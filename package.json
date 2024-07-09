@@ -1,0 +1,27 @@
+{
+  "name": "tree-sitter-noir",
+  "version": "0.1.0",
+  "author": "Jordan Ellis 'tsujp' Coppard <$(printf 'amMrZ2l0QHd6Lmh0Cg==' | base64 -d)>",
+  "license": "BSD-3-Clause",
+  "scripts": {
+      "ts-parse": "tree-sitter parse --config-path ./tree-sitter.json"
+  },
+  "repository": {
+    "type": "git"
+  },
+  "keywords": [],
+  "files": [
+    "grammar.js",
+    "queries/*",
+    "src/**"
+  ],
+  "dependencies": {
+    "tree-sitter-cli": "^0.22.6"
+  },
+  "tree-sitter": [
+    {
+      "scope": "source.noir",
+      "injection-regex": "^noir$"
+    }
+  ]
+}
