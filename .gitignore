@@ -1,0 +1,28 @@
+# Rust artifacts
+Cargo.lock
+target/
+
+# Node artifacts
+node_modules/
+*.tgz
+
+# C artifacts
+*.a
+*.so
+*.so.*
+*.dylib
+*.dll
+*.pc
+
+# Grammar volatiles
+*.wasm
+*.obj
+*.o
+
+# macOS
+.DS_Store
+
+# Emacs
+*~
+\#*\#
+.\#*
