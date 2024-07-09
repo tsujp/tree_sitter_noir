@@ -1,0 +1,52 @@
+{
+  "parser-directories": [],
+  "theme": {
+    "constructor": 136,
+    "property": 124,
+    "tag": 18,
+    "type": 23,
+    "module": 136,
+    "operator": {
+      "color": 239,
+      "bold": true
+    },
+    "function.builtin": {
+      "bold": true,
+      "color": 26
+    },
+    "embedded": null,
+    "constant.builtin": {
+      "color": 94,
+      "bold": true
+    },
+    "number": {
+      "bold": true,
+      "color": 94
+    },
+    "keyword": 56,
+    "punctuation.bracket": 239,
+    "punctuation.delimiter": 239,
+    "type.builtin": {
+      "color": 23,
+      "bold": true
+    },
+    "variable.parameter": {
+      "underline": true
+    },
+    "variable.builtin": {
+      "bold": true
+    },
+    "string": 28,
+    "function": 26,
+    "string.special": 30,
+    "comment": {
+      "color": 245,
+      "italic": true
+    },
+    "constant": 94,
+    "attribute": {
+      "color": 124,
+      "italic": true
+    }
+  }
+}
