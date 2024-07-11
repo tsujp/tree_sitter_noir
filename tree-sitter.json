@@ -1,5 +1,7 @@
 {
-  "parser-directories": [],
+    "parser-directories": [
+        "./src"
+  ],
   "theme": {
     "constructor": 136,
     "property": 124,
