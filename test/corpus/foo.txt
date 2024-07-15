@@ -1,0 +1,52 @@
+====================
+Function definitions
+====================
+
+fn hello_world() {}
+
+pub fn one_23() {}
+
+---
+
+(source_file
+  (function_definition
+    (identifier)
+    (parameter_list)
+    (block))
+  (function_definition
+    (visibility_modifier)
+    (identifier)
+    (parameter_list)
+    (block)))
+
+===
+Attributes
+===
+
+#[   ]
+fn foo() {}
+
+#[oracle( )]
+fn bar() {}
+
+#[oracle(...)]
+fn boing() {}
+
+---
+
+(source_file
+  (attribute)
+  (function_definition
+    (identifier)
+    (parameter_list)
+    (block))
+  (attribute)
+  (function_definition
+    (identifier)
+    (parameter_list)
+    (block))
+  (attribute)
+  (function_definition
+    (identifier)
+    (parameter_list)
+    (block)))
