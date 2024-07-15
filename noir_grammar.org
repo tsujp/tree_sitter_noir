@@ -1,0 +1,118 @@
+* Noir Grammar
+TODO: How can I have this as a prefix for other file locations?
+:PROPERTIES:
+:NOIRC_BASE: "noir/compiler/noirc_frontend/src"
+:END:
+
+Not formally specified currently; expected given the language is pre 1.0. So, notes and links to compiler infrastructure to ascertain language minutia.
+
+All notes currently against upstream commit ~af57471035e4fa7eaffa71693219df6d029dbcde~.
+
+** Lexing
+
+- Whitespace not relevant: https://github.com/noir-lang/noir/blob/af57471035e4fa7eaffa71693219df6d029dbcde/compiler/noirc_frontend/src/lexer/lexer.rs#L584-L589
+  - TODO: However, it must be in certain contexts (e.g. a string).
+- Code whitespace: ~'\t'~, ~'\n'~, ~'\r'~, ~' '~: https://github.com/noir-lang/noir/blob/af57471035e4fa7eaffa71693219df6d029dbcde/compiler/noirc_frontend/src/lexer/lexer.rs#L580-L582
+
+*** Attributes
+
+Two kinds: primary and secondary. Discriminated depending on how many can be applied to a function.
+
+  - Primary: one (changes function ACIR output).
+  - Secondary: unlimited.
+
+Reserved list of attributes defined in ~token.rs~.
+#+transclude: [[file:noir/compiler/noirc_frontend/src/lexer/token.rs]] :lines 631-685 :src rust
+
+*Lex process*:
+
+  1. Start with ~#~: (Lexer::next_token).
+    TODO: How to have ~:src rust~ pre-applied?
+    TODO: Have org-remark work with the transcluded content?
+    ~Lexer::next_token~
+    #+transclude: [[file:noir/compiler/noirc_frontend/src/lexer/lexer.rs]] :lines 147-147 :src rust
+  2. Must be /immediately/ followed by ~[~.
+    ~Lexer::eat_attribute~
+    #+transclude: [[file:noir/compiler/noirc_frontend/src/lexer/lexer.rs]] :lines 282-283 :src rust
+  3. Eat all chars as long as they are not ~]~.
+    ~Lexer::eat_attribute~
+    #+transclude: [[file:noir/compiler/noirc_frontend/src/lexer/lexer.rs]] :lines 291-291 :src rust
+    ~Attribute::lookup_attribute~ called to validate eaten char range.
+  4. Split span into segments at ~(~ and ~)~, drop all empty segments.
+     #+transclude: [[file:noir/compiler/noirc_frontend/src/lexer/token.rs]] :lines 612-615 :src rust
+  5. Each segment is later checked such that all characters are:
+     - Alphanumeric.
+     - Ascii punctuation.
+       + Any of the following (from Rust's stdlib): ~! " # $ % & ' ( ) * + , - . / : ; < = > ? @ [ \ ] ^ _ ` { | } ~~.
+     - Literal space.
+     #+transclude: [[file:noir/compiler/noirc_frontend/src/lexer/token.rs]] :lines 617-629 :src rust
+     #+transclude: [[file:noir/compiler/noirc_frontend/src/lexer/token.rs]] :lines 681-684 :sec rust
+
+ Some reserved attributes have additional lexing:
+
+ TODO: Document those additional steps (e.g. how foreign also validates the name it captures too).
+
+*** Keywords
+
+=lexer/token.rs=
+https://github.com/noir-lang/noir/blob/a3bb09ebe2df473d4a34a34fbfc3966ffbc630cb/compiler/noirc_frontend/src/lexer/token.rs#L927-L969
+
+TODO: Checklist of implemented keywords.
+
+**** Identifiers
+
+=lexer/lexer.rs=
+https://github.com/noir-lang/noir/blob/a3bb09ebe2df473d4a34a34fbfc3966ffbc630cb/compiler/noirc_frontend/src/lexer/lexer.rs#L318-L355
+
+~Lexer::eat_word~ -> { ~Lexer::lex_word~, ~Lexer::lookup_word_token~ } -> identifier-or-not
+
+~lex_word~ accumulates characters as long as they are: ~[a-z0-9_]~ (in source: ascii alphabetic, numeric, or _).
+~lookup_word_token~ receives from ~lex_word~ the span of such a sequence of characters.
+
+To determine if /span/ of text is an identifier, check:
+
+1. If it's an exact match to a keyword enum: ~Keyword::lookup_keyword~.
+2. If it can be parsed as an integer type: ~IntType::lookup_int_type~.
+
+If these checks fail then it is an identifier.
+
+TODO: But valid identifiers further narrowed to this Regex (Chumsky ident): ~[a-zA-Z_][a-zA-Z0-9_]*~
+TODO: I asked for clarification in Noir's Discord here: https://discord.com/channels/1113924620781883405/1260852401955536927
+
+**** ~lookup_int_type~
+
+=lexer/token.rs=
+https://github.com/noir-lang/noir/blob/a3bb09ebe2df473d4a34a34fbfc3966ffbc630cb/compiler/noirc_frontend/src/lexer/token.rs#L509-L532
+
+Determined by checking:
+
+1. Start with ~i~ or ~u~, comprised of only integers afterwards.
+
+If (1) fails then it is /not/ an integer /type/ (does not mean it's not an integer /literal/).
+
+
+** Parsing
+
+*** Modifiers
+
+**** General
+
+***** Visibility
+
+~pub~ applies generally.
+TODO: function.rs 56-68
+TODO: How it applies to crates.
+
+**** Function-specific
+
+***** Unconstrained
+
+~unconstrained~ applies optionally before general-visibility.
+TODO: Comptime?
+TODO: function.rs 73-81
+
+*** Functions
+
+Parser definition: https://github.com/noir-lang/noir/blob/af57471035e4fa7eaffa71693219df6d029dbcde/compiler/noirc_frontend/src/parser/parser/function.rs#L22-L53
+
+
