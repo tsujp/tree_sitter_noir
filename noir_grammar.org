@@ -21,6 +21,8 @@ Two kinds: primary and secondary. Discriminated depending on how many can be app
   - Primary: one (changes function ACIR output).
   - Secondary: unlimited.
 
+TODO: Can attributes be (later parsed to) functions? i.e. ~#[foo(a, b)]~? I saw such logic in the compiler ~elaborator~. 
+
 Reserved list of attributes defined in ~token.rs~.
 #+transclude: [[file:noir/compiler/noirc_frontend/src/lexer/token.rs]] :lines 631-685 :src rust
 

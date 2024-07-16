@@ -1,6 +1,6 @@
-====================
-Function definitions
-====================
+========================
+Function definitions :P:
+========================
 
 fn hello_world() {}
 
@@ -19,9 +19,9 @@ pub fn one_23() {}
     (parameter_list)
     (block)))
 
-===
-Attributes
-===
+==============
+Attributes :P:
+==============
 
 #[   ]
 fn foo() {}
@@ -32,21 +32,60 @@ fn bar() {}
 #[oracle(...)]
 fn boing() {}
 
+#[ leading, and space,      seperated  /with/  punctuation!!!,{}|!#_ () () ( ( ) () ( ]
+fn cursed() {}
+
+#[foo(bar)]
+fn normal() {}
+
+#[foo]
+fn normal() {}
+
+#[test(should_fail_with = "howdy there")]
+fn normal() {}
+
 ---
 
 (source_file
-  (attribute)
+  (attribute
+    (path))
   (function_definition
-    (identifier)
+    name: (identifier)
     (parameter_list)
     (block))
-  (attribute)
+  (attribute
+    (path))
   (function_definition
-    (identifier)
+    name: (identifier)
     (parameter_list)
     (block))
-  (attribute)
+  (attribute
+    (path))
   (function_definition
-    (identifier)
+    name: (identifier)
+    (parameter_list)
+    (block))
+  (attribute
+    (path))
+  (function_definition
+    name: (identifier)
+    (parameter_list)
+    (block))
+  (attribute
+    (path))
+  (function_definition
+    name: (identifier)
+    (parameter_list)
+    (block))
+  (attribute
+    (path))
+  (function_definition
+    name: (identifier)
+    (parameter_list)
+    (block))
+  (attribute
+    (path))
+  (function_definition
+    name: (identifier)
     (parameter_list)
     (block)))

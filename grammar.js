@@ -60,7 +60,7 @@ module.exports = grammar({
             optional($.function_modifiers),
             optional($.visibility_modifier),
             'fn',
-            $.identifier,
+            field('name', $.identifier),
             // TODO: Generics.
             $.parameter_list,
             // TODO: Function return type.
@@ -97,13 +97,27 @@ module.exports = grammar({
             // TODO: It's actually a lot more lenient, replace with other regex later.
             // TODO: Ask upstream if they intend for satanic attribute definitions.
             // TODO: Splits on ( and ) and that being sub-tokens.
+            // TODO: Does Noir call attribute 'names' as 'paths'?
+            alias(
+            repeat1(choice(
+                ' ',
+                REG_ALPHABETIC,
+                REG_NUMERIC,
+                REG_ASCII_PUNCTUATION,
+            ))
+                , $.path),
+            ']',
+        ),
+
+        // TODO: When mostly done see if this is generic or specific to attributes, i.e. rename to just `path` and remove all the aliases elsewhere?
+        // TODO: Come back to a field name for this later when what's going on with attributes is more locked down.
+        attribute_path: $ => seq(
             repeat1(choice(
                 ' ',
                 REG_ALPHABETIC,
                 REG_NUMERIC,
                 REG_ASCII_PUNCTUATION,
             )),
-            ']',
         ),
 
         // _statement: $ => choice(
