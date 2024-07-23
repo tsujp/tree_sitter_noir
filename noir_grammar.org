@@ -1,5 +1,6 @@
 * Noir Grammar
 TODO: How can I have this as a prefix for other file locations?
+TODO: Have the tree-sitter CLI check all syntax examples in a test marked :error do error, think about this though because technically each test case reads all the input as a single file.
 :PROPERTIES:
 :NOIRC_BASE: "noir/compiler/noirc_frontend/src"
 :END:

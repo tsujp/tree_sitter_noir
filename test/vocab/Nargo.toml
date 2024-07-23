@@ -1,0 +1,5 @@
+[package]
+name = 'noir_parse_files'
+authors = [ 'TODO' ]
+type = 'bin'
+entry = 'vocabulary.nr'

@@ -1,0 +1,79 @@
+==========
+Normal :P:
+==========
+
+#[foo(bar)]
+fn normal() {}
+
+#[foo]
+fn normal() {}
+
+#[test(should_fail_with = "howdy there")]
+fn normal() {}
+
+---
+
+(source_file
+  (attribute
+    (path))
+  (function_definition
+    (identifier)
+    (parameter_list)
+    (block))
+  (attribute
+    (path))
+  (function_definition
+    (identifier)
+    (parameter_list)
+    (block))
+  (attribute
+    (path))
+  (function_definition
+    (identifier)
+    (parameter_list)
+    (block)))
+
+==========
+Cursed :P:
+==========
+
+#[   ]
+fn cursed() {}
+
+#[oracle( )]
+fn cursed() {}
+
+#[oracle(...)]
+fn cursed() {}
+
+#[ leading, and space,      seperated  /with/  punctuation!!!,{}|!#_ () () ( ( ) () ( ]
+fn cursed() {}
+
+---
+
+(source_file
+  (attribute
+    (path))
+  (function_definition
+    (identifier)
+    (parameter_list)
+    (block))
+  (attribute
+    (path))
+  (function_definition
+    (identifier)
+    (parameter_list)
+    (block))
+  (attribute
+    (path))
+  (function_definition
+    (identifier)
+    (parameter_list)
+    (block))
+  (attribute
+    (path))
+  (function_definition
+    (identifier)
+    (parameter_list)
+    (block)))
+
