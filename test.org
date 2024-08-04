@@ -1,0 +1,208 @@
+TODO: Managing different files is getting annoying, plus I want to check against what Nargo thinks for correct behaviour which involves a lot of duplicating stuff. Would rather have _something_ manage that; instead of re-inventing the wheel I'll have org render out specific things to nargo files as well as tree-sitter tests.
+
+* Functions
+:PROPERTIES:
+:export_file_name: __functions.txt
+:END:
+
+Tree-sitter and Nargo tests for functions.
+
+** Basic definitions
+
+- Simple function definitions.
+  #+begin_test :extract
+  fn hello_world() {}
+
+  fn foo() {}
+
+  fn before123four_five_678() {}
+
+  ---
+
+  (function_definition
+    name: (identifier)
+    (parameter_list)
+    (block))
+
+  (function_definition
+    name: (identifier)
+    (parameter_list)
+    (block))
+
+  (function_definition
+    name: (identifier)
+    (parameter_list)
+    (block))
+  #+end_test
+
+- Starting with integer literal.
+  #+begin_test :error :extract
+  fn 123_not_okay() {}
+  #+end_test
+
+- Starting with negation operator.
+  #+begin_test :error :extract
+  fn !nope() {}
+  #+end_test
+
+- Missing parameter list.
+  #+begin_test :error :extract
+  fn nah {}
+  #+end_test
+
+- Missing block expression.
+  #+begin_test :error :extract
+  fn silly()
+  #+end_test
+
+** Modifiers
+
+- Visibility and other function-applicable modifiers.
+  #+begin_test
+  pub fn one() {}
+
+  unconstrained fn two() {}
+
+  unconstrained pub fn three() {}
+
+  ---
+
+  (function_definition
+    (visibility_modifier)
+    name: (identifier)
+    (parameter_list)
+    (block))
+
+  (function_definition
+    (function_modifiers)
+    name: (identifier)
+    (parameter_list)
+    (block))
+
+  (function_definition
+    (function_modifiers)
+    (visibility_modifier)
+    name: (identifier)
+    (parameter_list)
+    (block))
+  #+end_test
+
+- Visibility incorrect order
+  #+begin_test :error
+  fn pub one() {}
+  #+end_test
+
+- Unconstrained incorrect order
+  #+begin_test :error
+  fn unconstrained pub one() {}
+  #+end_test
+
+- Visibility and unconstrained incorrect order
+  #+begin_test :error
+  pub unconstrained fn one() {}
+  #+end_test
+
+- Function named visibility keyword
+  #+begin_test :error
+  fn pub() {}
+  #+end_test
+
+- Function named unconstrained keyword
+  #+begin_test :error
+  fn unconstrained() {}
+  #+end_test
+
+* Attributes
+:PROPERTIES:
+:export_file_name: __attributes.txt
+:END:
+
+** Normal
+
+- Expected attribute use.
+  #+begin_test
+  #[foo(bar)]
+  fn normal() {}
+
+  #[foo]
+  fn normal() {}
+
+  #[test(should_fail_with = "howdy there")]
+  fn normal() {}
+
+  ---
+
+  (attribute
+    (path))
+  (function_definition
+    (identifier)
+    (parameter_list)
+    (block))
+
+  (attribute
+    (path))
+  (function_definition
+    (identifier)
+    (parameter_list)
+    (block))
+
+  (attribute
+    (path))
+  (function_definition
+    (identifier)
+    (parameter_list)
+    (block))
+  #+end_test
+
+** Cursed
+
+- Unexpected (but still syntactically valid) attribute use.
+  #+begin_test
+  #[   ]
+  fn cursed() {}
+
+  #[oracle( )]
+  fn cursed() {}
+
+  #[oracle(...)]
+  fn cursed() {}
+
+  #[ leading, and space,      seperated  /with/  punctuation!!!,{}|!#_ () () ( ( ) () ( ]
+  fn cursed() {}
+
+  ---
+
+  (attribute
+    (path))
+  (function_definition
+    (identifier)
+    (parameter_list)
+    (block))
+
+  (attribute
+    (path))
+  (function_definition
+    (identifier)
+    (parameter_list)
+    (block))
+
+  (attribute
+    (path))
+  (function_definition
+    (identifier)
+    (parameter_list)
+    (block))
+
+  (attribute
+    (path))
+  (function_definition
+    (identifier)
+    (parameter_list)
+    (block))
+  #+end_test
+
+# Local variables:
+# after-save-hook: (lambda nil (org-export-as 'tst))
+# end:
+
+# (add-to-list 'org-babel-load-languages '(tree-sitter-test . t))
