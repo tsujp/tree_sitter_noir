@@ -1,6 +1,6 @@
-==========
-Normal :P:
-==========
+======
+Normal
+======
 
 #[foo(bar)]
 fn normal() {}
@@ -20,22 +20,26 @@ fn normal() {}
     (identifier)
     (parameter_list)
     (block))
+
   (attribute
     (path))
   (function_definition
     (identifier)
     (parameter_list)
     (block))
+
   (attribute
     (path))
   (function_definition
     (identifier)
     (parameter_list)
-    (block)))
+    (block))
+)
 
-==========
-Cursed :P:
-==========
+
+======
+Cursed
+======
 
 #[   ]
 fn cursed() {}
@@ -58,22 +62,25 @@ fn cursed() {}
     (identifier)
     (parameter_list)
     (block))
-  (attribute
-    (path))
-  (function_definition
-    (identifier)
-    (parameter_list)
-    (block))
-  (attribute
-    (path))
-  (function_definition
-    (identifier)
-    (parameter_list)
-    (block))
-  (attribute
-    (path))
-  (function_definition
-    (identifier)
-    (parameter_list)
-    (block)))
 
+  (attribute
+    (path))
+  (function_definition
+    (identifier)
+    (parameter_list)
+    (block))
+
+  (attribute
+    (path))
+  (function_definition
+    (identifier)
+    (parameter_list)
+    (block))
+
+  (attribute
+    (path))
+  (function_definition
+    (identifier)
+    (parameter_list)
+    (block))
+)

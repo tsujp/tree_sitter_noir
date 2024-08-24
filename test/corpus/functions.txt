@@ -1,6 +1,6 @@
-=====================
-Basic definitions :P:
-=====================
+=================
+Basic definitions
+=================
 
 fn hello_world() {}
 
@@ -15,31 +15,64 @@ fn before123four_five_678() {}
     name: (identifier)
     (parameter_list)
     (block))
+
   (function_definition
     name: (identifier)
     (parameter_list)
     (block))
+
   (function_definition
     name: (identifier)
     (parameter_list)
-    (block)))
+    (block))
+)
+
 
 =========================
-Bad basic definitions :P:
+Basic definitions (Bad) 1
 :error
 =========================
 
 fn 123_not_okay() {}
-
-fn !nope() {}
-
 ---
 
-=============
-Modifiers :P:
-=============
 
-pub fn one_23() {}
+=========================
+Basic definitions (Bad) 2
+:error
+=========================
+
+fn !nope() {}
+---
+
+
+=========================
+Basic definitions (Bad) 3
+:error
+=========================
+
+fn nah {}
+---
+
+
+=========================
+Basic definitions (Bad) 4
+:error
+=========================
+
+fn silly()
+---
+
+
+=========
+Modifiers
+=========
+
+pub fn one() {}
+
+unconstrained fn two() {}
+
+unconstrained pub fn three() {}
 
 ---
 
@@ -48,5 +81,63 @@ pub fn one_23() {}
     (visibility_modifier)
     name: (identifier)
     (parameter_list)
-    (block)))
-    
+    (block))
+
+  (function_definition
+    (function_modifiers)
+    name: (identifier)
+    (parameter_list)
+    (block))
+
+  (function_definition
+    (function_modifiers)
+    (visibility_modifier)
+    name: (identifier)
+    (parameter_list)
+    (block))
+)
+
+
+=================
+Modifiers (Bad) 1
+:error
+=================
+
+fn pub one() {}
+---
+
+
+=================
+Modifiers (Bad) 2
+:error
+=================
+
+fn unconstrained pub one() {}
+---
+
+
+=================
+Modifiers (Bad) 3
+:error
+=================
+
+pub unconstrained fn one() {}
+---
+
+
+=================
+Modifiers (Bad) 4
+:error
+=================
+
+fn pub() {}
+---
+
+
+=================
+Modifiers (Bad) 5
+:error
+=================
+
+fn unconstrained() {}
+---

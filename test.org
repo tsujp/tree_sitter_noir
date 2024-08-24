@@ -1,8 +1,9 @@
 TODO: Managing different files is getting annoying, plus I want to check against what Nargo thinks for correct behaviour which involves a lot of duplicating stuff. Would rather have _something_ manage that; instead of re-inventing the wheel I'll have org render out specific things to nargo files as well as tree-sitter tests.
+TODO: Logic for :extract
 
 * Functions
 :PROPERTIES:
-:export_file_name: __functions.txt
+:export_file_name: functions.txt
 :END:
 
 Tree-sitter and Nargo tests for functions.
@@ -114,7 +115,7 @@ Tree-sitter and Nargo tests for functions.
 
 * Attributes
 :PROPERTIES:
-:export_file_name: __attributes.txt
+:export_file_name: attributes.txt
 :END:
 
 ** Normal
@@ -201,8 +202,7 @@ Tree-sitter and Nargo tests for functions.
     (block))
   #+end_test
 
-# Local variables:
+# LOCAL VARIABLES:
+# eval: (load-file (expand-file-name "ox-tst.el" (file-name-directory (buffer-file-name))))
 # after-save-hook: (lambda nil (org-export-as 'tst))
-# end:
-
-# (add-to-list 'org-babel-load-languages '(tree-sitter-test . t))
+# END:
