@@ -22,7 +22,7 @@ Two kinds: primary and secondary. Discriminated depending on how many can be app
   - Primary: one (changes function ACIR output).
   - Secondary: unlimited.
 
-TODO: Can attributes be (later parsed to) functions? i.e. ~#[foo(a, b)]~? I saw such logic in the compiler ~elaborator~. 
+TODO: Can attributes be (later parsed to) functions? i.e. ~#[foo(a, b)]~? I saw such logic in the compiler ~elaborator~.
 
 Reserved list of attributes defined in ~token.rs~.
 #+transclude: [[file:noir/compiler/noirc_frontend/src/lexer/token.rs]] :lines 631-685 :src rust
@@ -105,6 +105,7 @@ If (1) fails then it is /not/ an integer /type/ (does not mean it's not an integ
 ~pub~ applies generally.
 TODO: function.rs 56-68
 TODO: How it applies to crates.
+TODO: Cannot have a function called ~pub~ right?
 
 **** Function-specific
 
@@ -113,9 +114,8 @@ TODO: How it applies to crates.
 ~unconstrained~ applies optionally before general-visibility.
 TODO: Comptime?
 TODO: function.rs 73-81
+TODO: Cannot have a function called ~unconstrained~ right?
 
 *** Functions
 
 Parser definition: https://github.com/noir-lang/noir/blob/af57471035e4fa7eaffa71693219df6d029dbcde/compiler/noirc_frontend/src/parser/parser/function.rs#L22-L53
-
-
