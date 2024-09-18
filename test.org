@@ -10,7 +10,7 @@ Tree-sitter and Nargo tests for functions.
 
 ** Basic definitions
 
-- Simple function definitions.
+- Simple function definitions
   #+begin_test :extract
   fn hello_world() {}
 
@@ -36,29 +36,29 @@ Tree-sitter and Nargo tests for functions.
     (block))
   #+end_test
 
-- Starting with integer literal.
+- Starting with integer literal
   #+begin_test :error :extract
   fn 123_not_okay() {}
   #+end_test
 
-- Starting with negation operator.
+- Starting with negation operator
   #+begin_test :error :extract
   fn !nope() {}
   #+end_test
 
-- Missing parameter list.
+- Missing parameter list
   #+begin_test :error :extract
   fn nah {}
   #+end_test
 
-- Missing block expression.
+- Missing block expression
   #+begin_test :error :extract
   fn silly()
   #+end_test
 
 ** Modifiers
 
-- Visibility and other function-applicable modifiers.
+- Visibility and other function-applicable modifiers
   #+begin_test
   pub fn one() {}
 
@@ -66,10 +66,18 @@ Tree-sitter and Nargo tests for functions.
 
   unconstrained pub fn three() {}
 
+  comptime fn four() {}
+
   ---
 
   (function_definition
-    (visibility_modifier)
+    (function_modifiers)
+    name: (identifier)
+    (parameter_list)
+    (block))
+
+  (function_definition
+    (function_modifiers)
     name: (identifier)
     (parameter_list)
     (block))
@@ -82,36 +90,45 @@ Tree-sitter and Nargo tests for functions.
 
   (function_definition
     (function_modifiers)
-    (visibility_modifier)
     name: (identifier)
     (parameter_list)
     (block))
   #+end_test
 
-- Visibility incorrect order
+- Visibility position
   #+begin_test :error
   fn pub one() {}
   #+end_test
 
-- Unconstrained incorrect order
+- Visibility repeated
+  #+begin_test :error
+  fn pub pub one() {}
+  #+end_test
+
+- Unconstrained position
   #+begin_test :error
   fn unconstrained pub one() {}
   #+end_test
 
-- Visibility and unconstrained incorrect order
+- Unconstrained repeated
   #+begin_test :error
-  pub unconstrained fn one() {}
+  fn unconstrained unconstrained one() {}
   #+end_test
 
-- Function named visibility keyword
-  #+begin_test :error
-  fn pub() {}
-  #+end_test
+*** Function named visibility keyword
+#+begin_test :error
+fn pub() {}
+#+end_test
 
-- Function named unconstrained keyword
-  #+begin_test :error
-  fn unconstrained() {}
-  #+end_test
+*** Function named unconstrained keyword
+#+begin_test :error
+fn unconstrained() {}
+#+end_test
+
+*** Function named comptime keyword
+#+begin_test :error
+fn comptime() {}
+#+end_test
 
 * Attributes
 :PROPERTIES:
@@ -120,7 +137,7 @@ Tree-sitter and Nargo tests for functions.
 
 ** Normal
 
-- Expected attribute use.
+- Expected attribute use
   #+begin_test
   #[foo(bar)]
   fn normal() {}
@@ -202,7 +219,4 @@ Tree-sitter and Nargo tests for functions.
     (block))
   #+end_test
 
-# LOCAL VARIABLES:
-# eval: (load-file (expand-file-name "ox-tst.el" (file-name-directory (buffer-file-name))))
-# after-save-hook: (lambda nil (org-export-as 'tst))
-# END:
+Foo
