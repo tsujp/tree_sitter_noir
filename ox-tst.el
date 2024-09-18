@@ -29,13 +29,13 @@
 and return said list."
   ;; Only support present/not-present properties currently.
   (let ((fragments (split-string str "[ ]+"))
-		(ret (list))
-		frg)
+        (ret (list))
+        frg)
     (while (and fragments
-				;; Any custom keywords should be pre-interned by being set in `presence-properties`.
-				(setq frg (intern-soft (pop fragments))))
+                ;; Any custom keywords should be pre-interned by being set in `presence-properties`.
+                (setq frg (intern-soft (pop fragments))))
       (when (member frg presence-properties)
-		(setq ret (plist-put ret frg t))))
+        (setq ret (plist-put ret frg t))))
     ret))
 
 (defun tst--get-special-block-contents (special-block)
@@ -60,18 +60,18 @@ error test number COUNT under a specific headline."
    (plist-get plist :test-name)
    (number-to-string count)))
 ;; (concat " (Bad) " (number-to-string count) (when annotation
-;; 												(concat " [" annotation "]")))))
+;;                                              (concat " [" annotation "]")))))
 
 ;; TODO: I suspect this isn't the most elegant way to do this?
 (defun tst--get-error-test-parent-item-contents (special-block)
   "Returns the paragraph contents for the parent list item
 of the given SPECIAL-BLOCK as a string."
   (string-trim-right (org-element-map
-						 (org-element-lineage special-block 'item)
-						 'paragraph
-					   #'org-element-interpret-data
-					   nil
-					   t)))
+                         (org-element-lineage special-block 'item)
+                         'paragraph
+                       #'org-element-interpret-data
+                       nil
+                       t)))
 
 
 ;;; Filters
@@ -90,24 +90,24 @@ property) while doing so.
 Also expand :EXPORT_FILE_NAME to absolute path ready
 for use later in export backend."
   (let ((anchors (org-element-map tree 'headline
-				   (lambda (hl)
-					 (let ((file-name (org-element-property :EXPORT_FILE_NAME hl)))
-					   (when file-name
-						 ;; Expand to absolute path.
-						 (org-element-put-property hl :EXPORT_FILE_NAME
-												   (expand-file-name
-													file-name
-													;; TODO: Allow hardcoded "test/corpus" to be configurable.
-													(file-name-concat (file-name-directory (plist-get info :input-file)) "test/corpus")))
-						 (when (org-export-get-parent-headline hl)
-						   hl)))))))
+                   (lambda (hl)
+                     (let ((file-name (org-element-property :EXPORT_FILE_NAME hl)))
+                       (when file-name
+                         ;; Expand to absolute path.
+                         (org-element-put-property hl :EXPORT_FILE_NAME
+                                                   (expand-file-name
+                                                    file-name
+                                                    ;; TODO: Allow hardcoded "test/corpus" to be configurable.
+                                                    (file-name-concat (file-name-directory (plist-get info :input-file)) "test/corpus")))
+                         (when (org-export-get-parent-headline hl)
+                           hl)))))))
     ;; (inspector-inspect tree)
     ;; Raise headline.
     (mapc (lambda (hl)
-			(org-element-set
-			 (car (last (org-element-lineage-map hl #'identity 'headline))) ; Top-parent.
-			 hl)) ; Current.
-		  anchors)
+            (org-element-set
+             (car (last (org-element-lineage-map hl #'identity 'headline))) ; Top-parent.
+             hl)) ; Current.
+          anchors)
 
     tree))
 
@@ -120,13 +120,13 @@ for use later in export backend."
   ""
   ;; Test title base for blocks at this headline (remove cdr if want full path).
   (let ((title-base (cdr (nreverse
-						  (org-element-lineage-map
-							  special-block
-							  (lambda (hl) (org-element-property :raw-value hl))
-							'headline nil)))))
-	(if (= 1 (length title-base))
-		(car title-base)
-	  (mapconcat #'identity title-base " / "))))
+                          (org-element-lineage-map
+                              special-block
+                              (lambda (hl) (org-element-property :raw-value hl))
+                            'headline nil)))))
+    (if (= 1 (length title-base))
+        (car title-base)
+      (mapconcat #'identity title-base " / "))))
 
 ;; TODO: Docs for the new changes here, and then take note of count of error test blocks under the current heading. If it's >1 then add numbering to the test name, otherwise no numbering (goal to remove the spam of 1s).
 
@@ -135,74 +135,74 @@ for use later in export backend."
 heading level, into a single test block. TREE is the org AST. INFO
 is a global communication plist with contextual information."
   (org-element-map tree 'special-block
-	(lambda (special-block)
-	  (let ((error-test-count 1)
-			;; Test title base for blocks at this headline (remove cdr if want full path).
-			(title-base (tst--get-base-test-title special-block))
-			;; (title-base (mapconcat #'identity (cddr (nreverse
-			;; 										 (org-element-lineage-map
-			;; 											 special-block
-			;; 											 (lambda (hl) (org-element-property :raw-value hl))
-			;; 										   'headline nil)))
-			;; 					   " / "))
-			;; Special-block siblings at current headline level (no recursion).
-			(siblings (org-element-map
-						  (org-element-contents (org-element-lineage special-block 'headline))
-						  'special-block #'identity info nil 'headline))
-			;; Non-error test-blocks to merge for this headline.
-			(merged-blocks ()))
+    (lambda (special-block)
+      (let ((error-test-count 1)
+            ;; Test title base for blocks at this headline (remove cdr if want full path).
+            (title-base (tst--get-base-test-title special-block))
+            ;; (title-base (mapconcat #'identity (cddr (nreverse
+            ;;                                       (org-element-lineage-map
+            ;;                                           special-block
+            ;;                                           (lambda (hl) (org-element-property :raw-value hl))
+            ;;                                         'headline nil)))
+            ;;                     " / "))
+            ;; Special-block siblings at current headline level (no recursion).
+            (siblings (org-element-map
+                          (org-element-contents (org-element-lineage special-block 'headline))
+                          'special-block #'identity info nil 'headline))
+            ;; Non-error test-blocks to merge for this headline.
+            (merged-blocks ()))
 
-		;; (inspector-inspect siblings)
-		(dolist (--sb siblings (setq merged-blocks (nreverse merged-blocks)))
-		  (let ((--sb-info (org-combine-plists
-							(tst--test-block-attributes --sb) (list :test-name title-base))))
-			(cond
-			 ;; Error test.
-			 ((plist-get --sb-info :error)
-			  (org-element-set --sb (org-element-create
-									 'test-block
-									 ;; Set error test title.
-									 ;; (plist-put --sb-info :test-name (tst--make-error-test-title --sb-info error-test-count))
-									 (plist-put
-									  --sb-info
-									  :test-name (tst--make-error-test-title
-												  --sb-info
-												  error-test-count))
-									 ;; (tst--get-error-test-parent-item-contents --sb)))
-									 (concat (tst--get-special-block-contents --sb) "---")))
-			  (setq error-test-count (1+ error-test-count)))
+        ;; (inspector-inspect siblings)
+        (dolist (--sb siblings (setq merged-blocks (nreverse merged-blocks)))
+          (let ((--sb-info (org-combine-plists
+                            (tst--test-block-attributes --sb) (list :test-name title-base))))
+            (cond
+             ;; Error test.
+             ((plist-get --sb-info :error)
+              (org-element-set --sb (org-element-create
+                                     'test-block
+                                     ;; Set error test title.
+                                     ;; (plist-put --sb-info :test-name (tst--make-error-test-title --sb-info error-test-count))
+                                     (plist-put
+                                      --sb-info
+                                      :test-name (tst--make-error-test-title
+                                                  --sb-info
+                                                  error-test-count))
+                                     ;; (tst--get-error-test-parent-item-contents --sb)))
+                                     (concat (tst--get-special-block-contents --sb) "---")))
+              (setq error-test-count (1+ error-test-count)))
 
-			 ;; Normal (non-error) test
-			 ((not (plist-get --sb-info :error))
-			  (if (seq-empty-p merged-blocks) ; First normal test block in this headline?
-				  ;; TODO: Only save first blocks properties, not important right now but (maybe) in future more properties = need to do this with more granularity.
-				  (push (cons --sb --sb-info) merged-blocks) ; Yes, save it (to merge others into).
-				(org-element-extract --sb)) ; No, remove it from the AST.
+             ;; Normal (non-error) test
+             ((not (plist-get --sb-info :error))
+              (if (seq-empty-p merged-blocks) ; First normal test block in this headline?
+                  ;; TODO: Only save first blocks properties, not important right now but (maybe) in future more properties = need to do this with more granularity.
+                  (push (cons --sb --sb-info) merged-blocks) ; Yes, save it (to merge others into).
+                (org-element-extract --sb)) ; No, remove it from the AST.
 
-			  (push (tst--get-special-block-contents --sb) merged-blocks)))
-			))
-		;; Encountered normal test block(s), format and merge contents into the first seen.
-		(when merged-blocks
-		  (org-element-set
-		   (caar merged-blocks) ; Saved first normal test block.
-		   (org-element-create 'test-block
-							   (cdar merged-blocks) ; Saved first normal test block custom properties.
-							   (let ((--haircut (mapcar (lambda (str)
-														  ;; Strip all leading/trailing newlines from split substrings.
-														  ;; XXX: split-string regex limits make this the easiest route, don't try improve.
-														  (split-string str "---" nil "\n+"))
-														(cdr merged-blocks)))) ; Extracted contents of all normal blocks in same headline.
-								 ;; Add newlines for nicer spacing (which may(not) have been present before).
-								 (concat
-								  (mapconcat #'car --haircut "\n\n") ; Noir syntax in car (first list).
-								  "\n\n---\n\n"
-								  (concat ; Wrap parse-tree assertion XXX in "(source_file XXX)"
-								   "(source_file\n"
-								   (replace-regexp-in-string "\\(^\\).+$" "  " (mapconcat #'cadr --haircut "\n\n") nil nil 1) ; Parse-tree assertion in cadr (second list).
-								   "\n)")
-								  )))))
-		) ; Close let.
-	  )) ; Close lambda and map.
+              (push (tst--get-special-block-contents --sb) merged-blocks)))
+            ))
+        ;; Encountered normal test block(s), format and merge contents into the first seen.
+        (when merged-blocks
+          (org-element-set
+           (caar merged-blocks) ; Saved first normal test block.
+           (org-element-create 'test-block
+                               (cdar merged-blocks) ; Saved first normal test block custom properties.
+                               (let ((--haircut (mapcar (lambda (str)
+                                                          ;; Strip all leading/trailing newlines from split substrings.
+                                                          ;; XXX: split-string regex limits make this the easiest route, don't try improve.
+                                                          (split-string str "---" nil "\n+"))
+                                                        (cdr merged-blocks)))) ; Extracted contents of all normal blocks in same headline.
+                                 ;; Add newlines for nicer spacing (which may(not) have been present before).
+                                 (concat
+                                  (mapconcat #'car --haircut "\n\n") ; Noir syntax in car (first list).
+                                  "\n\n---\n\n"
+                                  (concat ; Wrap parse-tree assertion XXX in "(source_file XXX)"
+                                   "(source_file\n"
+                                   (replace-regexp-in-string "\\(^\\).+$" "  " (mapconcat #'cadr --haircut "\n\n") nil nil 1) ; Parse-tree assertion in cadr (second list).
+                                   "\n)")
+                                  )))))
+        ) ; Close let.
+      )) ; Close lambda and map.
   ;; (inspector-inspect tree)
   tree)
 
@@ -226,10 +226,10 @@ plist with contextual information."
 CONTENTS holds headline's contents. INFO is global communication
 plist with contextual information."
   (if-let ((export-file-name (org-element-property :EXPORT_FILE_NAME headline)))
-	  (tst--write-string-to-file
-	   (replace-regexp-in-string "\n\\(^\\)===+\n.+\\(?:\n.+\\)*\n===+" "\n\n" contents nil t 1)
-	   export-file-name)
-	contents))
+      (tst--write-string-to-file
+       (replace-regexp-in-string "\n\\(^\\)===+\n.+\\(?:\n.+\\)*\n===+" "\n\n" contents nil t 1)
+       export-file-name)
+    contents))
 
 
 ;;;; Plain list
@@ -257,14 +257,14 @@ Test text comprised of test title with any test attributes (e.g. :error)
 all wrapped in = (equals sign); followed by test syntax, a delimiter
 of --- and (if appropriate) a tree-sitter parse-tree for assertion."
   (let* ((test-name (org-element-property :test-name test-block))
-		 (test-name-width (string-width test-name))
-		 (test-name-wrap (make-string test-name-width ?=)))
-	(concat test-name-wrap "\n"
-			test-name "\n"
-			(when (org-element-property :error test-block)
-			  ":error\n")
-			test-name-wrap "\n\n"
-			contents)))
+         (test-name-width (string-width test-name))
+         (test-name-wrap (make-string test-name-width ?=)))
+    (concat test-name-wrap "\n"
+            test-name "\n"
+            (when (org-element-property :error test-block)
+              ":error\n")
+            test-name-wrap "\n\n"
+            contents)))
 
 
 
@@ -272,10 +272,10 @@ of --- and (if appropriate) a tree-sitter parse-tree for assertion."
 
 (org-export-define-backend 'tst
   '((section . tst-section)
-	(headline . tst-headline)
-	(plain-list . tst-plain-list)
-	(item . tst-item)
-	;; Pseudo objects.
-	(test-block . tst-test-block))
+    (headline . tst-headline)
+    (plain-list . tst-plain-list)
+    (item . tst-item)
+    ;; Pseudo objects.
+    (test-block . tst-test-block))
   :filters-alist '((:filter-parse-tree tst-anchor-headlines-filter
-									   tst-test-block-filter)))
+                                       tst-test-block-filter)))
