@@ -58,8 +58,9 @@ base title string under property :test-name and the current
 error test number COUNT under a specific headline."
   (concat
    (plist-get plist :test-name)
-   (concat " (Bad) " (number-to-string count) (when annotation
-												(concat " [" annotation "]")))))
+   (number-to-string count)))
+;; (concat " (Bad) " (number-to-string count) (when annotation
+;; 												(concat " [" annotation "]")))))
 
 ;; TODO: I suspect this isn't the most elegant way to do this?
 (defun tst--get-error-test-parent-item-contents (special-block)
@@ -110,20 +111,40 @@ for use later in export backend."
 
     tree))
 
+;; (defun bingbong ()
+;;   (interactive)
+;;   (let ((
+;;   (org-element-lineage-map (org-element-at-point) (lambda (hl) (org-element-property :raw-value hl)) 'headline))
+
+(defun tst--get-base-test-title (special-block)
+  ""
+  ;; Test title base for blocks at this headline (remove cdr if want full path).
+  (let ((title-base (cdr (nreverse
+						  (org-element-lineage-map
+							  special-block
+							  (lambda (hl) (org-element-property :raw-value hl))
+							'headline nil)))))
+	(if (= 1 (length title-base))
+		(car title-base)
+	  (mapconcat #'identity title-base " / "))))
+
+;; TODO: Docs for the new changes here, and then take note of count of error test blocks under the current heading. If it's >1 then add numbering to the test name, otherwise no numbering (goal to remove the spam of 1s).
+
 (defun tst--merge-test-blocks (tree info)
   "Merge contiguous test blocks under the same heading, at the same
 heading level, into a single test block. TREE is the org AST. INFO
 is a global communication plist with contextual information."
   (org-element-map tree 'special-block
-    (lambda (special-block)
+	(lambda (special-block)
 	  (let ((error-test-count 1)
 			;; Test title base for blocks at this headline (remove cdr if want full path).
-			(title-base (mapconcat #'identity (cdr (nreverse
-													(org-element-lineage-map
-														special-block
-														(lambda (hl) (org-element-property :raw-value hl))
-													  'headline t)))
-								   " / "))
+			(title-base (tst--get-base-test-title special-block))
+			;; (title-base (mapconcat #'identity (cddr (nreverse
+			;; 										 (org-element-lineage-map
+			;; 											 special-block
+			;; 											 (lambda (hl) (org-element-property :raw-value hl))
+			;; 										   'headline nil)))
+			;; 					   " / "))
 			;; Special-block siblings at current headline level (no recursion).
 			(siblings (org-element-map
 						  (org-element-contents (org-element-lineage special-block 'headline))
@@ -131,6 +152,7 @@ is a global communication plist with contextual information."
 			;; Non-error test-blocks to merge for this headline.
 			(merged-blocks ()))
 
+		;; (inspector-inspect siblings)
 		(dolist (--sb siblings (setq merged-blocks (nreverse merged-blocks)))
 		  (let ((--sb-info (org-combine-plists
 							(tst--test-block-attributes --sb) (list :test-name title-base))))
@@ -145,8 +167,8 @@ is a global communication plist with contextual information."
 									  --sb-info
 									  :test-name (tst--make-error-test-title
 												  --sb-info
-												  error-test-count
-												  (tst--get-error-test-parent-item-contents --sb)))
+												  error-test-count))
+									 ;; (tst--get-error-test-parent-item-contents --sb)))
 									 (concat (tst--get-special-block-contents --sb) "---")))
 			  (setq error-test-count (1+ error-test-count)))
 
@@ -207,7 +229,7 @@ plist with contextual information."
 	  (tst--write-string-to-file
 	   (replace-regexp-in-string "\n\\(^\\)===+\n.+\\(?:\n.+\\)*\n===+" "\n\n" contents nil t 1)
 	   export-file-name)
-    contents))
+	contents))
 
 
 ;;;; Plain list
@@ -237,7 +259,7 @@ of --- and (if appropriate) a tree-sitter parse-tree for assertion."
   (let* ((test-name (org-element-property :test-name test-block))
 		 (test-name-width (string-width test-name))
 		 (test-name-wrap (make-string test-name-width ?=)))
-    (concat test-name-wrap "\n"
+	(concat test-name-wrap "\n"
 			test-name "\n"
 			(when (org-element-property :error test-block)
 			  ":error\n")
