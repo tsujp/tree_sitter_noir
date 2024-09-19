@@ -1,3 +1,5 @@
+#+TODO: TODO(t) | DONE(d!)
+
 * Noir Grammar
 TODO: How can I have this as a prefix for other file locations?
 TODO: Have the tree-sitter CLI check all syntax examples in a test marked :error do error, think about this though because technically each test case reads all the input as a single file.
@@ -8,6 +10,179 @@ TODO: Have the tree-sitter CLI check all syntax examples in a test marked :error
 Not formally specified currently; expected given the language is pre 1.0. So, notes and links to compiler infrastructure to ascertain language minutia.
 
 All notes currently against upstream commit ~af57471035e4fa7eaffa71693219df6d029dbcde~.
+
+TODO: Have the following checkbox list created dynamically from headings, and also link to said headings.
+TODO: When writing queries eventually, can use anonymous node queries also e.g. ~(function_modifiers "foo")~.
+
+- [ ] Top-level items
+- [ ] Expressions
+- [ ] Functions
+  + [ ] Parameters
+    - [ ] Names
+    - [ ] Types
+
+:FOO:
+foobar
+:END:
+
+** Compiler
+
+Noir's compiler frontend performs parsing and lexing at the same time; that is the parser internally lexes as it parses a given file.
+
+*** Parsed structure
+
+Each list element (-) of the first list following each heading under this tree represents an OR. So, the following example list reads "(A followed by B) OR C".
+
+#+begin_example
+- A followed by B
+- C
+#+end_example
+
+Each list element (+) of a list represents an ordered item type.
+
+**** Program
+
+- [[Module]] followed by EOF.
+#+transclude: [[file:noir/compiler/noirc_frontend/src/parser/parser.rs]] :lines 159-162 :src rust
+
+***** Module
+
+- [[Top-level statement]] followed by [[module]].
+#+transclude: [[file:noir/compiler/noirc_frontend/src/parser/parser.rs]] :lines 164-190 :src rust
+
+****** Top-level statement
+
+- [[Function definition]].
+- Struct definition.
+- Trait definition.
+- Trait implementation.
+- [[Implementation]].
+- Submodule.
+- Contract.
+- Module declaration.
+- Use statement.
+- Global declaration.
+
+#+transclude: [[file:noir/compiler/noirc_frontend/src/parser/parser.rs]] :lines 192-217 :src rust
+
+******* Function definition
+
++ [[Function modifiers]]
++ Function keyword =fn=
++ [[Identifier]]
++ Generics
++ Function parameters (TODO: That ~parenthesized~ function call)
++ Function return type
++ Where clause
++ Fresh statement (TODO: That spanned block function call)
+
+Parser function:
+#+transclude: [[file:noir/compiler/noirc_frontend/src/parser/parser/function.rs]] :lines 20-53 :src rust
+
+******** Function modifiers
+
+Ordered:
+1. Keyword =unconstrained=
+2. [[Visibility]]
+3. [[Comptime]]
+
+#+transclude: [[file:noir/compiler/noirc_frontend/src/parser/parser/function.rs]] :lines 70-81 :src rust
+
+******** TODO Function parameters
+******** TODO Function return type
+******** TODO Fresh statement
+
+What is this?
+
+******* Struct definition
+******* Trait definition
+******* Trait implementation
+******* Implementation
+
++ Non-trait implementation, add a set of methods to a type.
++ Must contain 1 or more valid function definitions.
+
+Parser:
+#+transclude: [[file:noir/compiler/noirc_frontend/src/parser/parser.rs]] :lines 219-232 :src rust
+
+
+******* Submodule
+******* Contract
+******* Module declaration
+******* Use statement
+******* Global declaration
+
+*** Auxiliary
+
+**** TODO Generic
+**** TODO Where clause
+**** Visibility
+
+Handles both crate visibility and /other/ visibility.
+
+*************** TODO Crates
+1. Keyword =pub=
+2. Token =(=
+3. Keyword =crate=
+4. Keyword =)=
+
+*************** TODO Other
+1. Keyword =pub=
+
+Parser:
+#+transclude: [[file:noir/compiler/noirc_frontend/src/parser/parser/function.rs]] :lines 55-68 :src rust
+
+**** Comptime
+
+1. Keyword =comptime=
+
+Parser:
+#+transclude: [[file:noir/compiler/noirc_frontend/src/parser/parser/types.rs]] :lines 14-20 :src rust
+
+**** Identifier
+
+=lexer/lexer.rs=
+https://github.com/noir-lang/noir/blob/a3bb09ebe2df473d4a34a34fbfc3966ffbc630cb/compiler/noirc_frontend/src/lexer/lexer.rs#L318-L355
+
+~Lexer::eat_word~ -> { ~Lexer::lex_word~, ~Lexer::lookup_word_token~ } -> identifier-or-not
+
+~lex_word~ accumulates characters as long as they are: ~[a-z0-9_]~ (in source: ascii alphabetic, numeric, or _).
+~lookup_word_token~ receives from ~lex_word~ the span of such a sequence of characters.
+
+To determine if /span/ of text is an identifier, check:
+
+1. If it's an exact match to a keyword enum: ~Keyword::lookup_keyword~.
+2. If it can be parsed as an integer type: ~IntType::lookup_int_type~.
+
+If these checks fail then it is an identifier.
+
+TODO: But valid identifiers further narrowed to this Regex (Chumsky ident): ~[a-zA-Z_][a-zA-Z0-9_]*~
+TODO: I asked for clarification in Noir's Discord here: https://discord.com/channels/1113924620781883405/1260852401955536927
+
+**** ~lookup_int_type~
+
+=lexer/token.rs=
+https://github.com/noir-lang/noir/blob/a3bb09ebe2df473d4a34a34fbfc3966ffbc630cb/compiler/noirc_frontend/src/lexer/token.rs#L509-L532
+
+Determined by checking:
+
+1. Start with ~i~ or ~u~, comprised of only integers afterwards.
+
+If (1) fails then it is /not/ an integer /type/ (does not mean it's not an integer /literal/).
+
+
+
+** TODO Where do these go?
+
+*** Visibility modifier
+
+#+transclude: [[file:noir/compiler/noirc_frontend/src/parser/parser/function.rs :lines 55-68 :src rust
+
+** Entrypoint
+
+~parse_program~ parses and then returns parsed module along with any errors.
+#+transclude: [[file:noir/compiler/noirc_frontend/src/parser/parser.rs]] :lines 79-79 :src rust
+
 
 ** Lexing
 
@@ -26,6 +201,8 @@ TODO: Can attributes be (later parsed to) functions? i.e. ~#[foo(a, b)]~? I saw 
 
 Reserved list of attributes defined in ~token.rs~.
 #+transclude: [[file:noir/compiler/noirc_frontend/src/lexer/token.rs]] :lines 631-685 :src rust
+
+TODO: Valueable to have list of reserved attributes as part of the parser?
 
 *Lex process*:
 
@@ -62,36 +239,6 @@ https://github.com/noir-lang/noir/blob/a3bb09ebe2df473d4a34a34fbfc3966ffbc630cb/
 
 TODO: Checklist of implemented keywords.
 
-**** Identifiers
-
-=lexer/lexer.rs=
-https://github.com/noir-lang/noir/blob/a3bb09ebe2df473d4a34a34fbfc3966ffbc630cb/compiler/noirc_frontend/src/lexer/lexer.rs#L318-L355
-
-~Lexer::eat_word~ -> { ~Lexer::lex_word~, ~Lexer::lookup_word_token~ } -> identifier-or-not
-
-~lex_word~ accumulates characters as long as they are: ~[a-z0-9_]~ (in source: ascii alphabetic, numeric, or _).
-~lookup_word_token~ receives from ~lex_word~ the span of such a sequence of characters.
-
-To determine if /span/ of text is an identifier, check:
-
-1. If it's an exact match to a keyword enum: ~Keyword::lookup_keyword~.
-2. If it can be parsed as an integer type: ~IntType::lookup_int_type~.
-
-If these checks fail then it is an identifier.
-
-TODO: But valid identifiers further narrowed to this Regex (Chumsky ident): ~[a-zA-Z_][a-zA-Z0-9_]*~
-TODO: I asked for clarification in Noir's Discord here: https://discord.com/channels/1113924620781883405/1260852401955536927
-
-**** ~lookup_int_type~
-
-=lexer/token.rs=
-https://github.com/noir-lang/noir/blob/a3bb09ebe2df473d4a34a34fbfc3966ffbc630cb/compiler/noirc_frontend/src/lexer/token.rs#L509-L532
-
-Determined by checking:
-
-1. Start with ~i~ or ~u~, comprised of only integers afterwards.
-
-If (1) fails then it is /not/ an integer /type/ (does not mean it's not an integer /literal/).
 
 
 ** Parsing
@@ -112,10 +259,23 @@ TODO: Cannot have a function called ~pub~ right?
 ***** Unconstrained
 
 ~unconstrained~ applies optionally before general-visibility.
-TODO: Comptime?
 TODO: function.rs 73-81
 TODO: Cannot have a function called ~unconstrained~ right?
+
+***** Comptime
+TODO: Does the order come from? https://github.com/noir-lang/noir/blob/af57471035e4fa7eaffa71693219df6d029dbcde/compiler/noirc_frontend/src/parser/parser/function.rs#L41-L43
+TODO: TODO: In later versions, unsure of how applicable this is to the current language version.
+TODO: Is it actually function-specific or can it be any statement?
+TODO: Cannot have a function called ~comptime~ right?
 
 *** Functions
 
 Parser definition: https://github.com/noir-lang/noir/blob/af57471035e4fa7eaffa71693219df6d029dbcde/compiler/noirc_frontend/src/parser/parser/function.rs#L22-L53
+
+*** General
+
+**** TODO Boolean literals
+
+**** TODO Integer literals
+
+**** TODO Identifiers
