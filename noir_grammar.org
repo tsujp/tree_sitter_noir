@@ -1,37 +1,40 @@
-#+TODO: TODO(t) | DONE(d!)
+#+TODO: TODO(t@) | DONE(d!)
+#+STARTUP: indent logdone
+
+#+NOIR_VERSION: 359caafac5e489901d9ff02b08d1a688178d9b0a
+
+- Tag =node= being used as a non-terminal symbol.
+- Tag =leaf= used as a terminal symbol.
+
+TODO: Internal CLI to test Noir language grammar stuff? See how the current noir frontend compiler test suite is set up, want a nice way to run the tests alongside any tree-sitter stuff too.
+
+*************** TODO Prevent =node= and =leaf= tags from overlapping
+So, if a parent headline has a =node= tag (or inherits one) and a child headline has a =leaf= tag then the =leaf= tag should not inherit (specifically) the =node= tag; it can continue to inherit others.
+
+Or ignore that since technically a leaf is a type of node.
+*************** END
 
 * Noir Grammar
-TODO: How can I have this as a prefix for other file locations?
 TODO: Have the tree-sitter CLI check all syntax examples in a test marked :error do error, think about this though because technically each test case reads all the input as a single file.
-:PROPERTIES:
-:NOIRC_BASE: "noir/compiler/noirc_frontend/src"
-:END:
 
 Not formally specified currently; expected given the language is pre 1.0. So, notes and links to compiler infrastructure to ascertain language minutia.
 
-All notes currently against upstream commit ~af57471035e4fa7eaffa71693219df6d029dbcde~.
+=(org-macro-expand (org-element-context) org-macro-templates)=
+All notes currently against upstream commit {{{keyword(NOIR_VERSION)}}}.
 
 TODO: Have the following checkbox list created dynamically from headings, and also link to said headings.
 TODO: When writing queries eventually, can use anonymous node queries also e.g. ~(function_modifiers "foo")~.
 
-- [ ] Top-level items
-- [ ] Expressions
-- [ ] Functions
-  + [ ] Parameters
-    - [ ] Names
-    - [ ] Types
+** Compiler                                                          :noirc:
 
-:FOO:
-foobar
-:END:
+Noir's compiler frontend performs parsing and lexing at the same time; the parser internally lexes as it parses a given file.
 
-** Compiler
+Entry:
+#+transclude: [[file:noir/compiler/noirc_frontend/src/parser/parser.rs][parse_program()]] :lines 83-97 :src rust
 
-Noir's compiler frontend performs parsing and lexing at the same time; that is the parser internally lexes as it parses a given file.
+*** Structure
 
-*** Parsed structure
-
-Each list element (-) of the first list following each heading under this tree represents an OR. So, the following example list reads "(A followed by B) OR C".
+Each list element (-) of the first list following each heading under this tree represents a logic OR. So, the following example list reads "(A followed by B) OR C".
 
 #+begin_example
 - A followed by B
@@ -40,17 +43,17 @@ Each list element (-) of the first list following each heading under this tree r
 
 Each list element (+) of a list represents an ordered item type.
 
-**** Program
+**** Program                                                        :node:
 
 - [[Module]] followed by EOF.
-#+transclude: [[file:noir/compiler/noirc_frontend/src/parser/parser.rs]] :lines 159-162 :src rust
+#+transclude: [[file:noir/compiler/noirc_frontend/src/parser/parser.rs][program()]] :lines 99-102 :src rust
 
-***** Module
+***** Module                                                       :node:
 
 - [[Top-level statement]] followed by [[module]].
-#+transclude: [[file:noir/compiler/noirc_frontend/src/parser/parser.rs]] :lines 164-190 :src rust
+#+transclude: [[file:noir/compiler/noirc_frontend/src/parser/parser.rs][module()]] :lines 104-129 :src rust
 
-****** Top-level statement
+****** TODO Top-level statement                                   :node:
 
 - [[Function definition]].
 - Struct definition.
@@ -63,9 +66,9 @@ Each list element (+) of a list represents an ordered item type.
 - Use statement.
 - Global declaration.
 
-#+transclude: [[file:noir/compiler/noirc_frontend/src/parser/parser.rs]] :lines 192-217 :src rust
+#+transclude: [[file:noir/compiler/noirc_frontend/src/parser/parser.rs][top_level_statement_kind()]] :lines 144-170 :src rust
 
-******* Function definition
+******* TODO Function definition
 
 + [[Function modifiers]]
 + Function keyword =fn=
@@ -76,17 +79,19 @@ Each list element (+) of a list represents an ordered item type.
 + Where clause
 + Fresh statement (TODO: That spanned block function call)
 
-Parser function:
-#+transclude: [[file:noir/compiler/noirc_frontend/src/parser/parser/function.rs]] :lines 20-53 :src rust
+TODO: Attributes?? Source file line `attributes()`.
 
-******** Function modifiers
+Parser:
+#+transclude: [[file:noir/compiler/noirc_frontend/src/parser/parser/function.rs][function_definition()]] :lines 30-76 :src rust
+
+******** TODO Function modifiers
 
 Ordered:
 1. Keyword =unconstrained=
 2. [[Visibility]]
 3. [[Comptime]]
 
-#+transclude: [[file:noir/compiler/noirc_frontend/src/parser/parser/function.rs]] :lines 70-81 :src rust
+#+transclude: [[file:noir/compiler/noirc_frontend/src/parser/parser/function.rs][function_modifiers()]] :lines 78-85 :src rust
 
 ******** TODO Function parameters
 ******** TODO Function return type
@@ -94,7 +99,17 @@ Ordered:
 
 What is this?
 
-******* Struct definition
+******* TODO Struct definition
+
++ Identifier
++ Parse type
+
+Parser:
+#+transclude: [[file:noir/compiler/noirc_frontend/src/parser/parser/structs.rs][struct_definition()]] :lines 18-41 :src rust
+
+Parser:
+#+transclude: [[file:noir/compiler/noirc_frontend/src/parser/parser/structs.rs][struct_fields()]] :lines 43-49 :src rust
+
 ******* Trait definition
 ******* Trait implementation
 ******* Implementation
@@ -114,9 +129,16 @@ Parser:
 
 *** Auxiliary
 
+**** TODO Parse type
+
+TODO: This is where Noir's recursive definitions stuff is too.
+
+Parser:
+#+transclude: [[file:noir/compiler/noirc_frontend/src/parser/parser.rs]] :lines 675-697 :src rust
+
 **** TODO Generic
 **** TODO Where clause
-**** Visibility
+**** TODO Visibility
 
 Handles both crate visibility and /other/ visibility.
 
@@ -124,22 +146,31 @@ Handles both crate visibility and /other/ visibility.
 1. Keyword =pub=
 2. Token =(=
 3. Keyword =crate=
-4. Keyword =)=
+4. Token =)=
 
-*************** TODO Other
+*************** DONE Other                               :leaf:
+CLOSED: [2024-09-23 Mon 18:34]
+:LOGBOOK:
+- State "DONE"       from "TODO"       [2024-09-23 Mon 18:34]
+:END:
 1. Keyword =pub=
 
 Parser:
-#+transclude: [[file:noir/compiler/noirc_frontend/src/parser/parser/function.rs]] :lines 55-68 :src rust
+#+transclude: [[file:noir/compiler/noirc_frontend/src/parser/parser/visibility.rs][item_visibility()]] :lines 14-27 :src rust
 
-**** Comptime
+**** TODO Comptime                                                     :leaf:
+- State "TODO"       from "DONE"       [2024-09-24 Tue 19:57] \\
+  update noir version
+:LOGBOOK:
+- State "DONE"       from "TODO"       [2024-09-23 Mon 18:37]
+:END:
 
 1. Keyword =comptime=
 
 Parser:
 #+transclude: [[file:noir/compiler/noirc_frontend/src/parser/parser/types.rs]] :lines 14-20 :src rust
 
-**** Identifier
+**** TODO Identifier
 
 =lexer/lexer.rs=
 https://github.com/noir-lang/noir/blob/a3bb09ebe2df473d4a34a34fbfc3966ffbc630cb/compiler/noirc_frontend/src/lexer/lexer.rs#L318-L355
