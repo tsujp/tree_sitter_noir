@@ -8,112 +8,124 @@ TODO: Logic for :extract
 
 Tree-sitter and Nargo tests for functions.
 
-** Basic definitions
+** Definitions
+#+begin_test :extract
+fn hello_world() {}
 
-- Simple function definitions
-  #+begin_test :extract
-  fn hello_world() {}
+fn foo() {}
 
-  fn foo() {}
+fn before123four_five_678() {}
 
-  fn before123four_five_678() {}
+---
 
-  ---
+(function_definition
+  name: (identifier)
+  (parameter_list)
+  (block))
 
-  (function_definition
-    name: (identifier)
-    (parameter_list)
-    (block))
+(function_definition
+  name: (identifier)
+  (parameter_list)
+  (block))
 
-  (function_definition
-    name: (identifier)
-    (parameter_list)
-    (block))
+(function_definition
+  name: (identifier)
+  (parameter_list)
+  (block))
+#+end_test
 
-  (function_definition
-    name: (identifier)
-    (parameter_list)
-    (block))
-  #+end_test
+*** Starting with integer literal
+#+begin_test :error :extract
+fn 123_not_okay() {}
+#+end_test
 
-- Starting with integer literal
-  #+begin_test :error :extract
-  fn 123_not_okay() {}
-  #+end_test
+*** Starting with negation operator
+#+begin_test :error :extract
+fn !nope() {}
+#+end_test
 
-- Starting with negation operator
-  #+begin_test :error :extract
-  fn !nope() {}
-  #+end_test
+*** Missing parameter list
+#+begin_test :error :extract
+fn nah {}
+#+end_test
 
-- Missing parameter list
-  #+begin_test :error :extract
-  fn nah {}
-  #+end_test
-
-- Missing block expression
-  #+begin_test :error :extract
-  fn silly()
-  #+end_test
+*** Missing block expression
+#+begin_test :error :extract
+fn silly()
+#+end_test
 
 ** Modifiers
+#+begin_test
+pub fn one() {}
 
-- Visibility and other function-applicable modifiers
-  #+begin_test
-  pub fn one() {}
+unconstrained fn two() {}
 
-  unconstrained fn two() {}
+unconstrained pub fn three() {}
 
-  unconstrained pub fn three() {}
+unconstrained pub comptime fn four() {}
 
-  comptime fn four() {}
+comptime fn five() {}
 
-  ---
+pub comptime fn six() {}
 
-  (function_definition
-    (function_modifiers)
-    name: (identifier)
-    (parameter_list)
-    (block))
+---
 
-  (function_definition
-    (function_modifiers)
-    name: (identifier)
-    (parameter_list)
-    (block))
+(function_definition
+  (function_modifiers)
+  name: (identifier)
+  (parameter_list)
+  (block))
 
-  (function_definition
-    (function_modifiers)
-    name: (identifier)
-    (parameter_list)
-    (block))
+(function_definition
+  (function_modifiers)
+  name: (identifier)
+  (parameter_list)
+  (block))
 
-  (function_definition
-    (function_modifiers)
-    name: (identifier)
-    (parameter_list)
-    (block))
-  #+end_test
+(function_definition
+  (function_modifiers)
+  name: (identifier)
+  (parameter_list)
+  (block))
 
-- Visibility position
-  #+begin_test :error
-  fn pub one() {}
-  #+end_test
+(function_definition
+  (function_modifiers)
+  name: (identifier)
+  (parameter_list)
+  (block))
 
-- Visibility repeated
-  #+begin_test :error
-  fn pub pub one() {}
-  #+end_test
+(function_definition
+  (function_modifiers)
+  name: (identifier)
+  (parameter_list)
+  (block))
 
-- Unconstrained position
-  #+begin_test :error
-  fn unconstrained pub one() {}
-  #+end_test
+(function_definition
+  (function_modifiers)
+  name: (identifier)
+  (parameter_list)
+  (block))
+#+end_test
 
-- Unconstrained repeated
-  #+begin_test :error
-  fn unconstrained unconstrained one() {}
-  #+end_test
+*** Visibility position
+#+begin_test :error
+fn pub one() {}
+#+end_test
+
+*** Visibility repeated
+#+begin_test :error
+fn pub pub one() {}
+#+end_test
+
+*** Unconstrained position
+#+begin_test :error
+fn unconstrained pub one() {}
+#+end_test
+
+*** Unconstrained repeated
+#+begin_test :error
+fn unconstrained unconstrained one() {}
+#+end_test
 
 *** Function named visibility keyword
 #+begin_test :error
@@ -136,87 +148,83 @@ fn comptime() {}
 :END:
 
 ** Normal
+#+begin_test
+#[foo(bar)]
+fn normal() {}
 
-- Expected attribute use
-  #+begin_test
-  #[foo(bar)]
-  fn normal() {}
+#[foo]
+fn normal() {}
 
-  #[foo]
-  fn normal() {}
+#[test(should_fail_with = "howdy there")]
+fn normal() {}
 
-  #[test(should_fail_with = "howdy there")]
-  fn normal() {}
+---
 
-  ---
+(attribute
+  (path))
+(function_definition
+  (identifier)
+  (parameter_list)
+  (block))
 
-  (attribute
-    (path))
-  (function_definition
-    (identifier)
-    (parameter_list)
-    (block))
+(attribute
+  (path))
+(function_definition
+  (identifier)
+  (parameter_list)
+  (block))
 
-  (attribute
-    (path))
-  (function_definition
-    (identifier)
-    (parameter_list)
-    (block))
-
-  (attribute
-    (path))
-  (function_definition
-    (identifier)
-    (parameter_list)
-    (block))
-  #+end_test
+(attribute
+  (path))
+(function_definition
+  (identifier)
+  (parameter_list)
+  (block))
+#+end_test
 
 ** Cursed
+#+begin_test
+#[   ]
+fn cursed() {}
 
-- Unexpected (but still syntactically valid) attribute use.
-  #+begin_test
-  #[   ]
-  fn cursed() {}
+#[oracle( )]
+fn cursed() {}
 
-  #[oracle( )]
-  fn cursed() {}
+#[oracle(...)]
+fn cursed() {}
 
-  #[oracle(...)]
-  fn cursed() {}
+#[ leading, and space,      seperated  /with/  punctuation!!!,{}|!#_ () () ( ( ) () ( ]
+fn cursed() {}
 
-  #[ leading, and space,      seperated  /with/  punctuation!!!,{}|!#_ () () ( ( ) () ( ]
-  fn cursed() {}
+---
 
-  ---
+(attribute
+  (path))
+(function_definition
+  (identifier)
+  (parameter_list)
+  (block))
 
-  (attribute
-    (path))
-  (function_definition
-    (identifier)
-    (parameter_list)
-    (block))
+(attribute
+  (path))
+(function_definition
+  (identifier)
+  (parameter_list)
+  (block))
 
-  (attribute
-    (path))
-  (function_definition
-    (identifier)
-    (parameter_list)
-    (block))
+(attribute
+  (path))
+(function_definition
+  (identifier)
+  (parameter_list)
+  (block))
 
-  (attribute
-    (path))
-  (function_definition
-    (identifier)
-    (parameter_list)
-    (block))
-
-  (attribute
-    (path))
-  (function_definition
-    (identifier)
-    (parameter_list)
-    (block))
-  #+end_test
+(attribute
+  (path))
+(function_definition
+  (identifier)
+  (parameter_list)
+  (block))
+#+end_test
 
 Foo

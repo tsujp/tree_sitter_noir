@@ -4,7 +4,7 @@
   "author": "Jordan Ellis 'tsujp' Coppard <$(printf 'amMrZ2l0QHd6Lmh0Cg==' | base64 -d)>",
   "license": "BSD-3-Clause",
   "scripts": {
-      "ts-parse": "tree-sitter parse --config-path ./tree-sitter.json"
+    "ts-parse": "tree-sitter parse --config-path ./tree-sitter.json"
   },
   "repository": {
     "type": "git"
@@ -16,7 +16,7 @@
     "src/**"
   ],
   "dependencies": {
-    "tree-sitter-cli": "^0.22.6"
+    "tree-sitter-cli": "^0.23.0"
   },
   "tree-sitter": [
     {
