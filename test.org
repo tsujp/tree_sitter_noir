@@ -158,28 +158,59 @@ fn normal() {}
 #[test(should_fail_with = "howdy there")]
 fn normal() {}
 
+#[multiple] #[on a single line]
+fn normal() {}
+
+#['tag]
+#[and stacked]
+fn normal() {}
+
 ---
 
 (attribute
-  (path))
+  (content))
 (function_definition
   (identifier)
   (parameter_list)
   (block))
 
 (attribute
-  (path))
+  (content))
 (function_definition
   (identifier)
   (parameter_list)
   (block))
 
 (attribute
-  (path))
+  (content))
 (function_definition
   (identifier)
   (parameter_list)
   (block))
+
+(attribute
+  (content))
+(attribute
+  (content))
+(function_definition
+  (identifier)
+  (parameter_list)
+  (block))
+
+(attribute
+  (content))
+(attribute
+  (content))
+(function_definition
+  (identifier)
+  (parameter_list)
+  (block))
+#+end_test
+
+*** Invalid inner character
+#+begin_test :error
+#@[bad]
+fn normal() {}
 #+end_test
 
 ** Cursed
@@ -199,28 +230,28 @@ fn cursed() {}
 ---
 
 (attribute
-  (path))
+  (content))
 (function_definition
   (identifier)
   (parameter_list)
   (block))
 
 (attribute
-  (path))
+  (content))
 (function_definition
   (identifier)
   (parameter_list)
   (block))
 
 (attribute
-  (path))
+  (content))
 (function_definition
   (identifier)
   (parameter_list)
   (block))
 
 (attribute
-  (path))
+  (content))
 (function_definition
   (identifier)
   (parameter_list)

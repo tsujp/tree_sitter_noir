@@ -106,12 +106,10 @@ module.exports = grammar({
         attribute: ($) =>
             seq(
                 '#',
+                optional('!'), // Marks an InnerAttribute.
                 '[',
-                // TODO: It's actually a lot more lenient, replace with other regex later.
-                // TODO: Ask upstream if they intend for satanic attribute definitions.
-                // TODO: Splits on ( and ) and that being sub-tokens.
-                // TODO: Does Noir call attribute 'names' as 'paths'?
-                alias(repeat1(choice(' ', REG_ALPHABETIC, REG_NUMERIC, REG_ASCII_PUNCTUATION)), $.path),
+                optional("'"), // Marks an attribute Tag.
+                alias(repeat1(choice(' ', REG_ALPHABETIC, REG_NUMERIC, REG_ASCII_PUNCTUATION)), $.content),
                 ']',
             ),
 
