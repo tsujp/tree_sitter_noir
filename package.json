@@ -16,7 +16,7 @@
     "src/**"
   ],
   "dependencies": {
-    "tree-sitter-cli": "^0.23.0"
+    "tree-sitter-cli": "^0.24.3"
   },
   "tree-sitter": [
     {
