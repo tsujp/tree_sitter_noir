@@ -1,7 +1,7 @@
 #+TODO: TODO(t@) | DONE(d!)
 #+STARTUP: indent logdone
 # ------------------------------------------------------
-#+NOIR_VERSION: 359caafac5e489901d9ff02b08d1a688178d9b0a
+#+NOIR_VERSION: 801c71880ecf8386a26737a5d8bb5b4cb164b2ab
 # ------------------------------------------------------
 
 =(org-macro-expand (org-element-context) org-macro-templates)=
