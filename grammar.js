@@ -2,12 +2,11 @@ const REG_ALPHABETIC = /[a-zA-Z]/
 const REG_NUMERIC = /[0-9]/
 const REG_ASCII_PUNCTUATION = /[!"#$%&'()*+,\-./:;<=>?@\[\\\]^_`\{|\}~]/
 
-// Keywords
-const KEYWORDS = {
-    Fn: 'fn',
-    Pub: 'pub',
+// Modifiers except for visibility (in order).
+const MODIFIERS = {
     Unconstrained: 'unconstrained',
     Comptime: 'comptime',
+    Mut: 'mut',
 }
 
 // Noir no longer allows arbitrarily-sized integers. Also, `U128` is a struct not a numeric type.
@@ -57,7 +56,6 @@ module.exports = grammar({
         source_file: ($) => repeat($._definitions),
 
         // Conceptually a `module` (in Noir's parser parlance).
-        // Can contain any top-level-statement and other modules.
         _definitions: ($) => choice($.function_definition, $.attribute),
 
         // * * * * * * * * * * * * * * * * * * * * * * * * * TOP-LEVEL-STATEMENTS
@@ -66,8 +64,8 @@ module.exports = grammar({
         function_definition: ($) =>
             seq(
                 // TODO: Attributes.
+                optional($.visibility_modifier),
                 optional($.function_modifiers),
-                // optional($.visibility_modifier),
                 'fn',
                 field('name', $.identifier),
                 // TODO: Generics.
@@ -76,17 +74,15 @@ module.exports = grammar({
                 $.block,
             ),
 
-        // TODO: Logic for `pub crate`.
-        // visibility_modifier: ($) => choice('pub'),
+        visibility_modifier: ($) => seq('pub', optional('(crate)')),
 
         // TODO: Make this a granular list instead of all leaf nodes currently being anonymous?
-        // TODO: Comptime still part of Noir?
         // TODO: Is comptime function-specific? I don't think it is.
         // TODO: Need to enforce the order of this.
         // function_modifiers: ($) => repeat1(choice('unconstrained', 'comptime')),
 
         // OPT: I personally don't think tree-sitter should report back a syntax tree as being correct if it isn't, and there's currently no easy way to have epsilon rules (save maybe a custom scanner). Look into this later. Other major languages like Rust don't have this in their tree-sitter grammar either, so for example: `pub unsafe async fn main()` is _invalid_ Rust syntax but tree-sitter will parse that and produce a CST without an error node, the correct form is `pub async unsafe fn main()` which tree-sitter also parses (this time correctly) to a CST without an error node.
-        function_modifiers: ($) => repeat1(choice(KEYWORDS.Unconstrained, KEYWORDS.Pub, KEYWORDS.Comptime)),
+        function_modifiers: ($) => repeat1(choice(MODIFIERS.Unconstrained, MODIFIERS.Comptime)),
 
         parameter_list: ($) =>
             seq(

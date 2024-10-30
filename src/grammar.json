@@ -1,14 +1,16 @@
 {
+  "$schema": "https://tree-sitter.github.io/tree-sitter/assets/schemas/grammar.schema.json",
   "name": "noir",
+  "word": "identifier",
   "rules": {
     "source_file": {
       "type": "REPEAT",
       "content": {
         "type": "SYMBOL",
-        "name": "_definition"
+        "name": "_definitions"
       }
     },
-    "_definition": {
+    "_definitions": {
       "type": "CHOICE",
       "members": [
         {
@@ -29,7 +31,7 @@
           "members": [
             {
               "type": "SYMBOL",
-              "name": "function_modifiers"
+              "name": "visibility_modifier"
             },
             {
               "type": "BLANK"
@@ -41,7 +43,7 @@
           "members": [
             {
               "type": "SYMBOL",
-              "name": "visibility_modifier"
+              "name": "function_modifiers"
             },
             {
               "type": "BLANK"
@@ -71,11 +73,23 @@
       ]
     },
     "visibility_modifier": {
-      "type": "CHOICE",
+      "type": "SEQ",
       "members": [
         {
           "type": "STRING",
           "value": "pub"
+        },
+        {
+          "type": "CHOICE",
+          "members": [
+            {
+              "type": "STRING",
+              "value": "(crate)"
+            },
+            {
+              "type": "BLANK"
+            }
+          ]
         }
       ]
     },
@@ -87,6 +101,10 @@
           {
             "type": "STRING",
             "value": "unconstrained"
+          },
+          {
+            "type": "STRING",
+            "value": "comptime"
           }
         ]
       }
@@ -125,8 +143,32 @@
           "value": "#"
         },
         {
+          "type": "CHOICE",
+          "members": [
+            {
+              "type": "STRING",
+              "value": "!"
+            },
+            {
+              "type": "BLANK"
+            }
+          ]
+        },
+        {
           "type": "STRING",
           "value": "["
+        },
+        {
+          "type": "CHOICE",
+          "members": [
+            {
+              "type": "STRING",
+              "value": "'"
+            },
+            {
+              "type": "BLANK"
+            }
+          ]
         },
         {
           "type": "ALIAS",
@@ -155,7 +197,7 @@
             }
           },
           "named": true,
-          "value": "path"
+          "value": "content"
         },
         {
           "type": "STRING",

@@ -1,6 +1,6 @@
-=================
-Basic definitions
-=================
+===========
+Definitions
+===========
 
 fn hello_world() {}
 
@@ -28,37 +28,37 @@ fn before123four_five_678() {}
 )
 
 
-=========================
-Basic definitions (Bad) 1
+============================================
+Definitions / Starting with integer literal1
 :error
-=========================
+============================================
 
 fn 123_not_okay() {}
 ---
 
 
-=========================
-Basic definitions (Bad) 2
+==============================================
+Definitions / Starting with negation operator1
 :error
-=========================
+==============================================
 
 fn !nope() {}
 ---
 
 
-=========================
-Basic definitions (Bad) 3
+=====================================
+Definitions / Missing parameter list1
 :error
-=========================
+=====================================
 
 fn nah {}
 ---
 
 
-=========================
-Basic definitions (Bad) 4
+=======================================
+Definitions / Missing block expression1
 :error
-=========================
+=======================================
 
 fn silly()
 ---
@@ -69,10 +69,17 @@ Modifiers
 =========
 
 pub fn one() {}
+pub(crate) fn two() {}
 
-unconstrained fn two() {}
+unconstrained fn three() {}
+pub unconstrained fn four() {}
+pub(crate) unconstrained fn five() {}
 
-unconstrained pub fn three() {}
+comptime fn six() {}
+pub(crate) comptime fn seven() {}
+
+pub unconstrained comptime fn eight() {}
+pub(crate) unconstrained comptime fn nine() {}
 
 ---
 
@@ -82,8 +89,25 @@ unconstrained pub fn three() {}
     name: (identifier)
     (parameter_list)
     (block))
+  (function_definition
+    (visibility_modifier)
+    name: (identifier)
+    (parameter_list)
+    (block))
 
   (function_definition
+    (function_modifiers)
+    name: (identifier)
+    (parameter_list)
+    (block))
+  (function_definition
+    (visibility_modifier)
+    (function_modifiers)
+    name: (identifier)
+    (parameter_list)
+    (block))
+  (function_definition
+    (visibility_modifier)
     (function_modifiers)
     name: (identifier)
     (parameter_list)
@@ -91,53 +115,89 @@ unconstrained pub fn three() {}
 
   (function_definition
     (function_modifiers)
+    name: (identifier)
+    (parameter_list)
+    (block))
+  (function_definition
     (visibility_modifier)
+    (function_modifiers)
+    name: (identifier)
+    (parameter_list)
+    (block))
+
+  (function_definition
+    (visibility_modifier)
+    (function_modifiers)
+    name: (identifier)
+    (parameter_list)
+    (block))
+  (function_definition
+    (visibility_modifier)
+    (function_modifiers)
     name: (identifier)
     (parameter_list)
     (block))
 )
 
 
-=================
-Modifiers (Bad) 1
+================================
+Modifiers / Visibility position1
 :error
-=================
+================================
 
 fn pub one() {}
 ---
 
 
-=================
-Modifiers (Bad) 2
+================================
+Modifiers / Visibility position2
 :error
-=================
+================================
+
+fn pub(crate) one() {}
+---
+
+
+================================
+Modifiers / Visibility repeated1
+:error
+================================
+
+fn pub pub one() {}
+---
+
+
+================================
+Modifiers / Visibility repeated2
+:error
+================================
+
+fn pub(crate) pub one() {}
+---
+
+
+===================================
+Modifiers / Unconstrained position1
+:error
+===================================
 
 fn unconstrained pub one() {}
 ---
 
 
-=================
-Modifiers (Bad) 3
+===================================
+Modifiers / Unconstrained position2
 :error
-=================
+===================================
 
-pub unconstrained fn one() {}
+unconstrained pub fn one() {}
 ---
 
 
-=================
-Modifiers (Bad) 4
+===================================
+Modifiers / Unconstrained repeated1
 :error
-=================
+===================================
 
-fn pub() {}
----
-
-
-=================
-Modifiers (Bad) 5
-:error
-=================
-
-fn unconstrained() {}
+fn unconstrained unconstrained one() {}
 ---

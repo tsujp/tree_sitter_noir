@@ -57,20 +57,44 @@ fn silly()
 ** Modifiers
 #+begin_test
 pub fn one() {}
+pub(crate) fn two() {}
 
-unconstrained fn two() {}
+unconstrained fn three() {}
+pub unconstrained fn four() {}
+pub(crate) unconstrained fn five() {}
 
-unconstrained pub fn three() {}
+comptime fn six() {}
+pub(crate) comptime fn seven() {}
 
-unconstrained pub comptime fn four() {}
-
-comptime fn five() {}
-
-pub comptime fn six() {}
+pub unconstrained comptime fn eight() {}
+pub(crate) unconstrained comptime fn nine() {}
 
 ---
 
 (function_definition
+  (visibility_modifier)
+  name: (identifier)
+  (parameter_list)
+  (block))
+(function_definition
+  (visibility_modifier)
+  name: (identifier)
+  (parameter_list)
+  (block))
+
+(function_definition
+  (function_modifiers)
+  name: (identifier)
+  (parameter_list)
+  (block))
+(function_definition
+  (visibility_modifier)
+  (function_modifiers)
+  name: (identifier)
+  (parameter_list)
+  (block))
+(function_definition
+  (visibility_modifier)
   (function_modifiers)
   name: (identifier)
   (parameter_list)
@@ -81,26 +105,21 @@ pub comptime fn six() {}
   name: (identifier)
   (parameter_list)
   (block))
-
 (function_definition
+  (visibility_modifier)
   (function_modifiers)
   name: (identifier)
   (parameter_list)
   (block))
 
 (function_definition
+  (visibility_modifier)
   (function_modifiers)
   name: (identifier)
   (parameter_list)
   (block))
-
 (function_definition
-  (function_modifiers)
-  name: (identifier)
-  (parameter_list)
-  (block))
-
-(function_definition
+  (visibility_modifier)
   (function_modifiers)
   name: (identifier)
   (parameter_list)
@@ -112,9 +131,17 @@ pub comptime fn six() {}
 fn pub one() {}
 #+end_test
 
+#+begin_test :error
+fn pub(crate) one() {}
+#+end_test
+
 *** Visibility repeated
 #+begin_test :error
 fn pub pub one() {}
+#+end_test
+
+#+begin_test :error
+fn pub(crate) pub one() {}
 #+end_test
 
 *** Unconstrained position
@@ -122,24 +149,13 @@ fn pub pub one() {}
 fn unconstrained pub one() {}
 #+end_test
 
+#+begin_test :error
+unconstrained pub fn one() {}
+#+end_test
+
 *** Unconstrained repeated
 #+begin_test :error
 fn unconstrained unconstrained one() {}
-#+end_test
-
-*** Function named visibility keyword
-#+begin_test :error
-fn pub() {}
-#+end_test
-
-*** Function named unconstrained keyword
-#+begin_test :error
-fn unconstrained() {}
-#+end_test
-
-*** Function named comptime keyword
-#+begin_test :error
-fn comptime() {}
 #+end_test
 
 * Attributes
@@ -259,3 +275,14 @@ fn cursed() {}
 #+end_test
 
 Foo
+
+* Modifiers
+:PROPERTIES:
+:export_file_name: modifiers.txt
+:END:
+
+** Visibility
+
+*** Top-level
+*************** TODO Are top-level naked visibility modifiers valid...?
+*************** END

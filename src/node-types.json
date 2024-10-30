@@ -8,7 +8,7 @@
       "required": true,
       "types": [
         {
-          "type": "path",
+          "type": "content",
           "named": true
         }
       ]
@@ -16,6 +16,11 @@
   },
   {
     "type": "block",
+    "named": true,
+    "fields": {}
+  },
+  {
+    "type": "content",
     "named": true,
     "fields": {}
   },
@@ -68,13 +73,9 @@
     "fields": {}
   },
   {
-    "type": "path",
-    "named": true,
-    "fields": {}
-  },
-  {
     "type": "source_file",
     "named": true,
+    "root": true,
     "fields": {},
     "children": {
       "multiple": true,
@@ -101,11 +102,23 @@
     "named": false
   },
   {
+    "type": "!",
+    "named": false
+  },
+  {
     "type": "#",
     "named": false
   },
   {
+    "type": "'",
+    "named": false
+  },
+  {
     "type": "(",
+    "named": false
+  },
+  {
+    "type": "(crate)",
     "named": false
   },
   {
@@ -118,6 +131,10 @@
   },
   {
     "type": "]",
+    "named": false
+  },
+  {
+    "type": "comptime",
     "named": false
   },
   {
