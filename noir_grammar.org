@@ -1,5 +1,5 @@
-#+TODO: TODO(t@) | DONE(d!)
-#+STARTUP: indent logdone
+#+TODO: TODO(t@) TOIMPL(i@) | DONE(d!)
+#+STARTUP: indent logdone logdrawer content
 # ------------------------------------------------------
 #+NOIR_VERSION: 801c71880ecf8386a26737a5d8bb5b4cb164b2ab
 # ------------------------------------------------------
@@ -9,12 +9,14 @@ All notes currently against upstream commit {{{keyword(NOIR_VERSION)}}}.
 
 Noir isn't formally specified currently; expected given the language is pre 1.0. So, here are notes and links to compiler infrastructure to ascertain language minutia.
 
+
 * Compiler                                                            :noirc:
 
 Noir's compiler frontend performs parsing and lexing at the same time; the parser internally lexes the target file(s).
 
 The lexer transforms an iterator of characters into an iterator of ~SpannedToken~; each ~Token~ having a ~Span~ (location in source file).
 
+Concerning Noir's frontend compiler:
 - Tag =node= being used as a non-terminal symbol.
 - Tag =leaf= used as a terminal symbol.
 
@@ -34,6 +36,9 @@ Newline, tab, carriage return, ASCII space.
 #+transclude: [[file:noir/compiler/noirc_frontend/src/lexer/lexer.rs][Lexer::is_code_whitespace()]] :lines 699-700 :src rust
 
 *** Attribute
+:PROPERTIES:
+:header-args: :noweb-ref AttributeKeywords :noweb-sep "\n\n"
+:END:
 
 Primary or Secondary; depending on how many can be applied to a function.
 
@@ -52,16 +57,20 @@ Primary or Secondary; depending on how many can be applied to a function.
 Also called FunctionAttribute.
 
 Predefined:
-- ~foreign~.
-- ~builtin~.
-- ~oracle~.
-- ~test~.
-- ~recursive~.
-- ~fold~.
-- ~no_predicates~.
-- ~inline_always~.
-- ~test~.
-- ~field~.
+#+begin_src js
+const PRIMARY_ATTRIBUTES = [
+    'foreign',
+    'builtin',
+    'oracle',
+    'test',
+    'recursive',
+    'fold',
+    'no_predicates',
+    'inline_always',
+    'test',
+    'field',
+]
+#+end_src
 
 #+transclude: [[file:noir/compiler/noirc_frontend/src/lexer/token.rs][FunctionAttribute]] :lines 849-861 :src rust
 #+transclude: [[file:noir/compiler/noirc_frontend/src/lexer/token.rs][predefined primaries]] :lines 782-812 :src rust
@@ -74,13 +83,17 @@ Predefined:
 Include CustomAttribute and InnerAttribute.
 
 Predefined:
-- ~deprecated~.
-- ~contract_library_method~.
-- ~abi~.
-- ~export~.
-- ~varargs~.
-- ~use_callers_scope~.
-- ~allow~.
+#+begin_src js
+const SECONDARY_ATTRIBUTES = [
+    'deprecated',
+    'contract_library_method',
+    'abi',
+    'export',
+    'varargs',
+    'use_callers_scope',
+    'allow',
+]
+#+end_src
 
 #+transclude: [[file:noir/compiler/noirc_frontend/src/lexer/token.rs][predefined secondaries]] :lines 814-842 :src rust
 
@@ -122,37 +135,51 @@ If the attribute was marked as an [[InnerAttribute]] it cannot match the name of
 
 Non-inner attributes returned (tokenised) as either primary or secondary.
 
+*** next_token
+TODO: Organise this and where/how we're putting lexing info.
+
+
+
 ** Structure
 
-Each list element (-) of the first list following each heading under this tree represents a logic OR. So, the following example list reads "(A followed by B) OR C".
+Noir **Program** contains **Module** which is comprised of [[./noir_grammar.org::#h:C58B2CB4-FF62-49BB-AFFD-1BADF4462B9D][InnerDocComments]] followed by (repeat) [[./noir_grammar.org::#h:8CC1D239-66B1-45A9-BB71-66AF07161479][Item]].
 
-: - A followed by B
-: - C
-
-Each list element (+) of a list represents an ordered item type.
-
-*** Program                                                            :node:
-
-- [[Module]].
+Program:
 #+transclude: [[file:noir/compiler/noirc_frontend/src/parser/parser.rs][Parser::parse_program()]] :lines 115-119 :src rust
 
-**** Module                                                            :node:
-
-- [[InnerDocComments]] by [[Item]]s.
+Module:
 #+transclude: [[file:noir/compiler/noirc_frontend/src/parser/parser.rs][Parser::parse_module()]] :lines 122-125 :src rust
 
-***** TODO InnerDocComments
 
-***** TODO Item
+The first list under each /Noir/ heading represents grammar where each element (-) is a logic OR and each element (+) is an ordered item type (also inlined via =by=).
+
+So, the following example list reads "(A followed by B) OR (C followed by D followed by E)".
+
+: - A by B
+: - C
+:   + D
+:   + E
+
+*** TODO InnerDocComments
+:PROPERTIES:
+:CUSTOM_ID: h:C58B2CB4-FF62-49BB-AFFD-1BADF4462B9D
+:END:
+Foo
+
+*** TODO Item                                                          :node:
+:PROPERTIES:
+:CUSTOM_ID: h:8CC1D239-66B1-45A9-BB71-66AF07161479
+:END:
 
 - [[OuterDocComments]] by [[ItemKind]].
 
 - Parsed without separator (~Parser::parse_module_items~).
 - ~Parser::parse_module_item_in_list~.
 
-****** TODO OuterDocComments
+**** TODO OuterDocComments
+Foo
 
-****** TODO ItemKind
+**** TODO ItemKind                                                     :node:
 
 - [[InnerAttribute]].
 - [[Attributes]] by [[Modifiers]].
@@ -164,7 +191,7 @@ maybe:
 
 #+transclude: [[file:noir/compiler/noirc_frontend/src/parser/parser/item.rs][Parser::parse_item_kind()]] :lines 97-109 :src rust
 
-******* InnerAttribute
+***** TODO InnerAttribute
 
 No special parse logic, merely checks type of lexed token.
 TODO: Link to Attribute (lex) subheading Lex process via that star syntax.
@@ -177,35 +204,570 @@ Can be any valid [[SecondaryAttribute]] and is purely a syntactical convenience 
 Any valid ~TokenKind::InnerAttribute~ parsed as InnerAttribute.
 #+transclude: [[file:noir/compiler/noirc_frontend/src/parser/parser/attributes.rs][Parser::parse_inner_attribute]] :lines 11-15 :src rust
 
-******* Attributes
+***** TODO Attributes
 
 Multiple attributes are parsed and collected within =Parser::parse_item_kind()= via call to:
 #+transclude: [[file:noir/compiler/noirc_frontend/src/parser/parser/attributes.rs][Parser::parse_attributes]] :lines 20-30 :src rust
 
-******* TODO Modifiers
+***** TODO Modifiers
 
+****** Treesitter                                                   :grammar:
+#+begin_src js :noweb-ref Modifiers
+// Modifiers except for visibility (in order).
+const MODIFIERS = {
+    Unconstrained: 'unconstrained',
+    Comptime: 'comptime',
+    Mut: 'mut',
+}
+#+end_src
+
+****** Noir
 - ItemVisibility.
-- (opt) ~unconstrained~.
-- (opt) ~comptime~.
-- (opt) ~mut~.
-
+- (opt) =unconstrained=.
+- (opt) =comptime=.
+- (opt) =mut=.
 #+transclude: [[file:noir/compiler/noirc_frontend/src/parser/parser/modifiers.rs][Parser::parse_modifiers()]] :lines 17-21 :src rust
+
+Remaining keywords consumed as their literal selves.
+#+transclude: [[file:noir/compiler/noirc_frontend/src/parser/parser/modifiers.rs][unconstrained, comptime, mut]] :lines 32-48 :src rust
 
 *************** TODO Verify that the Noir compiler will error if modifiers are supplied out of order, with the exception (mentioned in Noir compiler source) of unconstrained being before pub to support that legacy ordering.
 *************** END
 *************** TODO Decide on and note that we do not support legacy unconstrained ordering because it complicates things massively.
 *************** END
 
-******** TODO ItemVisibility
+****** DONE ItemVisibility                                      :declaration:
+CLOSED: [2024-11-01 Fri 19:56]
+:PROPERTIES:
+:CUSTOM_ID: h:F5A79701-65C9-4FEA-83D8-2413C585A5FA
+:END:
+:LOGBOOK:
+- State "DONE"       from "TODO"       [2024-11-01 Fri 19:56]
+:END:
 
-- ~pub~.
-- ~pub(crate)~.
+******* Treesitter                                                  :grammar:
+:PROPERTIES:
+:CUSTOM_ID: h:46B8EF89-89A5-4346-9B5B-04630DAEF262
+:END:
+#+begin_src js
+visibility_modifier: ($) => seq('pub', optional('(crate)'))
+#+end_src
+
+******* Noir
+- =pub=.
+- =pub(crate)=.
 - NIL.
 
 Missing text (NIL) is a type of visibility in the sense that the default visibility is private if unspecified. Missing text won't affect tree-sitter unless/until qualifying item visibility becomes part of the CST.
 
 #+transclude: [[file:noir/compiler/noirc_frontend/src/parser/parser/item_visibility.rs][Parser::parse_item_visibility()]] :lines 9-13 :src rust
 
+***** TODO Use
+
+- =use=.
+- PathKind.
+- PathNoTurbofish.
+- UseTree.
+
+Only the ItemVisibility modifier is applicable, all others are parse errors.
+#+transclude: [[file:noir/compiler/noirc_frontend/src/parser/parser/item.rs][parse use callsite]] :lines 121-126 :src rust
+
+#+transclude: [[file:noir/compiler/noirc_frontend/src/parser/parser/use_tree.rs][Parser::parse_use_tree]] :lines 12-29 :src rust
+
+****** TODO UseTree
+
+- PathNoTurbofish by (opt sublist)
+  + =::=.
+  + ={=.
+  + (opt) UseTreeList.
+  + =}=.
+
+****** TODO UseTreeList
+
+- UseTree by (repeat)
+  + =,=.
+  + UseTree.
+- (opt) =,=.
+
+***** TODO Struct
+Foo
+
+***** TODO Implementation
+Foo
+
+***** TODO Trait
+Foo
+
+***** TODO Global
+Foo
+
+***** TODO Type
+:PROPERTIES:
+:CUSTOM_ID: h:B3490B7C-F387-49C7-BF94-DC9CE8AC3581
+:END:
+- PrimitiveType.
+
+Compiler: [[file:noir/compiler/noirc_frontend/src/parser/parser/types.rs::fn parse_type(&mut self)][parse_type()]]
+
+TODO: Look at enum ~UnresolvedTypeData~, read the doc string and look at it's elements. Good stuff.
+TODO: Path from lexer.rs ~next_token()~ to the point where it checks for keywords.
+TODO: Put lookup_keyword under it's own heading and transclude the contents verbatim
+
+When lexing [[file:noir/compiler/noirc_frontend/src/lexer/token.rs::fn lookup_keyword(word: &str)][lookup_keyword()]] determines keyword tokens ~Keyword~ which are later parsed:
+
+:callstack:
+- [-] [[file:noir/compiler/noirc_frontend/src/parser/parser/types.rs::fn parse_unresolved_type_data(&mut self)][parse_unresolved_type_data()]]
+    - [ ] [[file:noir/compiler/noirc_frontend/src/parser/parser/types.rs::fn parse_str_type(&mut self)][parse_str_type()]]
+    - [ ] [[file:noir/compiler/noirc_frontend/src/parser/parser/types.rs::fn parse_fmtstr_type(&mut self)][parse_fmtstr_type()]]
+    - [ ] [[file:noir/compiler/noirc_frontend/src/parser/parser/types.rs::fn parse_comptime_type(&mut self)][parse_comptime_type()]]
+    - [ ] [[file:noir/compiler/noirc_frontend/src/parser/parser/types.rs::fn parse_resolved_type(&mut self)][parse_resolved_type()]]
+    - [ ] [[file:noir/compiler/noirc_frontend/src/parser/parser/types.rs::fn parse_interned_type(&mut self)][parse_interned_type()]]
+  - [ ] [[file:noir/compiler/noirc_frontend/src/parser/parser/types.rs::fn parse_parentheses_type(&mut self)][parse_parentheses_type()]]
+  - [ ] [[file:noir/compiler/noirc_frontend/src/parser/parser/types.rs::fn parse_array_or_slice_type(&mut self)][parse_array_or_slice_type()]]
+  - [ ] [[file:noir/compiler/noirc_frontend/src/parser/parser/types.rs::fn parses_mutable_reference_type(&mut self)][parses_mutable_reference_type()]]
+  - [ ] [[file:noir/compiler/noirc_frontend/src/parser/parser/types.rs::fn parse_function_type(&mut self)][parse_function_type()]]
+  - [ ] [[file:noir/compiler/noirc_frontend/src/parser/parser/types.rs::fn parse_trait_as_type(&mut self)][parse_trait_as_type()]]
+  - [ ] [[file:noir/compiler/noirc_frontend/src/parser/parser/types.rs::fn parse_as_trait_path_type(&mut self)][parse_as_trait_path_type()]]
+  - [ ] [[file:noir/compiler/noirc_frontend/src/parser/parser/path.rs::fn parse_path_no_turbofish(&mut self)][parse_path_no_turbofish()]]
+    - [ ] [[file:noir/compiler/noirc_frontend/src/parser/parser/generics.rs::fn parse_generic_type_args(&mut self)][parse_generic_type_args()]]
+:end:
+
+****** TODO PrimitiveType
+
+Compiler: [[file:noir/compiler/noirc_frontend/src/parser/parser/types.rs::fn parse_primitive_type(&mut self)][parse_primitive_type()]]
+
+******* TOIMPL FieldType
+:LOGBOOK:
+- State "TOIMPL"     from "TODO"       [2024-11-03 Sun 12:24]
+:END:
++ =Field=.
+
+Compiler: [[file:noir/compiler/noirc_frontend/src/parser/parser/types.rs::fn parse_field_type(&mut self)][parse_field_type()]]
+
+******* TOIMPL IntegerType
+:LOGBOOK:
+- State "TOIMPL"     from "TODO"       [2024-11-03 Sun 14:50]
+:END:
++ =i= OR =u=.
++ =1= OR =8= OR =16= OR =32= OR =64=.
+
+Parser: [[file:noir/compiler/noirc_frontend/src/parser/parser/types.rs::fn parse_int_type(&mut self)][parse_int_type()]]
+
+Both signed and unsigned: 1, 8, 16, 32, and 64 bits.
+#+transclude: [[file:noir/compiler/noirc_frontend/src/ast/mod.rs][IntegerBitSize::allowed_sizes()]] :lines 61-65 :src rust
+
+TODO: Is there a bug in this version of Noir that doesn't allow 16-bit integers?
+
+- [X] [[file:noir/compiler/noirc_frontend/src/parser/parser.rs::fn eat_int_type(&mut self)][eat_int_type()]]
+  - nb :: [[file:noir/compiler/noirc_frontend/src/lexer/token.rs::enum IntType][Token::IntType]] from [[#h:B7763FFE-9685-45F5-A414-66F9E47F3E1D][Lexing]].
+- [X] [[file:noir/compiler/noirc_frontend/src/ast/mod.rs::fn from_int_token(][UnresolvedTypeData::from_int_token()]]
+  - [X] [[file:noir/compiler/noirc_frontend/src/ast/mod.rs::fn try_from(value: u32)][IntegerBitSize::try_from()]]
+
+1. If [[file:noir/compiler/noirc_frontend/src/ast/mod.rs::fn from_int_token(][UnresolvedTypeData::from_int_token()]]'s call to [[file:noir/compiler/noirc_frontend/src/ast/mod.rs::fn try_from(value: u32)][IntegerBitSize::try_from()]] succeeds an ~UnresolvedTypeData::Integer~ is returned.
+2. [[file:noir/compiler/noirc_frontend/src/ast/mod.rs::fn try_from(value: u32)][IntegerBitSize::try_from()]] validates given numeric bit-size component and returns matching ~IntegerBitSize~, otherwise returning invalid bit-size parse error.
+
+******** Lexing
+:PROPERTIES:
+:CUSTOM_ID: h:B7763FFE-9685-45F5-A414-66F9E47F3E1D
+:END:
+
+:callstack:
+- [[file:noir/compiler/noirc_frontend/src/lexer/lexer.rs::fn next_token(&mut self)][Lexer::next_token()]]
+  - [[file:noir/compiler/noirc_frontend/src/lexer/lexer.rs::fn eat_alpha_numeric(&mut self, initial_char: char)][Lexer::eat_alpha_numeric()]]
+    - [[file:noir/compiler/noirc_frontend/src/lexer/lexer.rs::fn eat_word(&mut self, initial_char: char)][Lexer::eat_word()]]
+      - [[file:noir/compiler/noirc_frontend/src/lexer/lexer.rs::fn lookup_word_token(][Lexer::lookup_word_token()]]
+:end:
+Compiler: [[file:noir/compiler/noirc_frontend/src/lexer/token.rs::fn lookup_int_type(word: &str)][IntType::lookup_int_type()]]
+
+1. Signed or unsigned if ~word~ starts with =i= or =u= respectively.
+2. Remaining string ~word~ contents attempt parse into bit-size 32-bit integer.
+3. [[file:noir/compiler/noirc_frontend/src/lexer/token.rs::enum IntType][Token::IntType]] created with signedness and bit-size value.
+
+******* TOIMPL BoolType
+:LOGBOOK:
+- State "TOIMPL"     from "TODO"       [2024-11-03 Sun 12:21]
+:END:
++ =bool=.
+
+Compiler: [[file:noir/compiler/noirc_frontend/src/parser/parser/types.rs::fn parse_bool_type(&mut self)][parse_bool_type()]]
+
+:note:
+This is specifically parsing the literal /keyword/ =bool= **and not** literal text =true= or =false=.
+:end:
+
+******* TODO StringType
+
+******* TODO FormatStringType
+
+******* TODO ComptimeType
+
+******* TODO ResolvedType
+
+******* TODO InternedType
+
+
+***** TODO TypeOrTypeExpression
+:PROPERTIES:
+:CUSTOM_ID: h:A32A351C-092B-42F1-AB03-DE49862B35D4
+:END:
+- Type.
+- TypeExpression.
+
+Compiler: [[file:noir/compiler/noirc_frontend/src/parser/parser/type_expression.rs::196][parse_type_or_type_expression()]]
+#+transclude: [[file:noir/compiler/noirc_frontend/src/parser/parser/type_expression.rs][TypeOrTypeExpression doc]] :lines 195-195 :src rust
+
+Parse logic when entered here attempts to parse as any valid non-literal type, before finally calling ~parse_type()~ which /is/ [[#h:B3490B7C-F387-49C7-BF94-DC9CE8AC3581][Type]].
+
+- [ ] ~parse_add_or_subtract_type_or_type_expression()~.
+  - [ ] ~parse_multiply_or_divide_or_modulo_type_or_type_expression()~.
+    - [ ] ~parse_term_type_or_type_expression()~.
+      - [ ] ~parse_atom_type_or_type_expression()~.
+        - [ ] ~parse_parenthesized_type_or_type_expression()~.
+        - [ ] ~parse_type()~.
+
+***** TODO Path
+
+****** TODO PathNoTurbofish
+
+:note:
+- A /turbofish/ is syntax of the form ~::<Type>~.
+- Parse function called such that **trailing double colons are allowed**.
+:end:
+
++ PathKind.
++ An ~identifier~.
++ (rep0 grp) =::= by an ~identifier~.
+
+#+transclude: [[file:noir/compiler/noirc_frontend/src/parser/parser/path.rs::56][PathNoTurbofish doc]] :lines 55-55 :src rust
+
+- [-] ~Parser::parse_path_impl(false, true)~.
+  - [X] ~Parser::parse_path_kind()~.
+  - [ ] ~Parser::parse_optional_path_after_kind()~.
+    - [ ] ~Parser::parse_path_after_kind()~.
+
+****** TODO PathKind
+
+- =crate= by =::=.
+- =dep= by =::=.
+- =super= by =::=.
+- NIL.
+
+#+transclude: [[file:noir/compiler/noirc_frontend/src/parser/parser/path.rs::179][PathKind doc]] :lines 174-178 :src rust
+
+If there is no path kind, i.e. NIL, this is internally represented via ~PathKind::Plain~.
+
+****** TODO PathGenerics
+
+- [[#h:3267D7A4-7AA4-49FB-91FA-A9601BC6868A][GenericTypeArgs]].
+
+[[file:noir/compiler/noirc_frontend/src/parser/parser/path.rs::158][Parser::parse_path_generics()]]:
+#+transclude: [[file:noir/compiler/noirc_frontend/src/parser/parser/path.rs][PathGenerics doc]] :lines 157-157 :src rust
+
+- [ ] ~Parser::parse_generic_type_args()~.
+
+****** Internals                                                      :noirc:
+
+=Parser::parse_path_after_kind()=.
+
+:note:
+- Expects path kind with double colon, e.g. ~crate::~ or even ~plain~, has already been parsed.
+- Always returns a path even if still just a kind (e.g. ~crate::~) or an empty path.
+:end:
+
+1. Check ~TokenKind::Ident~.
+2. Parse generics with ~Parser::parse_path_generics()~ **if**:
+   - Caller allows turbofish, AND
+   - At ~Token::DoubleColon~, AND
+   - Next token is ~Token::Less~ (=<=).
+3. foo
+
+~PathSegment~ ast/statement.rs
+enum ~UnresolvedTypeData~ has some useful syntax examples in its comments.
+#+transclude: [[file:noir/compiler/noirc_frontend/src/ast/mod.rs][foobar]] :lines 108-108 :src rust
+
+***** TODO Function
+
+****** Treesitter                                                   :grammar:
+:PROPERTIES:
+:CUSTOM_ID: h:B3C4609F-307A-42A1-B420-DBBAB6CDE6E5
+:END:
+
+******* Definition
+Definition
+#+begin_src js
+function_definition: ($) => seq(
+	optional($.visibility_modifier),
+	optional($.function_modifiers),
+	'fn',
+	field('name', $.identifier),
+	// TODO: Generics
+	$.parameter_list,
+	optional(seq('->' /* TODO: Return visibility and type */)),
+	// TODO: Where clause
+	$.block,
+)
+#+end_src
+
+******* Modifiers
+Modifiers
+#+begin_src js
+function_modifiers: ($) => repeat1(choice(MODIFIERS.Unconstrained, MODIFIERS.Comptime))
+#+end_src
+
+****** Noir
++ =fn= by ~identifier~ by [Generics] by [FunctionParameters]
++ (opt group) =->= by [ItemVisibility] by [Type]
++ [WhereClause] by (group)
+  - [Block]
+  - =;=
+#+transclude: [[file:noir/compiler/noirc_frontend/src/parser/parser/function.rs::34][Parser::parse_function()]] :lines 34-34 :src rust
+TODO: Return visibility is seperate from function visibility.
+TODO: WhereClause isn't marked optional in Noir compiler, but it is.
+
+Mutable modifier =mut= not applicable; presence raises parse error.
+#+transclude: [[file:noir/compiler/noirc_frontend/src/parser/parser/item.rs][parse_item_kind() callsite]] :lines 184-194 :src rust
+
+***** TODO Generics                                                    :node:
+ * (opt grp) =<= by (opt) GenericsList by =>=.
+
+[[file:noir/compiler/noirc_frontend/src/parser/parser/generics.rs::16][Parser::parse_generics()]]:
+#+begin_src rust
+	/// Generics = ( '<' GenericsList? '>' )?
+	///
+	/// GenericsList = Generic ( ',' Generic )* ','?
+#+end_src
+
+- [X] ~Parser:parse_many()~.
+  - nb :: splits on =,= until =>= encountered.
+- [ ] ~Parser:parse_generic_in_list()~.
+  - [ ] ~Parser::parse_generic()~.
+
+****** TODO GenericsList
++ Generic.
++ (rep0 grp) =,= by Generic.
++ (opt) =,=.
+
+****** TODO Generic
+- VariableGeneric.
+- NumericGeneric.
+- ResolvedGeneric.
+
+[[file:noir/compiler/noirc_frontend/src/parser/parser/generics.rs::41][Parser::parse_generic()]]:
+#+transclude: [[file:noir/compiler/noirc_frontend/src/parser/parser/generics.rs][Generic doc]] :lines 37-40 :src rust
+
+****** TOIMPL VariableGeneric
+:LOGBOOK:
+- State "TOIMPL"     from "TODO"       [2024-11-03 Sun 05:25]
+:END:
+ * An ~identifier~.
+
+[[file:noir/compiler/noirc_frontend/src/parser/parser/generics.rs::58][Parser::parse_variable_generic()]]:
+#+begin_src rust
+	/// VariableGeneric = identifier
+#+end_src
+
+Calls ~Parser::eat_ident()~ and returns that as an ~UnresolvedGeneric::Variable~ enum.
+
+*************** TODO Appears to be some wacky macro stuff for enum ~UnresolvedGeneric~, look at way, way later.
+
+****** TOIMPL NumericGeneric
+:LOGBOOK:
+- State "TOIMPL"     from "TODO"       [2024-11-03 Sun 05:26]
+:END:
++ =let=.
++ An ~identifier~.
++ =:=.
++ Type.
+
+[[file:noir/compiler/noirc_frontend/src/parser/parser/generics.rs::63][Parser::parse_numeric_generic()]]:
+#+transclude: [[file:noir/compiler/noirc_frontend/src/parser/parser/generics.rs][NumericGeneric doc]] :lines 62-62 :src rust
+
+*************** TODO Parse function returns an error if missing a type after =:= (and assumes type is ~u32~) but is this error fatal?
+*************** TODO There's some forbidden numeric generic type logic there, look at later.
+
+****** TODO ResolvedGeneric
+Foo
+
+****** TODO GenericTypeArgs                                            :node:
+:PROPERTIES:
+:CUSTOM_ID: h:3267D7A4-7AA4-49FB-91FA-A9601BC6868A
+:END:
++ (grp) =<= by (opt) [[#h:8C6AF1F0-DBAC-4030-AEFC-8FBF6B069EAD][GenericTypeArgsList]] by =>=.
+
+Compiler: [[file:noir/compiler/noirc_frontend/src/parser/parser/generics.rs::117][Parser::parse_generic_type_args()]]
+#+transclude: [[file:noir/compiler/noirc_frontend/src/parser/parser/generics.rs][GenericTypeArgs doc]] :lines 106-116 :src rust
+
+- [X] ~Parser:parse_many()~.
+  - nb :: splits on =,= until =>= encountered.
+- [ ] ~Parser:parse_generic_type_arg()~.
+  - nb :: parses NamedTypeArg and OrderedTypeArg.
+
+******* TODO GenericTypeArgsList
+:PROPERTIES:
+:CUSTOM_ID: h:8C6AF1F0-DBAC-4030-AEFC-8FBF6B069EAD
+:END:
++ [[#h:B2EDBA96-AA93-449F-A8EB-5636CCFC4F1C][GenericTypeArg]].
++ (rep0 grp) =,= by [[#h:B2EDBA96-AA93-449F-A8EB-5636CCFC4F1C][GenericTypeArg]].
++ (opt) =,=.
+
+******* TODO GenericTypeArg
+:PROPERTIES:
+:CUSTOM_ID: h:B2EDBA96-AA93-449F-A8EB-5636CCFC4F1C
+:END:
+- [[#h:8314C368-924E-4B8B-A881-66C9F46D6833][NamedTypeArg]].
+- [[#h:43662F12-2EC8-47E8-B5B8-DFF8A1226EB2][OrderedTypeArg]].
+
+Compiler: [[file:noir/compiler/noirc_frontend/src/parser/parser/generics.rs::145][Parser::parse_generic_type_arg()]]
+
+******** TODO NamedTypeArg
+:PROPERTIES:
+:CUSTOM_ID: h:8314C368-924E-4B8B-A881-66C9F46D6833
+:END:
++ An ~identifier~.
++ ===.
++ [[#h:B3490B7C-F387-49C7-BF94-DC9CE8AC3581][Type]].
+
+~parse_type_or_error()~ wraps a call to ~parse_type()~, which /is/ where [[#h:B3490B7C-F387-49C7-BF94-DC9CE8AC3581][Type]] begins.
+
+******** TODO OrderedTypeArg
+:PROPERTIES:
+:CUSTOM_ID: h:43662F12-2EC8-47E8-B5B8-DFF8A1226EB2
+:END:
++ [[#h:A32A351C-092B-42F1-AB03-DE49862B35D4][TypeOrTypeExpression]].
+
+
+***** TODO WhereClause                                          :declaration:
+
+Treesitter ~seq~ captures rule ordering, and custom ~sepBy1~ enforces /at least/ one occurrence of our ~$.where_clause_item~ rule so the nesting of the rule definitions from the Noir compiler need **not** be replicated for ~$.where_clause_item~.
+
+*************** TODO WhereClause Treesitter                         :grammar:
+#+begin_src js
+where_clause: ($) => seq(
+	'where',
+	sepBy1($.where_clause_item, ','),
+	optional(',')
+)
+#+end_src
+*************** END
+
++ =where=
++ (opt) WhereClauseItems
+
+#+transclude: [[file:noir/compiler/noirc_frontend/src/parser/parser/where_clause.rs::18][WhereClause doc]] :lines 13-17 :src rust
+
+****** TODO WhereClauseItems
+
+*************** TODO WhereClauseItems Treesitter                    :grammar:
+#+begin_src js
+where_clause_item: ($) => seq(
+	$.type,
+	':',
+	$.trait_bound,
+)
+#+end_src
+*************** END
+
++ WhereClauseItem
++ (rep0 grp) =,= by WhereClauseItem
++ (opt) =,=
+
+****** TODO WhereClauseItem
+
++ Type
++ =:=
++ TraitBounds
+
+****** TODO TraitBounds
+
++ TraitBound.
++ (opt grp) =+= by TraitBound.
++ (opt) =+=.
+
+#+transclude: [[file:noir/compiler/noirc_frontend/src/parser/parser/where_clause.rs::51][TraitBounds doc]] :lines 50-50 :src rust
+
+****** TODO TraitBound
+
+*************** TODO TraitBound Treesitter                          :grammar:
+#+begin_src js
+trait_bound: ($) =>
+#+end_src
+*************** END
+
+
++ PathNoTurbofish
++ GenericTypeArgs
+
+
+** Internal
+
+*** [[file:noir/compiler/noirc_frontend/src/parser/parser/parse_many.rs::9][Parser::parse_many(items, sep)]]
+
+Parses list of items separated by sep, can optionally end when another (different configurable) separator is found.
+
+- [ ] ~Parser::parse_many_return_trailing_separator_if_any()~.
+
+TODO: Don't think I need to document parse_many_return blah blah, that's a compiler implementation detail (unless in future we have problems relating to it).
+
+* Grammar
+:PROPERTIES:
+:header-args: :noweb-sep ",\n\n"
+:END:
+
+Constructed grammar from investigating Noir compiler frontend.
+
+#+begin_src js :noweb yes :tangle hithere.js
+<<Modifiers>>
+
+<<AttributeKeywords>>
+
+module.exports = grammar({
+	name: 'noir',
+
+	extras: ($) => [/\s/],
+	word: ($) => $.identifier,
+
+	rules: {
+		source_file: ($) => repeat($._statement),
+
+		_statement: ($) => choice($._expression_statement, $._declaration_statement),
+		_expression_statement: ($) => seq($._expression, ';'),
+        _declaration_statement: ($) => choice($.function_definition),
+
+        _expression: ($) => 'foo',
+
+		// * * * * * * * * * * * * * * * * * * * * * * * * * DECLARATIONS
+
+		<<Declarations>>,
+
+		// * * * * * * * * * * * * * * * * * * * * * * * * * EXPRESSIONS
+
+		<<Expressions>>,
+	},
+})
+
+// Match one or more occurrences of rule separated by sep.
+function sepBy1(rule, sep) {
+	return seq(rule, repeat(seq(sep, rule)))
+}
+#+end_src
+
+*** Declarations
+:PROPERTIES:
+:header-args+: :noweb-ref Declarations
+:END:
+
+**** ItemVisibility
+#+transclude: [[./noir_grammar.org::#h:46B8EF89-89A5-4346-9B5B-04630DAEF262][ItemVisibility]] :only-contents
+
+**** Function
+#+transclude: [[./noir_grammar.org::#h:B3C4609F-307A-42A1-B420-DBBAB6CDE6E5][Function]] :only-contents
+
+*** Expressions
+:PROPERTIES:
+:header-args+: :noweb-ref Expressions
+:END:
+
+* TODO Old stuff bin or categorise
 ** TODO Attribute
 
 Document attributes. Note too that SecondaryAttributes can have a tag see 957 in token.rs
@@ -402,7 +964,6 @@ TODO: TODO: In later versions, unsure of how applicable this is to the current l
 TODO: Is it actually function-specific or can it be any statement?
 TODO: Cannot have a function called ~comptime~ right?
 
-
 * Temp bin
 
 TODOs and what not (temporary).
@@ -428,3 +989,8 @@ Have the following checkbox list created dynamically from headings, and also lin
 *************** TODO tree-sitter anonymous node queries
 When writing queries eventually, can use anonymous node queries also e.g. ~(function_modifiers "foo")~.
 *************** END
+
+# Local Variables:
+# org-todo-keyword-faces: (
+#                          ("TOIMPL" . org-warning))
+# End:
