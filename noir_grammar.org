@@ -1,8 +1,12 @@
 #+TODO: TODO(t@) TOIMPL(i@) | DONE(d!)
 #+STARTUP: indent logdone logdrawer content
 # ------------------------------------------------------
-#+NOIR_VERSION: 801c71880ecf8386a26737a5d8bb5b4cb164b2ab
+#+NOIR_TEMPLATE_URL: https://github.com/noir-lang/noir/blob/%h/%p#L%lC%c-L%lC%s
 # ------------------------------------------------------
+#+TITLE: Noir Treesitter Grammar
+#+AUTHOR: Jordan Ellis Coppard
+#+LANGUAGE: en
+#+OPTIONS: ^:{}
 
 =(org-macro-expand (org-element-context) org-macro-templates)=
 All notes currently against upstream commit {{{keyword(NOIR_VERSION)}}}.
@@ -104,7 +108,7 @@ const SECONDARY_ATTRIBUTES = [
 2. Optionally by ~!~ making it an [[#h:175D41E7-445C-45EE-B35D-27448C1A9D5C][InnerAttribute]].
    #+transclude: [[file:noir/compiler/noirc_frontend/src/lexer/lexer.rs][Lexer::eat_attribute()]] :lines 285-285 :src rust
 3. Immediately by ~[~.
-4. Optionally by ~'~ making the attribute a [[#h:175D41E7-445C-45EE-B35D-27448C1A9D5C][Tag]].
+4. Optionally by ~'~ making the attribute a Tag.
 5. Eat everything until ~]~.
 
 - =word= is everything between enclosing braces ~[~ and ~]~, and in the case of a tag that excludes the initial ~'~.
@@ -122,7 +126,7 @@ Within =Attribute::lookup_attribute=
    - Literal ASCII whitespace.
    #+transclude: [[file:noir/compiler/noirc_frontend/src/lexer/token.rs][Attribute::lookup_attribute()]] :lines 759-770 :src rust
 
-If the attribute was marked as a [[Tag]] a [[CustomAttribute]] within a [[SecondaryAttribute]] is created and returned.
+If the attribute was marked as a Tag a CustomAttribute within a [[SecondaryAttribute]] is created and returned.
 #+transclude: [[file:noir/compiler/noirc_frontend/src/lexer/token.rs][Attribute::lookup_attribute()]] :lines 773-777 :src rust
 *************** TODO Do CustomAttributes concern us from tree-sitter perspective?
 *************** END
@@ -362,6 +366,7 @@ TODO: Is there a bug in this version of Noir that doesn't allow 16-bit integers?
   - nb :: [[file:noir/compiler/noirc_frontend/src/lexer/token.rs::enum IntType][Token::IntType]] from [[#h:B7763FFE-9685-45F5-A414-66F9E47F3E1D][Lexing]].
 - [X] [[file:noir/compiler/noirc_frontend/src/ast/mod.rs::fn from_int_token(][UnresolvedTypeData::from_int_token()]]
   - [X] [[file:noir/compiler/noirc_frontend/src/ast/mod.rs::fn try_from(value: u32)][IntegerBitSize::try_from()]]
+
 
 1. If [[file:noir/compiler/noirc_frontend/src/ast/mod.rs::fn from_int_token(][UnresolvedTypeData::from_int_token()]]'s call to [[file:noir/compiler/noirc_frontend/src/ast/mod.rs::fn try_from(value: u32)][IntegerBitSize::try_from()]] succeeds an ~UnresolvedTypeData::Integer~ is returned.
 2. [[file:noir/compiler/noirc_frontend/src/ast/mod.rs::fn try_from(value: u32)][IntegerBitSize::try_from()]] validates given numeric bit-size component and returns matching ~IntegerBitSize~, otherwise returning invalid bit-size parse error.
