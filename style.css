@@ -1,0 +1,436 @@
+@charset "utf-8";
+/***
+    The new CSS reset - version 1.8.5 (last updated 14.6.2023)
+    GitHub page: https://github.com/elad2412/the-new-css-reset
+***/
+
+/*
+    Remove all the styles of the "User-Agent-Stylesheet", except for the 'display' property
+    - The "symbol *" part is to solve Firefox SVG sprite bug
+    - The "html" attribute is exclud, because otherwise a bug in Chrome breaks the CSS hyphens property (https://github.com/elad2412/the-new-css-reset/issues/36)
+ */
+*:where(:not(html, iframe, canvas, img, svg, video, audio):not(svg *, symbol *)) {
+    all: unset;
+    display: revert;
+}
+
+/* Preferred box-sizing value */
+*,
+*::before,
+*::after {
+    box-sizing: border-box;
+}
+
+/* Reapply the pointer cursor for anchor tags */
+a, button {
+    cursor: revert;
+}
+
+/* Remove list styles (bullets/numbers) */
+ol, ul, menu {
+    list-style: none;
+}
+
+/* For images to not be able to exceed their container */
+img {
+    max-inline-size: 100%;
+    max-block-size: 100%;
+}
+
+/* removes spacing between cells in tables */
+table {
+    border-collapse: collapse;
+}
+
+/* Safari - solving issue when using user-select:none on the <body> text input doesn't working */
+input, textarea {
+    -webkit-user-select: auto;
+}
+
+/* revert the 'white-space' property for textarea elements on Safari */
+textarea {
+    white-space: revert;
+}
+
+/* minimum style to allow to style meter element */
+meter {
+    -webkit-appearance: revert;
+    appearance: revert;
+}
+
+/* preformatted text - use only for this feature */
+:where(pre) {
+    all: revert;
+}
+
+/* reset default text opacity of input placeholder */
+::placeholder {
+    color: unset;
+}
+
+/* remove default dot (•) sign */
+::marker {
+    content: initial;
+}
+
+/* fix the feature of 'hidden' attribute.
+   display:revert; revert to element instead of attribute */
+:where([hidden]) {
+    display: none;
+}
+
+/* revert for bug in Chromium browsers
+   - fix for the content editable attribute will work properly.
+   - webkit-user-select: auto; added for Safari in case of using user-select:none on wrapper element */
+:where([contenteditable]:not([contenteditable="false"])) {
+    -moz-user-modify: read-write;
+    -webkit-user-modify: read-write;
+    overflow-wrap: break-word;
+    -webkit-line-break: after-white-space;
+    -webkit-user-select: auto;
+}
+
+/* apply back the draggable feature - exist only in Chromium and Safari */
+:where([draggable="true"]) {
+    -webkit-user-drag: element;
+}
+
+/* Revert Modal native behavior */
+:where(dialog:modal) {
+    all: revert;
+}
+
+
+/* ----------------------------- GENERATED STYLES FROM HTMLIZE ------------------------------ */
+
+
+[data-theme="dark"] {
+  /* default */
+  --org-src-default-fg: #ffffff;
+  --org-src-default-bg: #000000;
+  /* faces */
+  --org-src-comment-fg: #989898;
+  --org-src-comment-delimiter-fg: #989898;
+  --org-src-string-fg: #79a8ff;
+  --org-src-doc-fg: #9ac8e0;
+  --org-src-doc-markup-fg: #caa6df;
+  --org-src-keyword-fg: #b6a0ff;
+  --org-src-builtin-fg: #f78fe7;
+  --org-src-operator-fg: #ffffff;
+  --org-src-bracket-fg: #ffffff;
+  --org-src-function-name-fg: #feacd0;
+  --org-src-variable-name-fg: #00d3d0;
+  --org-src-type-fg: #6ae4b9;
+  --org-src-constant-fg: #00bcff;
+  --org-src-warning-fg: #fec43f;
+  --org-src-negation-char-fg: #ff5f59;
+  --org-src-preprocessor-fg: #ff7f86;
+  --org-src-regexp-grouping-backslash-fg: #feacd0;
+  --org-src-regexp-grouping-construct-fg: #00c06f;
+  --org-src-shadow-fg: #989898;
+  --org-src-link-fg: #79a8ff;
+  --org-src-link-visited-fg: #feacd0;
+  --org-src-highlight-fg: #ffffff;
+  --org-src-highlight-bg: #45605e;
+  --org-src-region-fg: #ffffff;
+  --org-src-region-bg: #5a5a5a;
+  --org-src-secondary-selection-fg: #ffffff;
+  --org-src-secondary-selection-bg: #654a39;
+  --org-src-line-number-fg: #989898;
+  --org-src-line-number-bg: #1e1e1e;
+  --org-src-line-number-current-line-fg: #ffffff;
+  --org-src-line-number-current-line-bg: #535353;
+  --org-src-line-number-major-tick-fg: #ff5f59;
+  --org-src-line-number-major-tick-bg: #1e1e1e;
+  --org-src-line-number-minor-tick-fg: #c6daff;
+  --org-src-line-number-minor-tick-bg: #1e1e1e;
+  --org-src-fill-column-indicator-fg: #1e1e1e;
+  --org-src-escape-glyph-fg: #ff5f59;
+  --org-src-homoglyph-fg: #fec43f;
+  --org-src-nobreak-space-fg: #ff5f59;
+  --org-src-nobreak-hyphen-fg: #ff5f59;
+}
+
+/* default */
+.org-src-container {
+  color: var(--org-src-default-fg);
+  background-color: var(--org-src-default-bg);
+}
+
+/* faces */
+.org-comment {
+  color: var(--org-src-comment-fg);
+  font-style: italic;
+}
+
+.org-comment-delimiter {
+  color: var(--org-src-comment-delimiter-fg);
+  font-style: italic;
+}
+
+.org-string {
+  color: var(--org-src-string-fg);
+}
+
+.org-doc {
+  color: var(--org-src-doc-fg);
+  font-style: italic;
+}
+
+.org-doc-markup {
+  color: var(--org-src-doc-markup-fg);
+  font-style: italic;
+}
+
+.org-keyword {
+  color: var(--org-src-keyword-fg);
+  font-weight: bold;
+}
+
+.org-builtin {
+  color: var(--org-src-builtin-fg);
+  font-weight: bold;
+}
+
+.org-operator {
+  color: var(--org-src-operator-fg);
+}
+
+.org-bracket {
+  color: var(--org-src-bracket-fg);
+}
+
+.org-function-name {
+  color: var(--org-src-function-name-fg);
+}
+
+.org-variable-name {
+  color: var(--org-src-variable-name-fg);
+}
+
+.org-type {
+  color: var(--org-src-type-fg);
+  font-weight: bold;
+}
+
+.org-constant {
+  color: var(--org-src-constant-fg);
+}
+
+.org-warning {
+  color: var(--org-src-warning-fg);
+  font-weight: bold;
+}
+
+.org-negation-char {
+  color: var(--org-src-negation-char-fg);
+  font-weight: bold;
+}
+
+.org-preprocessor {
+  color: var(--org-src-preprocessor-fg);
+}
+
+.org-regexp-grouping-backslash {
+  color: var(--org-src-regexp-grouping-backslash-fg);
+  font-weight: bold;
+}
+
+.org-regexp-grouping-construct {
+  color: var(--org-src-regexp-grouping-construct-fg);
+  font-weight: bold;
+}
+
+.org-bold {
+  font-weight: bold;
+}
+
+.org-italic {
+  font-style: italic;
+}
+
+.org-bold-italic {
+  font-weight: bold;
+  font-style: italic;
+}
+
+.org-underline {
+  text-decoration: underline;
+}
+
+.org-fixed-pitch {
+}
+
+.org-fixed-pitch-serif {
+}
+
+.org-variable-pitch {
+}
+
+.org-shadow {
+  color: var(--org-src-shadow-fg);
+}
+
+.org-link {
+  color: var(--org-src-link-fg);
+  text-decoration: underline;
+}
+
+.org-link-visited {
+  color: var(--org-src-link-visited-fg);
+  text-decoration: underline;
+}
+
+.org-highlight {
+  color: var(--org-src-highlight-fg);
+  background-color: var(--org-src-highlight-bg);
+}
+
+.org-region {
+  color: var(--org-src-region-fg);
+  background-color: var(--org-src-region-bg);
+}
+
+.org-secondary-selection {
+  color: var(--org-src-secondary-selection-fg);
+  background-color: var(--org-src-secondary-selection-bg);
+}
+
+.org-line-number {
+  color: var(--org-src-line-number-fg);
+  background-color: var(--org-src-line-number-bg);
+}
+
+.org-line-number-current-line {
+  color: var(--org-src-line-number-current-line-fg);
+  background-color: var(--org-src-line-number-current-line-bg);
+  font-weight: bold;
+}
+
+.org-line-number-major-tick {
+  color: var(--org-src-line-number-major-tick-fg);
+  background-color: var(--org-src-line-number-major-tick-bg);
+}
+
+.org-line-number-minor-tick {
+  color: var(--org-src-line-number-minor-tick-fg);
+  background-color: var(--org-src-line-number-minor-tick-bg);
+}
+
+.org-fill-column-indicator {
+  color: var(--org-src-fill-column-indicator-fg);
+}
+
+.org-escape-glyph {
+  color: var(--org-src-escape-glyph-fg);
+}
+
+.org-homoglyph {
+  color: var(--org-src-homoglyph-fg);
+}
+
+.org-nobreak-space {
+  color: var(--org-src-nobreak-space-fg);
+  text-decoration: underline;
+}
+
+.org-nobreak-hyphen {
+  color: var(--org-src-nobreak-hyphen-fg);
+}
+
+
+/* -------------------------------------- OWN STYLES -------------------------------------------- */
+
+
+:root {
+	--side-panel-width: 26em;
+}
+
+/* We have a lot of nesting */
+h1, h2, h3, h4, h5, h6, h7, h8, h9, h10, h11, h12 {
+	font-weight: 700;
+	margin: 1em 0em;
+}
+
+h1 {
+	font-size: 2em;
+}
+
+p {
+	margin: 1em 0em;
+}
+
+header {
+	margin-left: var(--side-panel-width);
+	padding: 0 1em;
+}
+
+header h1 {
+	margin: auto;
+	max-width: 30em;
+}
+
+body {
+	font-family: system-ui, -apple-system, Roboto, "Segoe UI", sans-serif;
+    margin: 1em 0;
+    line-height: 1.5;
+}
+
+#table-of-contents {
+	position: fixed;
+	top: 0;
+	width: var(--side-panel-width);
+	height: 100vh;
+	overflow: auto;
+}
+
+#content-wrap, header {
+	margin-left: var(--side-panel-width);
+	padding: 0 1em;
+}
+
+#content {
+    max-width: 60em;
+    margin: auto;
+}
+
+a:hover,a:focus {
+    background: #fff2a8;
+}
+
+a.noirc-link {
+	font-family: monospace;
+	font-size: 1.1em;
+}
+
+code, pre {
+	font-family: monospace;
+	border: 1px solid #444;
+	background: #222;
+	padding-left: 0.3em;
+	padding-right: 0.3em;
+}
+
+
+@media (prefers-color-scheme: dark) {
+    body {
+        background:#121212;
+        color: #ccc;
+    }
+
+	h1 a, h2 a, h3 a, h4 a, h5 a, h6 span {
+            color: #aaa;
+        }
+
+	a {
+        color: #88f;
+    }
+
+    a:hover, a:focus {
+        color: #000;
+    }
+}
+
+.outline-8 {
+	color: red;
+}

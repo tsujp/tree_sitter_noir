@@ -125,8 +125,6 @@
 
 ;;;; Functions
 
-;; org-html-htmlize-generate-css
-
 ;;; Brutally copy-pasted from org-html-export-to-html (with required changes for ngd).
 (defun org-ngd-export-to-html
     (&optional async subtreep visible-only body-only ext-plist)
@@ -175,14 +173,12 @@ global communication INFO plist."
   (plist-put info :with-broken-links t)
   (plist-put info :html-style nil)
   (plist-put info :headline-levels 500)
-  ;; (plist-put info :with-title nil)
   (plist-put info :html-head-include-default-style nil)
   (plist-put info :html-htmlized-css-url "style.css")
   (plist-put info :html-self-link-headlines t)
-  ;; (plist-put info :html-content-class "bingbong")
-  (plist-put info :html-divs (quote ((preamble "header" "preamble")
-									 (content "div" "main-wrap")
-									 (postamble "footer" "postamble"))))
+  ;; (plist-put info :html-divs (quote ((preamble "header" "preamble")
+  ;; 									 (content "div" "main-wrap")
+  ;; 									 (postamble "footer" "postamble"))))
   )
 
 (defun ngd-noirc-link-filter (tree backend info)
@@ -277,13 +273,14 @@ global communication INFO plist."
    (org-html--build-head info)
    "</head>\n"
    "<body>\n"
-   "<div id=\"main-wrap\">\n"
    (format "<header>\n<h1 class=\"title\">%s</h1>\n</header>\n"
            (org-export-data (or (plist-get info :title) "") info))
+   "<div id=\"main-wrap\">\n"
    contents
    "</div>\n"
    "</body>\n"
    ))
+
 
 ;;;; Inner template
 
@@ -294,7 +291,11 @@ global communication INFO plist."
    (let ((depth (plist-get info :with-toc)))
      (when depth (org-html-toc depth info)))
    ;; Document contents.
-   "<div id=\"content-wrap\">" contents "</div>"
+   "<div id=\"content-wrap\">"
+   "<main id=\"content\">\n"
+   contents
+   "<main>\n"
+   "</div>"
    ;; Footnotes section.
    (org-html-footnote-section info)))
 
