@@ -6,6 +6,91 @@
 (require 'ox)
 (require 'magit)
 
+
+;;; Transclusion extension
+
+(require 'org-transclusion)
+(require 'org-element)
+
+;;;; Extension setup
+
+;; Parse keyword values to plist.
+(add-to-list 'org-transclusion-keyword-value-functions
+			 #'org-transclusion-keyword-value-treesit)
+
+;; Convert plist values back to string.
+(add-to-list 'org-transclusion-keyword-plist-to-string-functions
+			 #'org-transclusion-keyword-plist-to-string-ox-ngd-treesit)
+
+;; Add custom transclusion type.
+(add-hook 'org-transclusion-add-functions
+          #'org-transclusion-add-ox-ngd-treesit)
+
+(defun org-transclusion-keyword-value-treesit (string)
+  "Utility function converting a keyword STRING to plist.
+Meant for use by `org-transclusion-get-string-to-plist'.
+Must be set in `org-transclusion-keyword-value-functions'."
+  (when (string-match ":treesit?" string)
+    (list :treesit t)))
+
+(defun org-transclusion-keyword-plist-to-string-ox-ngd-treesit (plist)
+  "Convert keyword property list `PLIST' to string."
+  ;; Overkill with a single custom keyword but easily extendable in this way.
+  (let ((treesit (plist-get plist :treesit)))
+	(concat
+	 (when treesit ":treesit"))))
+
+(defun org-transclusion-add-ox-ngd-treesit (link plist)
+  "Given an Org LINK element and a keyword property list
+PLIST return either nil if no transclusion content is
+appropriate or a payload property list as defined by
+`org-transclusion-add-functions'.
+
+The payload return filters for `src-block' org elements
+whose :name is \\+`treesit' and returns a concatenated
+and hierarchically flattened region of said elements
+under the heading LINK resolves to."
+  (when (plist-get plist :treesit)
+	(save-excursion
+	  (let ((org-link-search-must-match-exact-headline t))
+		(org-with-wide-buffer
+		 ;; If org cannot find CUSTOM_ID heading exeecution stops.
+		 (org-link-search (org-element-property :raw-link link))
+
+		 (let ((el (org-element-context))
+			   beg
+			   end
+			   ast)
+		   (setq beg (org-element-property :begin el)
+				 end (org-element-property :end el))
+
+		   (narrow-to-region beg end)
+		   (setq ast (org-element-parse-buffer))
+
+		   (setq ast (org-element-map ast 'src-block
+					   (lambda (sb)
+						 (when (string= "treesit" (org-element-property :name sb))
+						   (org-element-put-property sb :name nil)))))
+
+		   (list :tc-type "ngd-treesit"
+				 :src-content (org-element-interpret-data ast)
+				 :src-buf (current-buffer)
+				 :src-beg (point-min)
+				 :src-end (point-max))))))))
+
+;; (when (plist-get _plist :treesit)
+;; 	(message "foooooooooooo")
+;; 	#'org-transclusion-ox-ngd--content-range))
+;; (message "I was called! %s\n%s\n%s" link plist (current-buffer))
+;; (message "link path: %s" (org-element-property :path link))
+;; Crude way of enforcing (myself) to only provide a CUSTOM_ID as the link target. If desired later augment this to check :path is file name of current buffer (with `./' prefixed) and put the CUSTOM_ID in :search-option.
+;; (when (string= (concat "./" (file-name-nondirectory (buffer-file-name))) (org-element-property :path link))
+;; 	;; TODO: Rewrite as described above.
+;; 	(throw 'nah nil))
+;; (cond ((plist-get plist :treesit) (message "I should work!"))))
+;; (defun org-transclusion-ox-ngd--content-range (link plist copy)
+;;   (message "henlo there!"))
+
 ;;; Internal
 
 ;; Yoinked from: https://relint.de/emacs-export-faces.html
