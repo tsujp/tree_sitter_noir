@@ -1,4 +1,4 @@
-#+TODO: TODO(t@) TOIMPL(i@) | DONE(d!)
+#+TODO: TODO(t@) TOIMPL(i@) BLOCK(b@) | DONE(d!)
 #+STARTUP: indent logdone logdrawer content
 # ------------------------------------------------------
 #+NOIR_TEMPLATE_URL: https://github.com/noir-lang/noir/blob/%h/%p#L%lC%c-L%lC%s
@@ -15,10 +15,13 @@ Noir isn't formally specified currently; expected given the language is pre 1.0.
 
 
 * Compiler                                                            :noirc:
+:PROPERTIES:
+:ID:       9405296D-1F11-4E7E-8306-401487D24999
+:END:
 
 Noir's compiler frontend performs parsing and lexing at the same time; the parser internally lexes the target file(s).
 
-The lexer transforms an iterator of characters into an iterator of ~SpannedToken~; each ~Token~ having a ~Span~ (location in source file).
+The lexer transforms an iterator of characters into an iterator of ~SpannedToken~; each ~Token~ having a ~Span~ (delimited region in source file). ~Spans~ are owned by AST nodes which forms the (initial) parsing result.
 
 Concerning Noir's frontend compiler:
 - Tag =node= being used as a non-terminal symbol.
@@ -311,9 +314,11 @@ Foo
 :END:
 - PrimitiveType.
 
-Compiler: [[file:noir/compiler/noirc_frontend/src/parser/parser/types.rs::fn parse_type(&mut self)][parse_type()]]
+Parser: [[file:noir/compiler/noirc_frontend/src/parser/parser/types.rs::fn parse_type(&mut self)][parse_type()]]
 
 TODO: Look at enum ~UnresolvedTypeData~, read the doc string and look at it's elements. Good stuff.
+#+transclude: [[file:noir/compiler/noirc_frontend/src/ast/mod.rs][foobar]] :lines 104-106 :src foo
+
 TODO: Path from lexer.rs ~next_token()~ to the point where it checks for keywords.
 TODO: Put lookup_keyword under it's own heading and transclude the contents verbatim
 
@@ -358,15 +363,16 @@ Compiler: [[file:noir/compiler/noirc_frontend/src/parser/parser/types.rs::fn par
 Parser: [[file:noir/compiler/noirc_frontend/src/parser/parser/types.rs::fn parse_int_type(&mut self)][parse_int_type()]]
 
 Both signed and unsigned: 1, 8, 16, 32, and 64 bits.
-#+transclude: [[file:noir/compiler/noirc_frontend/src/ast/mod.rs][IntegerBitSize::allowed_sizes()]] :lines 61-65 :src rust
+#+transclude: [[file:noir/compiler/noirc_frontend/src/ast/mod.rs::61][IntegerBitSize::allowed_sizes()]] :lines 61-65 :src rust
 
 TODO: Is there a bug in this version of Noir that doesn't allow 16-bit integers?
 
+:callstack:
 - [X] [[file:noir/compiler/noirc_frontend/src/parser/parser.rs::fn eat_int_type(&mut self)][eat_int_type()]]
   - nb :: [[file:noir/compiler/noirc_frontend/src/lexer/token.rs::enum IntType][Token::IntType]] from [[#h:B7763FFE-9685-45F5-A414-66F9E47F3E1D][Lexing]].
 - [X] [[file:noir/compiler/noirc_frontend/src/ast/mod.rs::fn from_int_token(][UnresolvedTypeData::from_int_token()]]
   - [X] [[file:noir/compiler/noirc_frontend/src/ast/mod.rs::fn try_from(value: u32)][IntegerBitSize::try_from()]]
-
+:end:
 
 1. If [[file:noir/compiler/noirc_frontend/src/ast/mod.rs::fn from_int_token(][UnresolvedTypeData::from_int_token()]]'s call to [[file:noir/compiler/noirc_frontend/src/ast/mod.rs::fn try_from(value: u32)][IntegerBitSize::try_from()]] succeeds an ~UnresolvedTypeData::Integer~ is returned.
 2. [[file:noir/compiler/noirc_frontend/src/ast/mod.rs::fn try_from(value: u32)][IntegerBitSize::try_from()]] validates given numeric bit-size component and returns matching ~IntegerBitSize~, otherwise returning invalid bit-size parse error.
@@ -397,7 +403,7 @@ Compiler: [[file:noir/compiler/noirc_frontend/src/lexer/token.rs::fn lookup_int_
 Compiler: [[file:noir/compiler/noirc_frontend/src/parser/parser/types.rs::fn parse_bool_type(&mut self)][parse_bool_type()]]
 
 :note:
-This is specifically parsing the literal /keyword/ =bool= **and not** literal text =true= or =false=.
+Parses the literal /keyword/ =bool= **and not** literal words =true= or =false=.
 :end:
 
 ******* TODO StringType
@@ -421,7 +427,7 @@ This is specifically parsing the literal /keyword/ =bool= **and not** literal te
 Compiler: [[file:noir/compiler/noirc_frontend/src/parser/parser/type_expression.rs::196][parse_type_or_type_expression()]]
 #+transclude: [[file:noir/compiler/noirc_frontend/src/parser/parser/type_expression.rs][TypeOrTypeExpression doc]] :lines 195-195 :src rust
 
-Parse logic when entered here attempts to parse as any valid non-literal type, before finally calling ~parse_type()~ which /is/ [[#h:B3490B7C-F387-49C7-BF94-DC9CE8AC3581][Type]].
+Parse logic when entered here attempts to parse any valid non-literal type, before finally calling ~parse_type()~ which /is/ [[#h:B3490B7C-F387-49C7-BF94-DC9CE8AC3581][Type]].
 
 - [ ] ~parse_add_or_subtract_type_or_type_expression()~.
   - [ ] ~parse_multiply_or_divide_or_modulo_type_or_type_expression()~.
@@ -431,8 +437,45 @@ Parse logic when entered here attempts to parse as any valid non-literal type, b
         - [ ] ~parse_type()~.
 
 ***** TODO Path
+:PROPERTIES:
+:CUSTOM_ID: h:07167116-EAE4-475B-8C87-DE9075BAF88D
+:END:
++ [[#h:96FCF9AD-3B89-451B-B84D-90A7A625B56D][PathKind]].
++ ~Token::Ident~ as identifier.
++ (opt) [[#h:D0AD78D7-3BF6-4D89-A709-C8CD28968213][Turbofish]].
++ (rep0 grp) =::= by ~Token::Ident~ as identifier by (opt) [[#h:D0AD78D7-3BF6-4D89-A709-C8CD28968213][Turbofish]].
+
+In all cases where Path is parsed via mentioned parsers if there are no path segments None is returned; so **Path is implied optional wherever it occurs**.
+
+Parser: [[file:noir/compiler/noirc_frontend/src/parser/parser/path.rs::pub(super) fn parse_path_impl(][parse_path_impl()]] (usually via [[file:noir/compiler/noirc_frontend/src/parser/parser/path.rs::pub(crate) fn parse_path(&mut self)][parse_path()]])
+#+transclude: [[file:noir/compiler/noirc_frontend/src/parser/parser/path.rs::29][Path doc]] :lines 29-33 :src rust
+
+
+TODO: Have this generated from an org-mode dynamic block maybe?
+- [X] parse_path
+  - [X] parse_path_impl
+    - [X] parse_path_kind
+    - [X] parse_optional_path_after_kind
+      - [X] parse_path_after_kind
+        - [X] parse_path_generics
+
+
+*************** TODO Are PathNoTurboFish and PathTraitKind seperate Items in the parser (i.e. an Item like Path is an item)?
+If they are can reduce nesting complexity.
+*************** END
+
+****** TODO Turbofish
+:PROPERTIES:
+:CUSTOM_ID: h:D0AD78D7-3BF6-4D89-A709-C8CD28968213
+:END:
++ =::=.
++ [[#h:F8EF693C-A6E2-4D57-BE08-103479D4270D][PathGenerics]].
+
 
 ****** TODO PathNoTurbofish
+:PROPERTIES:
+:CUSTOM_ID: h:A051D0D5-7007-4DF8-83B7-FB4EFF9C383E
+:END:
 
 :note:
 - A /turbofish/ is syntax of the form ~::<Type>~.
@@ -450,66 +493,86 @@ Parse logic when entered here attempts to parse as any valid non-literal type, b
   - [ ] ~Parser::parse_optional_path_after_kind()~.
     - [ ] ~Parser::parse_path_after_kind()~.
 
-****** TODO PathKind
-
+****** TOIMPL PathKind
+:PROPERTIES:
+:CUSTOM_ID: h:96FCF9AD-3B89-451B-B84D-90A7A625B56D
+:END:
+:LOGBOOK:
+- State "TOIMPL"     from "TODO"       [2024-11-13 Wed 18:18]
+:END:
 - =crate= by =::=.
 - =dep= by =::=.
 - =super= by =::=.
 - NIL.
 
-#+transclude: [[file:noir/compiler/noirc_frontend/src/parser/parser/path.rs::179][PathKind doc]] :lines 174-178 :src rust
+Parser: [[file:noir/compiler/noirc_frontend/src/parser/parser/path.rs::pub(super) fn parse_path_kind(&mut self)][parse_path_kind()]]
+#+transclude: [[file:noir/compiler/noirc_frontend/src/parser/parser/path.rs::174][PathKind doc]] :lines 174-178 :src rust
 
 If there is no path kind, i.e. NIL, this is internally represented via ~PathKind::Plain~.
 
-****** TODO PathGenerics
+****** TOIMPL PathGenerics
+:PROPERTIES:
+:CUSTOM_ID: h:F8EF693C-A6E2-4D57-BE08-103479D4270D
+:END:
+:LOGBOOK:
+- State "TOIMPL"     from "TODO"       [2024-11-13 Wed 19:28]
+:END:
+- [[#h:3267D7A4-7AA4-49FB-91FA-A9601BC6868A][GenericTypeArgs]]<[[#h:43662F12-2EC8-47E8-B5B8-DFF8A1226EB2][OrderedTypeArg]]>.
 
-- [[#h:3267D7A4-7AA4-49FB-91FA-A9601BC6868A][GenericTypeArgs]].
+Checks current token is ~Token::Less~ (=<=) before continuing. Only OrderedTypeArgs are allowed, any NamedTypeArgs (aka "associated types" are errors).
 
-[[file:noir/compiler/noirc_frontend/src/parser/parser/path.rs::158][Parser::parse_path_generics()]]:
-#+transclude: [[file:noir/compiler/noirc_frontend/src/parser/parser/path.rs][PathGenerics doc]] :lines 157-157 :src rust
+Parser: [[file:noir/compiler/noirc_frontend/src/parser/parser/path.rs::pub(super) fn parse_path_generics(][parse_path_generics()]]
+#+transclude: [[file:noir/compiler/noirc_frontend/src/parser/parser/path.rs::157][PathGenerics doc]] :lines 157-157 :src rust
 
-- [ ] ~Parser::parse_generic_type_args()~.
+Return ~AST::GenericTypeArg::Ordered~.
+
+*************** TODO Document in-code Noir that only OrderedGenerics are allowed.
+As the parsing function for PathGenerics shows, any NamedArgs will return a parser error.
+*************** END
 
 ****** Internals                                                      :noirc:
 
-=Parser::parse_path_after_kind()=.
+[[file:noir/compiler/noirc_frontend/src/parser/parser/path.rs::pub(super) fn parse_path_after_kind(][parse_path_after_kind()]]
 
-:note:
-- Expects path kind with double colon, e.g. ~crate::~ or even ~plain~, has already been parsed.
-- Always returns a path even if still just a kind (e.g. ~crate::~) or an empty path.
-:end:
+Return ~AST::Path~.
 
-1. Check ~TokenKind::Ident~.
-2. Parse generics with ~Parser::parse_path_generics()~ **if**:
+Make a segments vector and run the following as a loop:
+
+1. Check ~Token::Ident~.
+2. Parse generics ([[#h:F8EF693C-A6E2-4D57-BE08-103479D4270D][PathGenerics]]) with [[file:noir/compiler/noirc_frontend/src/parser/parser/path.rs::pub(super) fn parse_path_generics(][parse_path_generics()]] **if**:
    - Caller allows turbofish, AND
    - At ~Token::DoubleColon~, AND
    - Next token is ~Token::Less~ (=<=).
-3. foo
+3. Add parsed generics as ~AST::PathSegment~ to segments.
+4. Back to (1) if current token (will eat) is =::= and next is ~Token::Ident~, otherwise parser error (missing identifier).
 
-~PathSegment~ ast/statement.rs
-enum ~UnresolvedTypeData~ has some useful syntax examples in its comments.
-#+transclude: [[file:noir/compiler/noirc_frontend/src/ast/mod.rs][foobar]] :lines 108-108 :src rust
+Return ~AST::Path~.
 
 ***** TODO Function
-
-****** Treesitter                                                   :grammar:
 :PROPERTIES:
 :CUSTOM_ID: h:B3C4609F-307A-42A1-B420-DBBAB6CDE6E5
 :END:
 
+TODO: Reorganise this subtree since I added :treesit transclusion.
+
+****** Treesitter                                                   :grammar:
+:PROPERTIES:
+:CUSTOM_ID: h:30A04BE4-E1C5-40E1-B2B2-DA0747C66D48
+:END:
+
 ******* Definition
-Definition
-#+begin_src js
+#+begin_src js :comments org
 function_definition: ($) => seq(
 	optional($.visibility_modifier),
 	optional($.function_modifiers),
 	'fn',
 	field('name', $.identifier),
 	// TODO: Generics
-	$.parameter_list,
+	$.function_parameters,
 	optional(seq('->' /* TODO: Return visibility and type */)),
 	// TODO: Where clause
 	$.block,
+	// TODO: It's block or ';' see Parser::parse_function()
 )
 #+end_src
 
@@ -520,7 +583,10 @@ function_modifiers: ($) => repeat1(choice(MODIFIERS.Unconstrained, MODIFIERS.Com
 #+end_src
 
 ****** Noir
-+ =fn= by ~identifier~ by [Generics] by [FunctionParameters]
+:PROPERTIES:
+:ID:       E4C0DE73-57E7-4703-BB09-5AFC0B3C85BD
+:END:
++ =fn= by ~identifier~ by [[#h:BA1422E4-AB97-4099-8346-5845CA9223A1][Generics]] by [[#h:B635EAF3-0AE1-47E0-8817-7174186912D8][FunctionParameters]].
 + (opt group) =->= by [ItemVisibility] by [Type]
 + [WhereClause] by (group)
   - [Block]
@@ -530,9 +596,77 @@ TODO: Return visibility is seperate from function visibility.
 TODO: WhereClause isn't marked optional in Noir compiler, but it is.
 
 Mutable modifier =mut= not applicable; presence raises parse error.
-#+transclude: [[file:noir/compiler/noirc_frontend/src/parser/parser/item.rs][parse_item_kind() callsite]] :lines 184-194 :src rust
+#+transclude: [[file:noir/compiler/noirc_frontend/src/parser/parser/item.rs::184][parse_item_kind() callsite]] :lines 184-194 :src rust
+
+TODO: Callstack and what not for...:
+TODO: transclude parse_function_definition or whatever is appropriate.
+TODO: transclude parse_function_definition_with_optional_body
+
+***** TODO FunctionParameters                                          :node:
+:PROPERTIES:
+:CUSTOM_ID: h:B635EAF3-0AE1-47E0-8817-7174186912D8
+:END:
++ =(=.
++ (opt) FunctionParametersList.
++ =)=.
+
+Parser: [[file:noir/compiler/noirc_frontend/src/parser/parser/function.rs::fn parse_function_parameters(&mut self, allow_self: bool)][parse_function_parameters()]]
+#+transclude: [[file:noir/compiler/noirc_frontend/src/parser/parser/function.rs][FunctionParameters doc]] :lines 129-133 :src rust
+
+TODO: Is ~FunctionParameters~ only used when _DECLARING_ a function or also when calling? If the former then this node can go under ~Function~ i.e. ~function_definition~.
+
+*************** TODO Are missing parens in function parameters actually valid?
+Checked on a concrete Noir source file against 0.36.0 a function ~fn foo {}~ is accepted by the frontend, even though its suggested (in doc comments of said frontend) that ~(~ and ~)~ are required i.e. ~fn foo() {}~. Which is truly valid here? For now assume the latter.
+
+~parse_function_parameters~ returns an empty ~Vec~ if it doesn't eat a left paren first, which currently does not raise any kind of parsing error.
+*************** END
+
+#+label: treesit
+#+begin_src js
+function_parameters: ($) => seq(
+	'(',
+	// TODO: The rest.
+	')',
+)
+#+end_src
+
+#+label: treesit
+#+begin_src js
+const foobar = 'yoloscoped'
+#+end_src
+
+****** TODO FunctionParametersList
+:PROPERTIES:
+:CUSTOM_ID: h:D94BC382-4224-4FB5-8332-4C5CCF285946
+:END:
++ FunctionParameter.
++ (rep0 grp) =,= by FunctionParameter.
++ (opt) =,=.
+
+Split by =,= until =)=, each parsed as FunctionParameter.
+#+transclude: [[file:noir/compiler/noirc_frontend/src/parser/parser/function.rs][parse_many()]] :lines 139-141 :src rust
+
+- [ ] [[#h:8E0DC05B-1ED6-47BE-9589-64DC06FAECCA][Parser::parse_many()]]
+  - nb :: split on =,= until =)= encountered.
+  - [ ] ~parse_function_parameter()~.
+
+
+****** TODO FunctionParameter
+:PROPERTIES:
+:CUSTOM_ID: h:9554D746-C88F-4E3D-B065-B1A5C5F9B57B
+:END:
++ Visibility. (td: link)
++ PatternOrSelf. (td: link)
++ =:=.
++ Type. (td: link)
+
+Parser: [[file:noir/compiler/noirc_frontend/src/parser/parser/function.rs::fn parse_function_parameter(&mut self, allow_self: bool)][parse_function_parameter()]]
+
 
 ***** TODO Generics                                                    :node:
+:PROPERTIES:
+:CUSTOM_ID: h:BA1422E4-AB97-4099-8346-5845CA9223A1
+:END:
  * (opt grp) =<= by (opt) GenericsList by =>=.
 
 [[file:noir/compiler/noirc_frontend/src/parser/parser/generics.rs::16][Parser::parse_generics()]]:
@@ -593,53 +727,79 @@ Calls ~Parser::eat_ident()~ and returns that as an ~UnresolvedGeneric::Variable~
 ****** TODO ResolvedGeneric
 Foo
 
-****** TODO GenericTypeArgs                                            :node:
+****** TOIMPL GenericTypeArgs                                          :node:
 :PROPERTIES:
 :CUSTOM_ID: h:3267D7A4-7AA4-49FB-91FA-A9601BC6868A
 :END:
+:LOGBOOK:
+- State "TOIMPL"     from "TODO"       [2024-11-13 Wed 19:10]
+:END:
 + (grp) =<= by (opt) [[#h:8C6AF1F0-DBAC-4030-AEFC-8FBF6B069EAD][GenericTypeArgsList]] by =>=.
 
-Compiler: [[file:noir/compiler/noirc_frontend/src/parser/parser/generics.rs::117][Parser::parse_generic_type_args()]]
-#+transclude: [[file:noir/compiler/noirc_frontend/src/parser/parser/generics.rs][GenericTypeArgs doc]] :lines 106-116 :src rust
+Parser: [[file:noir/compiler/noirc_frontend/src/parser/parser/generics.rs::pub(super) fn parse_generic_type_args(&mut self)][parse_generic_type_args()]]
+#+transclude: [[file:noir/compiler/noirc_frontend/src/parser/parser/generics.rs::106][GenericTypeArgs doc]] :lines 106-116 :src rust
 
-- [X] ~Parser:parse_many()~.
-  - nb :: splits on =,= until =>= encountered.
-- [ ] ~Parser:parse_generic_type_arg()~.
-  - nb :: parses NamedTypeArg and OrderedTypeArg.
+Return ~AST::GenericTypeArgs()~.
 
-******* TODO GenericTypeArgsList
+******* TOIMPL GenericTypeArgsList
 :PROPERTIES:
 :CUSTOM_ID: h:8C6AF1F0-DBAC-4030-AEFC-8FBF6B069EAD
+:END:
+:LOGBOOK:
+- State "TOIMPL"     from "TODO"       [2024-11-13 Wed 19:09]
 :END:
 + [[#h:B2EDBA96-AA93-449F-A8EB-5636CCFC4F1C][GenericTypeArg]].
 + (rep0 grp) =,= by [[#h:B2EDBA96-AA93-449F-A8EB-5636CCFC4F1C][GenericTypeArg]].
 + (opt) =,=.
 
-******* TODO GenericTypeArg
+Split by =,= until =>=, each parsed as [[#h:B2EDBA96-AA93-449F-A8EB-5636CCFC4F1C][GenericTypeArg]].
+#+transclude: [[file:noir/compiler/noirc_frontend/src/parser/parser/generics.rs::123][parse_many()]] :lines 123-127 :src rust
+
+******* TOIMPL GenericTypeArg
 :PROPERTIES:
 :CUSTOM_ID: h:B2EDBA96-AA93-449F-A8EB-5636CCFC4F1C
+:END:
+:LOGBOOK:
+- State "TOIMPL"     from "TODO"       [2024-11-13 Wed 19:07]
 :END:
 - [[#h:8314C368-924E-4B8B-A881-66C9F46D6833][NamedTypeArg]].
 - [[#h:43662F12-2EC8-47E8-B5B8-DFF8A1226EB2][OrderedTypeArg]].
 
-Compiler: [[file:noir/compiler/noirc_frontend/src/parser/parser/generics.rs::145][Parser::parse_generic_type_arg()]]
+Parser: [[file:noir/compiler/noirc_frontend/src/parser/parser/generics.rs::fn parse_generic_type_arg(&mut self)][parse_generic_type_arg()]] (inline handles child nodes).
 
-******** TODO NamedTypeArg
+******** TOIMPL NamedTypeArg
 :PROPERTIES:
 :CUSTOM_ID: h:8314C368-924E-4B8B-A881-66C9F46D6833
 :END:
-+ An ~identifier~.
+:LOGBOOK:
+- State "TOIMPL"     from "TODO"       [2024-11-13 Wed 18:56]
+:END:
++ ~Token::Ident~ as identifier.
 + ===.
 + [[#h:B3490B7C-F387-49C7-BF94-DC9CE8AC3581][Type]].
 
-~parse_type_or_error()~ wraps a call to ~parse_type()~, which /is/ where [[#h:B3490B7C-F387-49C7-BF94-DC9CE8AC3581][Type]] begins.
+Also called "associated types".
 
-******** TODO OrderedTypeArg
+Parser: /within slice of parent/
+#+transclude: [[file:noir/compiler/noirc_frontend/src/ast/mod.rs::187][NamedTypeArg doc]] :lines 187-188 :src rust
+
+Return ~AST::GenericTypeArg::Named()~.
+
+Call to Type wrapped in ~parse_type_or_error~.
+
+******** TOIMPL OrderedTypeArg
 :PROPERTIES:
 :CUSTOM_ID: h:43662F12-2EC8-47E8-B5B8-DFF8A1226EB2
 :END:
+:LOGBOOK:
+- State "TOIMPL"     from "TODO"       [2024-11-13 Wed 18:56]
+:END:
 + [[#h:A32A351C-092B-42F1-AB03-DE49862B35D4][TypeOrTypeExpression]].
 
+Parser: /within slice of parent/
+#+transclude: [[file:noir/compiler/noirc_frontend/src/ast/mod.rs::184][OrderedTypeArg doc]] :lines 184-184 :src rust
+
+Return ~AST::GenericTypeArg::Ordered()~.
 
 ***** TODO WhereClause                                          :declaration:
 
@@ -703,9 +863,280 @@ trait_bound: ($) =>
 + GenericTypeArgs
 
 
+***** TODO PatternOrSelf
+:PROPERTIES:
+:CUSTOM_ID: h:464E9BE0-4EC7-4D73-A1F2-F9C581DFD8E3
+:END:
+- Pattern.
+- SelfPattern.
+
+Parser: [[file:noir/compiler/noirc_frontend/src/parser/parser/pattern.rs::pub(crate) fn parse_pattern_or_self(&mut self)][parse_pattern_or_self()]]
+#+transclude: [[file:noir/compiler/noirc_frontend/src/parser/parser/pattern.rs::43][PatternOrSelf doc]] :lines 43-45 :src rust
+
+*************** TODO Where does this Pattern node actually belong hierarchically?
+It's probably not an ~ItemKind~ as I've temporarily placed it. Locate it elsewhere when appropriate.
+
+The top level node (unto itself) here is also ~PatternOrSelf~ and not ~Pattern~ since the former contains all of the latter. Probably a proper technical set or graph theory term for this.
+*************** END
+
+
+
+FOR JORDAN: Currently looking at SelfPattern
+
+FOR JORDAN: Given we've only reached here via function declaration (SO FAR) the current parent for this entire call stack is ~parse_function_parameter~. I expect this won't be the case when all the frontend is explored so adjust accordingly then.
+
+=parse_function_parameter= callstack:
+- [ ] parse_pattern_or_self and [[file:noir/compiler/noirc_frontend/src/parser/parser/pattern.rs::pub(crate) fn parse_pattern(&mut self)][parse_pattern()]]
+  - [ ] [[file:noir/compiler/noirc_frontend/src/parser/parser/pattern.rs::pub(crate) fn parse_pattern_after_modifiers(][parse_pattern_after_modifiers()]]
+    - [ ] [[file:noir/compiler/noirc_frontend/src/parser/parser/pattern.rs::fn parse_pattern_no_mut(&mut self)][parse_pattern_no_mut()]] /(see: PatternNoMut)/
+- [ ] If ~Pattern~ call [[file:noir/compiler/noirc_frontend/src/parser/parser/function.rs::fn pattern_param(&mut self, pattern: Pattern, start_span: Span)][pattern_param()]]
+- [X] If ~SelfPattern~ call [[file:noir/compiler/noirc_frontend/src/parser/parser/function.rs::fn self_pattern_param(&mut self, self_pattern: SelfPattern)][self_pattern_param()]]
+
+- [ ]
+
+Parameter parsing entry: ~parse_function_parameter~.
+
+
+=parse_pattern_or_self=
+
+TODO: This specific function looks to guarantee only that SelfPattern is =self=, =&self=, or =&mut self=?? So what about =mut self=??
+TODO: In-code docs on SelfPattern are wrong, parser logic looks likt it parses =self=, =mut self=, and =&mut self= so what about =&self=?
+
+Standard case:
+1. Check next token is not =:= /token/, then;
+2. Eat current token as a ~Token::Ident~ if its literal text is =self=.
+
+:note:
+Remember when a token is /eaten/ successfully the parser advances to the subsequent token afterwards.
+:end:
+
+PatternOrSelf forms checked in increasing complexity, absent condition checks fall through:
+- Standard case is checked.
+  - pass :: SelfPattern =self=.
+  #+transclude: [[file:noir/compiler/noirc_frontend/src/parser/parser/pattern.rs::49][parse SelfPattern `self`]] :lines 49-54 :src rust
+- Eat /keyword/ =mut= and then check standard case.
+  - pass :: SelfPattern =mut self=.
+  - fail :: Pattern.
+  #+transclude: [[file:noir/compiler/noirc_frontend/src/parser/parser/pattern.rs::56][parse either {Self}Pattern `mut self`]] :lines 56-67 :src rust
+- Eat /token/ =&= and eat /keyword/ =mut= and then check standard case.
+  - pass :: SelfPattern =&mut self=.
+  - fail :: Pattern. /also pushes parser error ~RefMutCanOnlyBeUsedWithSelf~/.
+- All other (fall through) cases yield Pattern.
+
+In all cases Pattern is further parsed by call to ~parse_pattern_after_modifiers~.
+
+TOOD: This isn't the end of the pattern parsing logic though, it goes up elsewhere. It's quite strange.
+
+=parse_pattern_after_modifiers=
+
+
+
+
+=parse_pattern=
+
+Eat keyword =mut= and call parse_pattern_after_modifiers
+
+
+=pattern_param=
+
+
+
+=self_pattern_param=
+
+This function isn't important for deriving treesitter grammar, it concerns AST creation no further parsing (that we care about) is performed. It is (by the author's curiosity) however documented:
+
+Constructs a concrete ~AST::Param~ expression from ~SelfPattern~; when constructed this way ~SelfPattern~ is /always/ ~Visibility::Private~.
+#+transclude: [[file:noir/compiler/noirc_frontend/src/ast/expression.rs::516][Param AST]] :lines 516-521 :src rust
+
+TODO: Put the whole schpeel about ~UnresolvedTypeData~ somewhere else?
+TODO: Document that these structs are being declared inline of the ~UnresolvedTypeData~ enum, it's not like they exist elsewhere and are being referenced. This is a Rust thing.
+The Noir parser will parse any types (which are enumerants of ~UnresolvedTypeData~) as ~UnresolvedType~ which marks them as requiring name resolution; these are otherwise identical to ~Type~s.
+#+transclude: [[file:noir/compiler/noirc_frontend/src/ast/mod.rs::104][AST UnresolvedType doc]] :lines 104-106 :src rust
+#+transclude: [[file:noir/compiler/noirc_frontend/src/ast/mod.rs::161][AST UnresolvedType enum]] :lines 160-163 :src rust
+
+#+transclude: [[file:noir/compiler/noirc_frontend/src/ast/mod.rs::109][AST UnresolvedTypeData enumerants]] :lines 109-156 :src rust
+
+TODO: Currently on plane, what /exactly/ is Rust's ~Box~ doing?
+
+:verbose:
+1. Construct an ~AST::UnresolvedType::Named~ with =Self= ~AST::Path~; then box the entire aforementioned into an ~AST::UnresolvedType::MutableReference~ iff given ~SelfPattern~ contained =&= (i.e. a reference).
+2. Construct an ~AST::Pattern::Identifier~ with =self= ~AST::Ident~; then box the entire aforementioned into an ~AST::Pattern::Mutable~ iff given ~SelfPattern~ contained =mut= (i.e. mutable).
+3. Return ~AST::Param~ which contains (1) and (2).
+:end:
+
+****** TODO Pattern
+:PROPERTIES:
+:CUSTOM_ID: h:D349E307-F033-4D2A-A729-F2EE5B483065
+:END:
++ (opt) =mut=.
++ [[#h:4A5BB563-4244-4B1F-8084-1116B58FA40F][PatternNoMut]].
+
+TODO: Update Noir in-code docs, mut is actually optional. i.e. literal in-code Noir docs should say ='mut'?= and not ='mut'=.
+
+#+transclude: [[file:noir/compiler/noirc_frontend/src/parser/parser/pattern.rs::35][Pattern doc]] :lines 35-36 :src rust
+
+******* TODO PatternNoMut
+:PROPERTIES:
+:CUSTOM_ID: h:4A5BB563-4244-4B1F-8084-1116B58FA40F
+:END:
+- [[#h:BA807BCE-99B0-4D84-BDC5-613C20F4A422][InternedPattern]].
+- [[#h:5EC2C25E-781B-4AA1-B01B-D37B761237F8][TupplePattern]].
+- [[#h:44A2D194-B244-4E4C-B53E-2FCF3F4165E2][StructPattern]].
+- [[#h:CE58024C-51AD-4A68-A57B-CE4E6D5C0552][IdentifierPattern]].
+
+Parser: [[file:noir/compiler/noirc_frontend/src/parser/parser/pattern.rs::fn parse_pattern_no_mut(&mut self)][parse_pattern_no_mut()]]
+#+transclude: [[file:noir/compiler/noirc_frontend/src/parser/parser/pattern.rs::112][PatternNoMut doc]] :lines 112-116 :src rust
+
+******* TODO InternedPattern
+:PROPERTIES:
+:CUSTOM_ID: h:BA807BCE-99B0-4D84-BDC5-613C20F4A422
+:END:
+- TERMINAL ~TokenKind::InternedPattern~.
+
+Parser: [[file:noir/compiler/noirc_frontend/src/parser/parser/pattern.rs::fn parse_interned_pattern(&mut self)][parse_interned_pattern()]]
+
+Eat token ~TokenKind::InternedPattern~ and get it's literal contents. If contents is indexable in ~noirc_arena~ (i.e. its been interned) then return ~AST::Pattern::Interned~.
+
+TODO: I spent like 1 hour on the flight to BKK while really tired trying to figure out how the fuck ~TokenKind::InternedPattern~ is assigned and I see no way, maybe it's not even in-use yet or some satanic shit is involved here. Leave it for now I guess.
+TODO: How does the lexer assign ~TokenKind::InternedPattern~? Once that's known this node is done.
+TODO: TokenKind::InternedPattern (TODO) ~InteredPattern~ is a reference to an interned ~Pattern~.
+TODO: So a ~Spanned~ 's ~contents~ are the literal source-code buffers content for the byte region the span defines.
+TODO: As per the top of node_interner.rs an InternedPattern is one that is encountered specifically at comptime (i.e. in a comptime block?)
+
+******* BLOCK TupplePattern
+:PROPERTIES:
+:CUSTOM_ID: h:5EC2C25E-781B-4AA1-B01B-D37B761237F8
+:END:
+:LOGBOOK:
+- State "BLOCK"      from "TODO"       [2024-11-13 Wed 02:23] \\
+  Until Path.
+:END:
++ =(=.
++ (opt) [[#h:3C5C665F-CB91-4C4E-9B39-ACFEE421F5DB][PatternList]].
++ =)=.
+
+Parser: [[file:noir/compiler/noirc_frontend/src/parser/parser/pattern.rs::fn parse_tuple_pattern(&mut self)][parse_tuple_pattern()]]
+#+transclude: [[file:noir/compiler/noirc_frontend/src/parser/parser/pattern.rs::169][TuplePattern doc]] :lines 169-171 :src rust
+
+Return ~AST::Pattern::Tuple()~.
+
+******** BLOCK PatternList
+:PROPERTIES:
+:CUSTOM_ID: h:3C5C665F-CB91-4C4E-9B39-ACFEE421F5DB
+:END:
+:LOGBOOK:
+- State "BLOCK"      from "TODO"       [2024-11-13 Wed 02:22] \\
+  Until Path.
+:END:
++ [[#h:D349E307-F033-4D2A-A729-F2EE5B483065][Pattern]].
++ (rep0 grp) =,= by [[#h:D349E307-F033-4D2A-A729-F2EE5B483065][Pattern]].
++ (opt) =,=.
+
+Parser: [[file:noir/compiler/noirc_frontend/src/parser/parser/pattern.rs::fn parse_tuple_pattern_element(&mut self)][parse_tuple_pattern_element()]]
+
+Split by =,= until =)=, each parsed as [[#h:D349E307-F033-4D2A-A729-F2EE5B483065][Pattern]] via **recursive** call to ~parse_pattern~.
+#+transclude: [[file:noir/compiler/noirc_frontend/src/parser/parser/pattern.rs::179][parse_many()]] :lines 179-183 :src rust
+
+*************** TODO This can be marked TOIMPL when all others under Pattern are, since this recurses.
+*************** END
+
+******* BLOCK StructPattern
+:PROPERTIES:
+:CUSTOM_ID: h:44A2D194-B244-4E4C-B53E-2FCF3F4165E2
+:END:
+:LOGBOOK:
+- State "BLOCK"      from "TODO"       [2024-11-13 Wed 02:22] \\
+  Until Path is complete.
+:END:
++ (opt) [[#h:07167116-EAE4-475B-8C87-DE9075BAF88D][Path]].
++ ={=.
++ (opt) [[#h:AD401294-1A53-405B-9717-6818B89FF22E][StructPatternFields]].
++ =}=.
+
+Parser: [[file:noir/compiler/noirc_frontend/src/parser/parser/pattern.rs::fn parse_struct_pattern(&mut self, path: Path, start_span: Span)][parse_struct_pattern()]]
+#+transclude: [[file:noir/compiler/noirc_frontend/src/parser/parser/pattern.rs::197][StructPattern doc]] :lines 197-201 :src rust
+
+Return ~AST::Pattern::Struct()~.
+
+*************** TODO Before parse_struct_pattern is called parser wants to parse an entire path via parse_path, gotta finish paths before considering how that affects this now.
+I'm on the plane so wicked tired, I don't think it will really since if there's no path the first argument to parse_struct_pattern is None. Idk how it wanting a left brace before calling will affect things UNLESS left braces have never _technically_ been part of paths this entire time, i.e. use foo::bar::{lorem} the path is actually `foo::bar` with the _pattern_ being `{lorem}` even though i (and probably others??) would consider that `foo::bar::{lorem}` is the entire path.
+*************** END
+
+******** BLOCK StructPatternFields
+:PROPERTIES:
+:CUSTOM_ID: h:AD401294-1A53-405B-9717-6818B89FF22E
+:END:
+:LOGBOOK:
+- State "BLOCK"      from "TODO"       [2024-11-13 Wed 02:21] \\
+  Requires all of Pattern which itself has a dependency on Path which is TODO.
+:END:
++ [[#h:E4A5FB8F-3DEF-4AA2-8457-E7DE648EC0F4][StructPatternField]].
++ (rep0 grp) =,= by [[#h:E4A5FB8F-3DEF-4AA2-8457-E7DE648EC0F4][StructPatternField]].
++ (opt) =,=.
+
+Split by =,= until =}=, each parsed as [[#h:E4A5FB8F-3DEF-4AA2-8457-E7DE648EC0F4][StructPatternField]].
+#+transclude: [[file:noir/compiler/noirc_frontend/src/parser/parser/pattern.rs::203][parse_many()]] :lines 203-207 :src rust
+
+*************** TODO Update in-code Noir docs for StructPatternFields
+The question mark in the grouping should be an asterisk no?
+*************** END
+
+******** BLOCK StructPatternField
+:PROPERTIES:
+:CUSTOM_ID: h:E4A5FB8F-3DEF-4AA2-8457-E7DE648EC0F4
+:END:
+:LOGBOOK:
+- State "BLOCK"      from "TODO"       [2024-11-13 Wed 02:22] \\
+  Until Path is completed.
+:END:
++ ~Token::Ident~ as identifier.
++ (opt grp) =:= by [[#h:D349E307-F033-4D2A-A729-F2EE5B483065][Pattern]].
+
+Parser: [[file:noir/compiler/noirc_frontend/src/parser/parser/pattern.rs::fn parse_struct_pattern_field(&mut self)][parse_struct_pattern_field()]]
+
+******* TODO IdentifierPattern
+:PROPERTIES:
+:CUSTOM_ID: h:CE58024C-51AD-4A68-A57B-CE4E6D5C0552
+:END:
+- ~identifier~.
+
+FOR JORDAN: IdentifierPattern is yielded if none of PatternNoMut parsed and is_ident returned true.
+FOR JORDAN: This needs Path finished before it can be used.
+
+#+transclude: [[file:noir/compiler/noirc_frontend/src/parser/parser/pattern.rs::118][IdentifierPattern doc]] :lines 118-118 :src rust
+
+Return ~AST::Pattern::Identifier()~.
+
+****** TODO SelfPattern
+:PROPERTIES:
+:CUSTOM_ID: h:5B14A337-12EC-477C-8269-961094FAB41B
+:END:
+- =self=.
+- =&self=.
+- =mut self=.
+- =&mut self=.
+
+Parser: /within slice of [[#h:464E9BE0-4EC7-4D73-A1F2-F9C581DFD8E3][PatternOrSelf]]'s/.
+#+transclude: [[file:noir/compiler/noirc_frontend/src/parser/parser/pattern.rs::19][SelfPattern doc]] :lines 19-19 :src rust
+*************** TODO Update upstream in-code docs if =mut self= is in-fact valid?
+In-code don't suggest so but parser logic (thus far) says it is.
+*************** END
+
+:note:
+TODO: Claim sounds dubious based on doc comments, test if unclear when TOIMPL status.
+Guaranteed to NOT have a colon =:= following it.
+
+=self= is not a true keyword as it is contextual.
+#+transclude: [[file:noir/compiler/noirc_frontend/src/lexer/token.rs::1093][`self` is not a keyword]] :lines 1093-1094 :src rust
+:end:
+
+
 ** Internal
 
 *** [[file:noir/compiler/noirc_frontend/src/parser/parser/parse_many.rs::9][Parser::parse_many(items, sep)]]
+:PROPERTIES:
+:CUSTOM_ID: h:8E0DC05B-1ED6-47BE-9589-64DC06FAECCA
+:END:
 
 Parses list of items separated by sep, can optionally end when another (different configurable) separator is found.
 
@@ -762,10 +1193,13 @@ function sepBy1(rule, sep) {
 :END:
 
 **** ItemVisibility
-#+transclude: [[./noir_grammar.org::#h:46B8EF89-89A5-4346-9B5B-04630DAEF262][ItemVisibility]] :only-contents
+#+transclude: [[./noir_grammar.org::#h:46B8EF89-89A5-4346-9B5B-04630DAEF262][ItemVisibility]] :treesit
 
 **** Function
-#+transclude: [[./noir_grammar.org::#h:B3C4609F-307A-42A1-B420-DBBAB6CDE6E5][Function]] :only-contents
+#+transclude: [[#h:B635EAF3-0AE1-47E0-8817-7174186912D8][FunctionParameters]] :treesit
+
+**** Foo
+#+transclude: [[./noir_grammar.org::#h:30A04BE4-E1C5-40E1-B2B2-DA0747C66D48][other thing]] :treesit
 
 *** Expressions
 :PROPERTIES:
@@ -997,5 +1431,6 @@ When writing queries eventually, can use anonymous node queries also e.g. ~(func
 
 # Local Variables:
 # org-todo-keyword-faces: (
-#                          ("TOIMPL" . org-warning))
+#                          ("TOIMPL" . org-warning)
+# ("BLOCK" . org-verbatim))
 # End:
