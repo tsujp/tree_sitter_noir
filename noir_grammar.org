@@ -13,7 +13,6 @@ All notes currently against upstream commit {{{keyword(NOIR_VERSION)}}}.
 
 Noir isn't formally specified currently; expected given the language is pre 1.0. So, here are notes and links to compiler infrastructure to ascertain language minutia.
 
-
 * Compiler                                                            :noirc:
 :PROPERTIES:
 :ID:       9405296D-1F11-4E7E-8306-401487D24999
@@ -124,7 +123,7 @@ Within =Attribute::lookup_attribute=
 7. Check all characters in =span= such that they are:
    - ASCII alphabetic.
    - Numeric
-     **NOTE** that this does NOT mean ASCII numeric, see [[https://doc.rust-lang.org/std/primitive.char.html#method.is_numeric][rust docs]].
+     *NOTE* that this does NOT mean ASCII numeric, see [[https://doc.rust-lang.org/std/primitive.char.html#method.is_numeric][rust docs]].
    - ASCII punctuation; any of: (see [[https://doc.rust-lang.org/std/primitive.char.html#method.is_ascii_punctuation][rust docs]]) ~! " # $ % & ' ( ) * + , - . / : ; < = > ? @ [ \ ] ^ _ ` { | } ~~.
    - Literal ASCII whitespace.
    #+transclude: [[file:noir/compiler/noirc_frontend/src/lexer/token.rs][Attribute::lookup_attribute()]] :lines 759-770 :src rust
@@ -149,7 +148,7 @@ TODO: Organise this and where/how we're putting lexing info.
 
 ** Structure
 
-Noir **Program** contains **Module** which is comprised of [[./noir_grammar.org::#h:C58B2CB4-FF62-49BB-AFFD-1BADF4462B9D][InnerDocComments]] followed by (repeat) [[./noir_grammar.org::#h:8CC1D239-66B1-45A9-BB71-66AF07161479][Item]].
+Noir *Program* contains *Module* which is comprised of [[./noir_grammar.org::#h:C58B2CB4-FF62-49BB-AFFD-1BADF4462B9D][InnerDocComments]] followed by (repeat) [[./noir_grammar.org::#h:8CC1D239-66B1-45A9-BB71-66AF07161479][Item]].
 
 Program:
 #+transclude: [[file:noir/compiler/noirc_frontend/src/parser/parser.rs][Parser::parse_program()]] :lines 115-119 :src rust
@@ -308,11 +307,21 @@ Foo
 ***** TODO Global
 Foo
 
-***** TODO Type
+***** TOIMPL Type
 :PROPERTIES:
 :CUSTOM_ID: h:B3490B7C-F387-49C7-BF94-DC9CE8AC3581
 :END:
-- PrimitiveType.
+:LOGBOOK:
+- State "TOIMPL"     from "TODO"       [2024-11-16 Sat 18:26]
+:END:
+- [[#h:C23E374A-42EF-467D-AE3D-548D880712D8][PrimitiveType]].
+- [[#h:39A2690C-319F-4F34-A139-8549D70FCF26][ParenthesesType]].
+- [[#h:FAB3845D-97FD-454B-B8C8-09FEEB41FC3D][ArrayOrSliceType]].
+- [[#h:C1EF6337-B3F1-44D9-B5E6-FF5A0215FCC5][MutableReferenceType]].
+- [[#h:96043AA8-9EC3-4E80-AA5D-CBFFE60A9072][FunctionType]].
+- [[#h:08118263-BDC8-4589-8EF9-1F0490B62F34][TraitAsType]].
+- [[#h:5B4FDF39-09B2-4C07-A2B5-3A3D6BEDD4B7][AsTraitPathType]].
+- [[#h:F2E3D7E1-0978-44DF-A49E-EBE348F9D973][UnresolvedNamedType]].
 
 Parser: [[file:noir/compiler/noirc_frontend/src/parser/parser/types.rs::fn parse_type(&mut self)][parse_type()]]
 
@@ -341,9 +350,16 @@ When lexing [[file:noir/compiler/noirc_frontend/src/lexer/token.rs::fn lookup_ke
     - [ ] [[file:noir/compiler/noirc_frontend/src/parser/parser/generics.rs::fn parse_generic_type_args(&mut self)][parse_generic_type_args()]]
 :end:
 
-****** TODO PrimitiveType
+****** BLOCK PrimitiveType
+:PROPERTIES:
+:CUSTOM_ID: h:C23E374A-42EF-467D-AE3D-548D880712D8
+:END:
+:LOGBOOK:
+- State "BLOCK"      from "TODO"       [2024-11-15 Fri 19:40] \\
+  Explored the parsing function for all its subtypes, but there are some non-trivial recursive dependencies (going back to Type) and also some quoted and interned stuff so blocked for now.
+:END:
 
-Compiler: [[file:noir/compiler/noirc_frontend/src/parser/parser/types.rs::fn parse_primitive_type(&mut self)][parse_primitive_type()]]
+Parser: [[file:noir/compiler/noirc_frontend/src/parser/parser/types.rs::fn parse_primitive_type(&mut self)][parse_primitive_type()]]
 
 ******* TOIMPL FieldType
 :LOGBOOK:
@@ -351,7 +367,7 @@ Compiler: [[file:noir/compiler/noirc_frontend/src/parser/parser/types.rs::fn par
 :END:
 + =Field=.
 
-Compiler: [[file:noir/compiler/noirc_frontend/src/parser/parser/types.rs::fn parse_field_type(&mut self)][parse_field_type()]]
+Parser: [[file:noir/compiler/noirc_frontend/src/parser/parser/types.rs::fn parse_field_type(&mut self)][parse_field_type()]]
 
 ******* TOIMPL IntegerType
 :LOGBOOK:
@@ -365,7 +381,7 @@ Parser: [[file:noir/compiler/noirc_frontend/src/parser/parser/types.rs::fn parse
 Both signed and unsigned: 1, 8, 16, 32, and 64 bits.
 #+transclude: [[file:noir/compiler/noirc_frontend/src/ast/mod.rs::61][IntegerBitSize::allowed_sizes()]] :lines 61-65 :src rust
 
-TODO: Is there a bug in this version of Noir that doesn't allow 16-bit integers?
+TODO: Is there a bug in this version of Noir that doesn't allow 16-bit integers? See the above transclude missing ~Self::Sixteen~.
 
 :callstack:
 - [X] [[file:noir/compiler/noirc_frontend/src/parser/parser.rs::fn eat_int_type(&mut self)][eat_int_type()]]
@@ -388,7 +404,7 @@ TODO: Is there a bug in this version of Noir that doesn't allow 16-bit integers?
     - [[file:noir/compiler/noirc_frontend/src/lexer/lexer.rs::fn eat_word(&mut self, initial_char: char)][Lexer::eat_word()]]
       - [[file:noir/compiler/noirc_frontend/src/lexer/lexer.rs::fn lookup_word_token(][Lexer::lookup_word_token()]]
 :end:
-Compiler: [[file:noir/compiler/noirc_frontend/src/lexer/token.rs::fn lookup_int_type(word: &str)][IntType::lookup_int_type()]]
+Parser: [[file:noir/compiler/noirc_frontend/src/lexer/token.rs::fn lookup_int_type(word: &str)][IntType::lookup_int_type()]]
 
 1. Signed or unsigned if ~word~ starts with =i= or =u= respectively.
 2. Remaining string ~word~ contents attempt parse into bit-size 32-bit integer.
@@ -400,29 +416,309 @@ Compiler: [[file:noir/compiler/noirc_frontend/src/lexer/token.rs::fn lookup_int_
 :END:
 + =bool=.
 
-Compiler: [[file:noir/compiler/noirc_frontend/src/parser/parser/types.rs::fn parse_bool_type(&mut self)][parse_bool_type()]]
+Parser: [[file:noir/compiler/noirc_frontend/src/parser/parser/types.rs::fn parse_bool_type(&mut self)][parse_bool_type()]]
 
-:note:
-Parses the literal /keyword/ =bool= **and not** literal words =true= or =false=.
-:end:
+Parses the literal /keyword/ =bool= *and not* literal words =true= or =false=.
 
-******* TODO StringType
+******* BLOCK StringType
+:LOGBOOK:
+- State "BLOCK"      from "TODO"       [2024-11-16 Sat 18:26] \\
+  TypeExpression completion.
+:END:
++ =str= (kw).
++ =<=.
++ [[#h:0DEF3192-4840-41B3-A941-714798677092][TypeExpression]].
++ =>=.
 
-******* TODO FormatStringType
+Parser: [[file:noir/compiler/noirc_frontend/src/parser/parser/types.rs::fn parse_str_type(&mut self)][parse_str_type()]]
 
-******* TODO ComptimeType
+*************** TODO How does the first check on eat_less in parse_str_type work?
+What's going on here specifically when it returns Some(UnresolvedTypeExpression)? Is that important later on? Check `str` syntax with concrete tests in Noir, like is str allowed or does it always have to be str<123>.
 
-******* TODO ResolvedType
+It looks like it _is_ a parser error so..?
+*************** END
 
-******* TODO InternedType
+******* TOIMPL FormatStringType
+:LOGBOOK:
+- State "TOIMPL"     from "TODO"       [2024-11-16 Sat 18:24]
+:END:
++ =fmtstr= (kw).
 
+Parser: [[file:noir/compiler/noirc_frontend/src/parser/parser/types.rs::fn parse_fmtstr_type(&mut self)][parse_fmtstr_type()]]
+
+Return ~AST::UnresolvedTypeData::FormatString~.
+
+******* TOIMPL ComptimeType
+:PROPERTIES:
+:CUSTOM_ID: h:98FC5657-8034-42F7-A263-3172EFEEEB23
+:END:
+:LOGBOOK:
+- State "TOIMPL"     from "TODO"       [2024-11-15 Fri 19:29]
+:END:
+- =Expr=.
+- =Quoted=.
+- =TopLevelItem=.
+- =Type=.
+- =TypedExpr=.
+- =StructDefinition=.
+- =TraitConstraint=.
+- =TraitDefinition=.
+- =TraitImpl=.
+- =UnresolvedType=.
+- =FunctionDefinition=.
+- =Module=.
+- =CtString=.
+
+Parser: [[file:noir/compiler/noirc_frontend/src/parser/parser/types.rs::fn parse_comptime_type(&mut self)][parse_comptime_type()]]
+
+All ComptimeTypes returned as ~AST::UnresolvedTypeData::Quoted(X)~ where ~X~ is [[file:noir/compiler/noirc_frontend/src/hir_def/types.rs::pub enum QuotedType {][QuotedType]].
+#+transclude: [[file:noir/compiler/noirc_frontend/src/hir_def/types.rs::282][QuotedType]] :lines 282-296 :src rust
+
+*************** TODO This feels strage, are those literal keywords allowed in source?
+This feels like stuff a preprocessing step would inline or something. If one can literally write these keywords and them be valid then sure.
+*************** END
+*************** TODO Check out hir_def/types.rs enum Type, good docs.
+*************** END
+
+******* BLOCK ResolvedType
+:PROPERTIES:
+:CUSTOM_ID: h:87984AE0-613D-4D9A-A64D-D3FD8BD51C98
+:END:
+:LOGBOOK:
+- State "BLOCK"      from "TODO"       [2024-11-16 Sat 18:25] \\
+  Clarity on QuotedType stuff.
+:END:
+
+Parser: [[file:noir/compiler/noirc_frontend/src/parser/parser/types.rs::fn parse_resolved_type(&mut self)][parse_resolved_type()]]
+
+*************** TODO Non-concrete token kinds lookup, so get to this later.
+i.e. no literal string keyword that lookup_keyword matches.
+*************** END
+
+******* BLOCK InternedType
+:PROPERTIES:
+:CUSTOM_ID: h:21789349-305A-46D0-8D87-D7B8647482CF
+:END:
+:LOGBOOK:
+- State "BLOCK"      from "TODO"       [2024-11-16 Sat 18:25] \\
+  Clarity on InternedType stuff.
+:END:
+
+Parser: [[file:noir/compiler/noirc_frontend/src/parser/parser/types.rs::pub(super) fn parse_interned_type(&mut self)][parse_interned_type()]]
+
+*************** TODO Non-concrete token kinds lookup, so get to this later.
+i.e. no literal string keyword that lookup_keyword matches.
+*************** END
+
+****** BLOCK ParenthesesType
+:PROPERTIES:
+:CUSTOM_ID: h:39A2690C-319F-4F34-A139-8549D70FCF26
+:END:
+:LOGBOOK:
+- State "BLOCK"      from "TODO"       [2024-11-16 Sat 17:09] \\
+  Type completion.
+:END:
+- [[#h:9653A5E5-2857-4FB4-8698-5D9F6F0E8755][Unit]].
+- [[#h:CF9505CB-8110-4FC2-8A6B-5D88A7EB1D06][TupleElement]].
+
+Parser: [[file:noir/compiler/noirc_frontend/src/parser/parser/types.rs::fn parse_parentheses_type(&mut self)][parse_parentheses_type()]]
+
+******* TOIMPL Unit
+:PROPERTIES:
+:CUSTOM_ID: h:9653A5E5-2857-4FB4-8698-5D9F6F0E8755
+:END:
+:LOGBOOK:
+- State "TOIMPL"     from "TODO"       [2024-11-15 Fri 20:24]
+:END:
++ =(= by =)=.
+
+Parser: /in slice of parent/.
+
+******* TODO TupleElement
+:PROPERTIES:
+:CUSTOM_ID: h:CF9505CB-8110-4FC2-8A6B-5D88A7EB1D06
+:END:
++ =(=.
++ [[#h:B3490B7C-F387-49C7-BF94-DC9CE8AC3581][Type]].
++ (rep0 grp) =,= by [[#h:B3490B7C-F387-49C7-BF94-DC9CE8AC3581][Type]].
++ (opt) =,=.
++ =)=.
+
+Parser: /in slice of parent/.
+#+transclude: [[file:noir/compiler/noirc_frontend/src/parser/parser/types.rs::387][parse_many_return_trailing_separator_if_any()]] :lines 387-397 :src rust
+
+If only one Type and no trailing comma return ~AST::UnresolvedTypeData::Parenthesized~, else return ~AST::UnresolvedTypeData::Tuple~.
+
+****** BLOCK ArrayOrSliceType
+:PROPERTIES:
+:CUSTOM_ID: h:FAB3845D-97FD-454B-B8C8-09FEEB41FC3D
+:END:
+:LOGBOOK:
+- State "BLOCK"      from "TODO"       [2024-11-16 Sat 17:09] \\
+  Type and TypeExpression completion.
+:END:
++ =[=.
++ [[#h:B3490B7C-F387-49C7-BF94-DC9CE8AC3581][Type]] by:
+  - =]= returns ~AST::UnresolvedTypeData::Slice~.
+  - =;= by [[#h:0DEF3192-4840-41B3-A941-714798677092][TypeExpression]] by =]= returns ~AST::UnresolvedTypeData::Array~.
+
+Parser: [[file:noir/compiler/noirc_frontend/src/parser/parser/types.rs::fn parse_array_or_slice_type(&mut self)][parse_array_or_slice_type()]]
+
+*************** TODO What about slice literal syntax?
+What about the &[0; 2] syntax for slice literals? This node doesn't appear to do any ampersand parsing? Check higher up the call chain though since there's A LOT of nesting and what not going on currently.
+*************** END
+
+****** BLOCK MutableReferenceType
+:PROPERTIES:
+:CUSTOM_ID: h:C1EF6337-B3F1-44D9-B5E6-FF5A0215FCC5
+:END:
+:LOGBOOK:
+- State "BLOCK"      from "TODO"       [2024-11-16 Sat 17:09] \\
+  Block on Type completion.
+:END:
++ =&=.
++ =mut= (kw).
++ [[#h:B3490B7C-F387-49C7-BF94-DC9CE8AC3581][Type]].
+
+Parser: [[file:noir/compiler/noirc_frontend/src/parser/parser/types.rs::fn parses_mutable_reference_type(&mut self)][parse_mutable_reference_type()]]
+
+Return: ~AST::UnresolvedTypeData::MutableReference~,
+
+*************** TODO Get all these return types by using rust-analyser or something? Once we know the parsing function (should still do this manually), give that to rust-analyser to inline the return type here instead of manually maintaining it.
+Assuming it will be accurate.
+*************** END
+
+****** BLOCK FunctionType
+:PROPERTIES:
+:CUSTOM_ID: h:96043AA8-9EC3-4E80-AA5D-CBFFE60A9072
+:END:
+:LOGBOOK:
+- State "BLOCK"      from "TODO"       [2024-11-16 Sat 17:37] \\
+  Type completion.
+:END:
++ (opt) =unconstrained= (kw).
++ =fn= (kw).
++ (opt) [[#h:4E68CB10-4122-4C09-B99F-DE7F57651E02][CaptureEnvironment]].
++ [[#h:FC1E33B7-033B-4F6F-9EFD-2CDC784E572C][Parameter]].
++ =->=.
++ [[#h:B3490B7C-F387-49C7-BF94-DC9CE8AC3581][Type]].
+
+Parser: [[file:noir/compiler/noirc_frontend/src/parser/parser/types.rs::fn parse_function_type(&mut self)][parse_function_type()]]
+
+Return: ~AST::UnresolvedTypeData::Function~.
+
+*************** TODO So this is specifically NOT a function DECLARATION? It's either an inline function e.g. a lambda, or calling another pre-declared function?
+Because there's already a function for parsing a function declaration in the compiler frontend as far as I can see and that function does not support environment capture. It's been a while but I believe I have some environment capture stuff in Tikan from old noir, see how that's used and if that pattern is still valid in current Noir (as well as consulting the compiler tests) to determine what is valid now if there's still uncertainty once all frontend paths are documented.
+*************** END
+
+******* BLOCK CaptureEnvironment
+:PROPERTIES:
+:CUSTOM_ID: h:4E68CB10-4122-4C09-B99F-DE7F57651E02
+:END:
+:LOGBOOK:
+- State "BLOCK"      from "TODO"       [2024-11-16 Sat 17:34] \\
+  Type completion.
+:END:
++ =[=.
++ [[#h:B3490B7C-F387-49C7-BF94-DC9CE8AC3581][Type]].
++ =]=.
+
+Function capture environment syntax, e.g. =fn foo[Env]()= where =[Env]= is the environment specifier valid for the function to be called within.
+
+Parser: /within slice of parent/
+#+transclude: [[file:noir/compiler/noirc_frontend/src/parser/parser/types.rs::252][FunctionType CaptureEnvironment]] :lines 252-258 :src rust
+
+******* BLOCK Parameter
+:PROPERTIES:
+:CUSTOM_ID: h:FC1E33B7-033B-4F6F-9EFD-2CDC784E572C
+:END:
+:LOGBOOK:
+- State "BLOCK"      from "TODO"       [2024-11-16 Sat 17:34] \\
+  Type completion.
+:END:
++ =(=.
++ (rep0 grp) [[#h:B3490B7C-F387-49C7-BF94-DC9CE8AC3581][Type]] by =,=.
++ =)=.
+
+Parser: /within slice of parent/ and [[file:noir/compiler/noirc_frontend/src/parser/parser/types.rs::fn parse_parameter(&mut self)][parse_parameter()]]
+#+transclude: [[file:noir/compiler/noirc_frontend/src/parser/parser/types.rs::271][parse_many()]] :lines 271-275 :src rust
+
+*************** TODO Are parameters here required? Surely not but until all paths explored they might be?
+Could easily validate with a concrete syntax test however.
+
+The documentation for (rep0 grp) here differs from other lsits because in those other cases at least one element was required before the optional repeating, as this TODO states unsure if the "at least one" is required here.
+*************** END
+
+****** BLOCK TraitAsType
+:PROPERTIES:
+:CUSTOM_ID: h:08118263-BDC8-4589-8EF9-1F0490B62F34
+:END:
+:LOGBOOK:
+- State "BLOCK"      from "TODO"       [2024-11-16 Sat 17:48] \\
+  PathNoTurbofish and GenericTypeArgs completion.
+:END:
++ =impl= (kw).
++ [[#h:A051D0D5-7007-4DF8-83B7-FB4EFF9C383E][PathNoTurbofish]].
++ [[#h:3267D7A4-7AA4-49FB-91FA-A9601BC6868A][GenericTypeArgs]].
+
+Parser: [[file:noir/compiler/noirc_frontend/src/parser/parser/types.rs::fn parse_trait_as_type(&mut self)][parse_trait_as_type()]]
+
+Return: ~AST::UnresolvedTypeData::TraitAsType~.
+
+*************** TODO Rename this to just TraitType if that is unused elsewhere in the (relevant) compiler frontend section?
+*************** END
+*************** TODO Path is implied optional (as noted elsewhere), is PathNoTurbofish also implied optional?
+Because here its required that PathNoTurbofish is Some and _not_ None (which IIRC is how/why Path is implied optional elsewhere).
+*************** END
+
+****** BLOCK AsTraitPathType
+:PROPERTIES:
+:CUSTOM_ID: h:5B4FDF39-09B2-4C07-A2B5-3A3D6BEDD4B7
+:END:
+:LOGBOOK:
+- State "BLOCK"      from "TODO"       [2024-11-16 Sat 18:10] \\
+  AsTraitPath completion.
+:END:
++ [[#h:348C4ABC-3FC0-46EC-95A0-7F4B238BB86A][AsTraitPath]].
+
+This just wraps AsTraitPath.
+
+Parser: [[file:noir/compiler/noirc_frontend/src/parser/parser/types.rs::fn parse_as_trait_path_type(&mut self)][parse_as_trait_path_type()]]
+
+Return: ~AST::UnresolvedTypeData::AsTraitPath~.
+
+****** BLOCK UnresolvedNamedType
+:PROPERTIES:
+:CUSTOM_ID: h:F2E3D7E1-0978-44DF-A49E-EBE348F9D973
+:END:
+:LOGBOOK:
+- State "BLOCK"      from "TODO"       [2024-11-16 Sat 18:22] \\
+  PathNoTurbofish completion.
+:END:
++ [[#h:A051D0D5-7007-4DF8-83B7-FB4EFF9C383E][PathNoTurbofish]].
++ (opt) [[#h:3267D7A4-7AA4-49FB-91FA-A9601BC6868A][GenericTypeArgs]].
+
+Parser: /within slice of parent/
+#+transclude: [[file:noir/compiler/noirc_frontend/src/parser/parser/types.rs::58][parent parser slice]] :lines 58-61 :src rust
+
+Return: ~AST::UnresolvedTypeData::Named~.
+
+#+transclude: [[file:noir/compiler/noirc_frontend/src/ast/mod.rs::121][UnresolvedTypeData::Named doc]] :lines 121-122 :src rust
+
+*************** TODO Unsure of the exact syntax here, should be a path (no turbofish) with generics after it per the method calls.
+Really deep in syntax spaghetti right now, I expect this will be clear when finally some tests are written and what not.
+
+Also I named this node since it doesn't appear to canonically have one.
+
+I also ASSUME the generic type args are optional (test concretely).
+*************** END
 
 ***** TODO TypeOrTypeExpression
 :PROPERTIES:
 :CUSTOM_ID: h:A32A351C-092B-42F1-AB03-DE49862B35D4
 :END:
 - Type.
-- TypeExpression.
+- [[#h:0DEF3192-4840-41B3-A941-714798677092][TypeExpression]].
 
 Compiler: [[file:noir/compiler/noirc_frontend/src/parser/parser/type_expression.rs::196][parse_type_or_type_expression()]]
 #+transclude: [[file:noir/compiler/noirc_frontend/src/parser/parser/type_expression.rs][TypeOrTypeExpression doc]] :lines 195-195 :src rust
@@ -435,6 +731,123 @@ Parse logic when entered here attempts to parse any valid non-literal type, befo
       - [ ] ~parse_atom_type_or_type_expression()~.
         - [ ] ~parse_parenthesized_type_or_type_expression()~.
         - [ ] ~parse_type()~.
+
+***** TOIMPL TypeExpression
+:PROPERTIES:
+:CUSTOM_ID: h:0DEF3192-4840-41B3-A941-714798677092
+:END:
+:LOGBOOK:
+- State "TOIMPL"     from "TODO"       [2024-11-16 Sat 20:20]
+:END:
+- [[#h:F248EB42-693F-4CB9-A2B2-68AE5ED9A6B0][AddOrSubtractTypeExpression]].
+
+Parser: [[file:noir/compiler/noirc_frontend/src/parser/parser/type_expression.rs::pub(crate) fn parse_type_expression(][parse_type_expression()]]
+#+transclude: [[file:noir/compiler/noirc_frontend/src/parser/parser/type_expression.rs::14][TypeExpression doc]] :lines 14-14 :src rust
+
+*************** TODO Flatten nesting or binary/unary structure
+There's A LOT of nesting here. Attempting to flatten this by hand yields satanic syntax but using such nested structures in the treesitter grammar will be no bueno guaranteed.
+
+TypeExpressions _might_ need to wait for a little bit since any optimised flatenning here will be a chore and a half to set up (at least for now, maybe I am just tired now as I've already been working on the documentation stuff for like 5 hours non-stop).
+*************** END
+
+****** TOIMPL AddOrSubtractTypeExpression
+:PROPERTIES:
+:CUSTOM_ID: h:F248EB42-693F-4CB9-A2B2-68AE5ED9A6B0
+:END:
+:LOGBOOK:
+- State "TOIMPL"     from "TODO"       [2024-11-16 Sat 20:20]
+:END:
++ [[#h:AE6765C3-A59C-4316-A3D0-1C67B512AA3E][MultiplyOrDivideOrModuloTypeExpression]].
++ (rep0 grp):
+  + (grp) =+= OR =-=.
+  + [[#h:AE6765C3-A59C-4316-A3D0-1C67B512AA3E][MultiplyOrDivideOrModuloTypeExpression]].
+
+Parser: [[file:noir/compiler/noirc_frontend/src/parser/parser/type_expression.rs::fn parse_add_or_subtract_type_expression(&mut self)][parse_add_or_subtract_type_expression()]]
+#+transclude: [[file:noir/compiler/noirc_frontend/src/parser/parser/type_expression.rs::24][AddOrSubtractTypeExpression doc]] :lines 24-25 :src rust
+
+******* TOIMPL MultiplyOrDivideOrModuloTypeExpression
+:PROPERTIES:
+:CUSTOM_ID: h:AE6765C3-A59C-4316-A3D0-1C67B512AA3E
+:END:
+:LOGBOOK:
+- State "TOIMPL"     from "TODO"       [2024-11-16 Sat 20:20]
+:END:
++ [[#h:7B5047E4-D6BD-47E0-8AC3-0BD8AB23AAD2][TermTypeExpression]].
++ (rep0 grp):
+  + (grp) =*= OR =/= OR =%=.
+  + [[#h:7B5047E4-D6BD-47E0-8AC3-0BD8AB23AAD2][TermTypeExpression]].
+
+Parser: [[file:noir/compiler/noirc_frontend/src/parser/parser/type_expression.rs::fn parse_multiply_or_divide_or_modulo_type_expression(][parse_multiply_or_divide_or_modulo_type_expression()]]
+#+transclude: [[file:noir/compiler/noirc_frontend/src/parser/parser/type_expression.rs::65][MultiplyOrDivideOrModuloTypeExpression doc]] :lines 65-66 :src rust
+
+******** TOIMPL TermTypeExpression
+:PROPERTIES:
+:CUSTOM_ID: h:7B5047E4-D6BD-47E0-8AC3-0BD8AB23AAD2
+:END:
+:LOGBOOK:
+- State "TOIMPL"     from "TODO"       [2024-11-16 Sat 20:20]
+:END:
+- =-= by [[#h:7B5047E4-D6BD-47E0-8AC3-0BD8AB23AAD2][TermTypeExpression]].
+- [[#h:5FA16AAC-EBDB-4764-B3DB-07AF284343E8][AtomTypeExpression]].
+
+Parser: [[file:noir/compiler/noirc_frontend/src/parser/parser/type_expression.rs::fn parse_term_type_expression(&mut self)][parse_term_type_expression()]]
+#+transclude: [[file:noir/compiler/noirc_frontend/src/parser/parser/type_expression.rs::111][TermTypeExpression doc]] :lines 111-113 :src rust
+
+*************** TODO In-code docs for TermTypeExpression minus missing a closing apostrophe
+Teeny tiny change, fix if not already done as it seems Noir is now at 0.38.0 so some updating will be required anyway.
+*************** END
+
+********* TOIMPL AtomTypeExpression
+:PROPERTIES:
+:CUSTOM_ID: h:5FA16AAC-EBDB-4764-B3DB-07AF284343E8
+:END:
+:LOGBOOK:
+- State "TOIMPL"     from "TODO"       [2024-11-16 Sat 20:20]
+:END:
+- [[#h:AD4F1A7F-721B-4864-AF9F-1383E974E0B2][ConstantTypeExpression]].
+- [[#h:55482566-855D-4631-8E1F-7E540041E536][VariableTypeExpression]].
+- [[#h:DA270219-6BFD-42AB-A9B2-4BF9241BAE9E][ParenthesizedTypeExpression]].
+
+Parser: [[file:noir/compiler/noirc_frontend/src/parser/parser/type_expression.rs::fn parse_atom_type_expression(&mut self)][parse_atom_type_expression()]]
+#+transclude: [[file:noir/compiler/noirc_frontend/src/parser/parser/type_expression.rs::139][AtomTypeExpression doc]] :lines 139-142 :src rust
+
+********** TOIMPL ConstantTypeExpression
+:PROPERTIES:
+:CUSTOM_ID: h:AD4F1A7F-721B-4864-AF9F-1383E974E0B2
+:END:
+:LOGBOOK:
+- State "TOIMPL"     from "TODO"       [2024-11-16 Sat 20:18]
+:END:
++ TERMINAL ~Token::Int~.
+
+Parser: [[file:noir/compiler/noirc_frontend/src/parser/parser/type_expression.rs::fn parse_constant_type_expression(&mut self)][parse_constant_type_expression()]]
+#+transclude: [[file:noir/compiler/noirc_frontend/src/parser/parser/type_expression.rs::159][ConstantTypeExpression doc]] :lines 159-159 :src rust
+
+********** TOIMPL VariableTypeExpression
+:PROPERTIES:
+:CUSTOM_ID: h:55482566-855D-4631-8E1F-7E540041E536
+:END:
+:LOGBOOK:
+- State "TOIMPL"     from "TODO"       [2024-11-16 Sat 20:20]
+:END:
++ [[#h:07167116-EAE4-475B-8C87-DE9075BAF88D][Path]].
+
+Parser: [[file:noir/compiler/noirc_frontend/src/parser/parser/type_expression.rs::fn parse_variable_type_expression(&mut self)][parse_variable_type_expression()]]
+#+transclude: [[file:noir/compiler/noirc_frontend/src/parser/parser/type_expression.rs::168][VariableTypeExpression doc]] :lines 168-168 :src rust
+
+********** TOIMPL ParenthesizedTypeExpression
+:PROPERTIES:
+:CUSTOM_ID: h:DA270219-6BFD-42AB-A9B2-4BF9241BAE9E
+:END:
+:LOGBOOK:
+- State "TOIMPL"     from "TODO"       [2024-11-16 Sat 20:20]
+:END:
++ =(=.
++ [[#h:0DEF3192-4840-41B3-A941-714798677092][TypeExpression]].
++ =)=.
+
+Parser: [[file:noir/compiler/noirc_frontend/src/parser/parser/type_expression.rs::fn parse_parenthesized_type_expression(&mut self)][parse_parenthesized_type_expression()]]
+#+transclude: [[file:noir/compiler/noirc_frontend/src/parser/parser/type_expression.rs::174][ParenthesizedTypeExpression doc]] :lines 174-174 :src rust
 
 ***** TODO Path
 :PROPERTIES:
@@ -460,6 +873,16 @@ TODO: Have this generated from an org-mode dynamic block maybe?
         - [X] parse_path_generics
 
 
+#+BEGIN: parser-callstack
+Path
+Turbofish
+PathNoTurbofish
+PathKind
+PathGenerics
+Internals
+#+END:
+
+
 *************** TODO Are PathNoTurboFish and PathTraitKind seperate Items in the parser (i.e. an Item like Path is an item)?
 If they are can reduce nesting complexity.
 *************** END
@@ -467,10 +890,10 @@ If they are can reduce nesting complexity.
 ****** TODO Turbofish
 :PROPERTIES:
 :CUSTOM_ID: h:D0AD78D7-3BF6-4D89-A709-C8CD28968213
+:FOO: [[file:noir/compiler/noirc_frontend/src/parser/parser/path.rs::pub(super) fn parse_path_impl(][parse_path_impl()]]
 :END:
 + =::=.
 + [[#h:F8EF693C-A6E2-4D57-BE08-103479D4270D][PathGenerics]].
-
 
 ****** TODO PathNoTurbofish
 :PROPERTIES:
@@ -492,6 +915,34 @@ If they are can reduce nesting complexity.
   - [X] ~Parser::parse_path_kind()~.
   - [ ] ~Parser::parse_optional_path_after_kind()~.
     - [ ] ~Parser::parse_path_after_kind()~.
+
+****** BLOCK AsTraitPath
+:PROPERTIES:
+:CUSTOM_ID: h:348C4ABC-3FC0-46EC-95A0-7F4B238BB86A
+:END:
+:LOGBOOK:
+- State "BLOCK"      from "TODO"       [2024-11-16 Sat 18:10] \\
+  Type and PathNoTurbofish completion.
+:END:
++ =<=.
++ [[#h:B3490B7C-F387-49C7-BF94-DC9CE8AC3581][Type]].
++ =as= (kw).
++ [[#h:A051D0D5-7007-4DF8-83B7-FB4EFF9C383E][PathNoTurbofish]].
++ [[#h:3267D7A4-7AA4-49FB-91FA-A9601BC6868A][GenericTypeArgs]].
++ =>=.
++ =::=.
++ ~Token::Ident~ as identifier.
+
+Parser: [[file:noir/compiler/noirc_frontend/src/parser/parser/path.rs::pub(super) fn parse_as_trait_path(&mut self)][parse_as_trait_path()]]
+#+transclude: [[file:noir/compiler/noirc_frontend/src/parser/parser/path.rs::195][AsTraitPath doc]] :lines 195-195 :src rust
+
+Not to be confused with [[#h:5B4FDF39-09B2-4C07-A2B5-3A3D6BEDD4B7][AsTraitPathType]] which wraps the return in ~AST::UnresolvedType::AsTraitPath~, this node returns a ~AST::Statement::AsTraitPath~.
+
+This is the syntax spaghetti =<Foo as Trait>::Bar= stuff. Specifically the =as Trait= part which leads to the associated type.
+
+*************** TODO Add or note the docs for AsTraitPath
+see ast statement.rs line 394 context.
+*************** END
 
 ****** TOIMPL PathKind
 :PROPERTIES:
@@ -577,19 +1028,16 @@ function_definition: ($) => seq(
 #+end_src
 
 ******* Modifiers
-Modifiers
+
 #+begin_src js
 function_modifiers: ($) => repeat1(choice(MODIFIERS.Unconstrained, MODIFIERS.Comptime))
 #+end_src
 
 ****** Noir
-:PROPERTIES:
-:ID:       E4C0DE73-57E7-4703-BB09-5AFC0B3C85BD
-:END:
 + =fn= by ~identifier~ by [[#h:BA1422E4-AB97-4099-8346-5845CA9223A1][Generics]] by [[#h:B635EAF3-0AE1-47E0-8817-7174186912D8][FunctionParameters]].
-+ (opt group) =->= by [ItemVisibility] by [Type]
-+ [WhereClause] by (group)
-  - [Block]
++ (opt group) =->= by ItemVisibility by Type
++ WhereClause by (group)
+  - Block
   - =;=
 #+transclude: [[file:noir/compiler/noirc_frontend/src/parser/parser/function.rs::34][Parser::parse_function()]] :lines 34-34 :src rust
 TODO: Return visibility is seperate from function visibility.
@@ -621,8 +1069,7 @@ Checked on a concrete Noir source file against 0.36.0 a function ~fn foo {}~ is 
 ~parse_function_parameters~ returns an empty ~Vec~ if it doesn't eat a left paren first, which currently does not raise any kind of parsing error.
 *************** END
 
-#+label: treesit
-#+begin_src js
+#+begin_src js :treesit t
 function_parameters: ($) => seq(
 	'(',
 	// TODO: The rest.
@@ -630,8 +1077,7 @@ function_parameters: ($) => seq(
 )
 #+end_src
 
-#+label: treesit
-#+begin_src js
+#+begin_src js :treesit t
 const foobar = 'yoloscoped'
 #+end_src
 
@@ -708,6 +1154,7 @@ Parser: [[file:noir/compiler/noirc_frontend/src/parser/parser/function.rs::fn pa
 Calls ~Parser::eat_ident()~ and returns that as an ~UnresolvedGeneric::Variable~ enum.
 
 *************** TODO Appears to be some wacky macro stuff for enum ~UnresolvedGeneric~, look at way, way later.
+*************** END
 
 ****** TOIMPL NumericGeneric
 :LOGBOOK:
@@ -722,7 +1169,9 @@ Calls ~Parser::eat_ident()~ and returns that as an ~UnresolvedGeneric::Variable~
 #+transclude: [[file:noir/compiler/noirc_frontend/src/parser/parser/generics.rs][NumericGeneric doc]] :lines 62-62 :src rust
 
 *************** TODO Parse function returns an error if missing a type after =:= (and assumes type is ~u32~) but is this error fatal?
+*************** END
 *************** TODO There's some forbidden numeric generic type logic there, look at later.
+*************** END
 
 ****** TODO ResolvedGeneric
 Foo
@@ -803,7 +1252,7 @@ Return ~AST::GenericTypeArg::Ordered()~.
 
 ***** TODO WhereClause                                          :declaration:
 
-Treesitter ~seq~ captures rule ordering, and custom ~sepBy1~ enforces /at least/ one occurrence of our ~$.where_clause_item~ rule so the nesting of the rule definitions from the Noir compiler need **not** be replicated for ~$.where_clause_item~.
+Treesitter ~seq~ captures rule ordering, and custom ~sepBy1~ enforces /at least/ one occurrence of our ~$.where_clause_item~ rule so the nesting of the rule definitions from the Noir compiler need *not* be replicated for ~$.where_clause_item~.
 
 *************** TODO WhereClause Treesitter                         :grammar:
 #+begin_src js
@@ -1034,7 +1483,7 @@ Return ~AST::Pattern::Tuple()~.
 
 Parser: [[file:noir/compiler/noirc_frontend/src/parser/parser/pattern.rs::fn parse_tuple_pattern_element(&mut self)][parse_tuple_pattern_element()]]
 
-Split by =,= until =)=, each parsed as [[#h:D349E307-F033-4D2A-A729-F2EE5B483065][Pattern]] via **recursive** call to ~parse_pattern~.
+Split by =,= until =)=, each parsed as [[#h:D349E307-F033-4D2A-A729-F2EE5B483065][Pattern]] via *recursive* call to ~parse_pattern~.
 #+transclude: [[file:noir/compiler/noirc_frontend/src/parser/parser/pattern.rs::179][parse_many()]] :lines 179-183 :src rust
 
 *************** TODO This can be marked TOIMPL when all others under Pattern are, since this recurses.
@@ -1129,7 +1578,6 @@ Guaranteed to NOT have a colon =:= following it.
 =self= is not a true keyword as it is contextual.
 #+transclude: [[file:noir/compiler/noirc_frontend/src/lexer/token.rs::1093][`self` is not a keyword]] :lines 1093-1094 :src rust
 :end:
-
 
 ** Internal
 
@@ -1305,6 +1753,7 @@ Handles both crate visibility and /other/ visibility.
 2. Token =(=
 3. Keyword =crate=
 4. Token =)=
+*************** END
 
 *************** DONE Other                               :leaf:
 CLOSED: [2024-09-23 Mon 18:34]
@@ -1315,6 +1764,8 @@ CLOSED: [2024-09-23 Mon 18:34]
 
 Parser:
 #+transclude: [[file:noir/compiler/noirc_frontend/src/parser/parser/visibility.rs][item_visibility()]] :lines 14-27 :src rust
+*************** END
+
 
 *** TODO Comptime                                                      :leaf:
 - State "TODO"       from "DONE"       [2024-09-24 Tue 19:57] \\
@@ -1433,4 +1884,5 @@ When writing queries eventually, can use anonymous node queries also e.g. ~(func
 # org-todo-keyword-faces: (
 #                          ("TOIMPL" . org-warning)
 # ("BLOCK" . org-verbatim))
+# org-babel-header-args:js: '((treesit . :any))
 # End:
