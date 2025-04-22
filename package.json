@@ -16,12 +16,6 @@
     "src/**"
   ],
   "dependencies": {
-    "tree-sitter-cli": "^0.24.3"
-  },
-  "tree-sitter": [
-    {
-      "scope": "source.noir",
-      "injection-regex": "^noir$"
-    }
-  ]
+    "tree-sitter-cli": "^0.25.3"
+  }
 }

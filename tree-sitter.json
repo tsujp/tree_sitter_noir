@@ -1,0 +1,41 @@
+{
+  "$schema": "https://tree-sitter.github.io/tree-sitter/assets/schemas/config.schema.json",
+  "grammars": [
+    {
+      "name": "noir",
+      "camelcase": "Noir",
+      "title": "Noir",
+      "scope": "source.noir",
+      "file-types": [
+        "nr"
+      ],
+      "injection-regex": "^noir$",
+      "class-name": "TreeSitterNoir"
+    }
+  ],
+  "metadata": {
+    "version": "0.1.0",
+    "license": "BSD-3-Clause",
+    "description": "Noir tree-sitter grammar",
+    "authors": [
+      {
+        "name": "Jordan Ellis Coppard",
+        "email": "TODO_email",
+        "url": "https://github.com/tsujp"
+      }
+    ],
+    "links": {
+      "repository": "https://github.com/tsujp/tree_sitter_noir",
+      "funding": "https://todo_funding_url.com/"
+    }
+  },
+  "bindings": {
+    "c": true,
+    "go": true,
+    "node": true,
+    "python": true,
+    "rust": true,
+    "swift": true,
+    "zig": true
+  }
+}

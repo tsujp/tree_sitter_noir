@@ -1,54 +1,63 @@
 {
-    "parser-directories": [
-        "./src"
+  "parser-directories": [
+      "./src"
   ],
   "theme": {
-    "constructor": 136,
-    "property": 124,
-    "tag": 18,
-    "type": 23,
-    "module": 136,
-    "operator": {
-      "color": 239,
-      "bold": true
+    "attribute": {
+      "color": 124,
+      "italic": true
     },
-    "function.builtin": {
-      "bold": true,
-      "color": 26
-    },
-    "embedded": null,
-    "constant.builtin": {
-      "color": 94,
-      "bold": true
-    },
+    "constant": 94,
+    "keyword": 56,
     "number": {
       "bold": true,
       "color": 94
     },
-    "keyword": 56,
-    "punctuation.bracket": 239,
-    "punctuation.delimiter": 239,
-    "type.builtin": {
-      "color": 23,
-      "bold": true
-    },
-    "variable.parameter": {
-      "underline": true
-    },
-    "variable.builtin": {
-      "bold": true
-    },
-    "string": 28,
     "function": 26,
-    "string.special": 30,
+    "operator": {
+      "bold": true,
+      "color": 239
+    },
     "comment": {
       "color": 245,
       "italic": true
     },
-    "constant": 94,
-    "attribute": {
+    "punctuation": 239,
+    "string": 28,
+    "string.special": 30,
+    "type.builtin": {
+      "bold": true,
+      "color": 23
+    },
+    "constructor": 136,
+    "punctuation.bracket": 239,
+    "variable": 252,
+    "module": 136,
+    "type": 23,
+    "constant.builtin": {
+      "color": 94,
+      "bold": true
+    },
+    "embedded": null,
+    "tag": 18,
+    "variable.builtin": {
+      "bold": true,
+      "color": 252
+    },
+    "property.builtin": {
       "color": 124,
-      "italic": true
+      "bold": true
+    },
+    "property": 124,
+    "punctuation.special": 239,
+    "punctuation.delimiter": 239,
+    "function.builtin": {
+      "color": 26,
+      "bold": true
+    },
+    "variable.parameter": {
+      "color": 252,
+      "underline": true
     }
   }
 }

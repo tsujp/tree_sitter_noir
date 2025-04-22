@@ -1,10 +1,22 @@
 # Rust artifacts
-Cargo.lock
 target/
 
 # Node artifacts
+build/
+prebuilds/
 node_modules/
-*.tgz
+
+# Swift artifacts
+.build/
+
+# Go artifacts
+_obj/
+
+# Python artifacts
+.venv/
+dist/
+*.egg-info
+*.whl
 
 # C artifacts
 *.a
@@ -13,16 +25,23 @@ node_modules/
 *.dylib
 *.dll
 *.pc
+*.exp
+*.lib
+
+# Zig artifacts
+.zig-cache/
+zig-cache/
+zig-out/
+
+# Example dirs
+/examples/*/
 
 # Grammar volatiles
 *.wasm
 *.obj
 *.o
 
-# macOS
-.DS_Store
-
-# Emacs
-*~
-\#*\#
-.\#*
+# Archives
+*.tar.gz
+*.tgz
+*.zip
