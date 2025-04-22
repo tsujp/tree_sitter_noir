@@ -6,6 +6,24 @@
 (require 'ox)
 (require 'magit)
 
+;;; Dynamic blocks
+
+(setq-local org-custom-properties '("FOO"))
+
+(defun org-dblock-write:parser-callstack (params)
+  (let ((the-shit))
+	(save-excursion
+	  (org-narrow-to-subtree)
+	  (let ((ast (org-element-parse-buffer)))
+		(setq the-shit (org-element-map ast 'headline
+						 (lambda (hl)
+						   (org-element-property :raw-value hl))))))
+	(dolist (ting the-shit)
+	  (insert ting "\n"))
+	(join-line))) ; Remove trailing empty line.
+;; (let ((fmt (or (plist-get params :format) "%d. %m. %Y")))
+;;   (insert "Last block update at: "
+;;           (format-time-string fmt))))
 
 ;;; Transclusion extension
 
@@ -24,14 +42,14 @@
 
 ;; Add custom transclusion type.
 (add-hook 'org-transclusion-add-functions
-          #'org-transclusion-add-ox-ngd-treesit)
+		  #'org-transclusion-add-ox-ngd-treesit)
 
 (defun org-transclusion-keyword-value-treesit (string)
   "Utility function converting a keyword STRING to plist.
 Meant for use by `org-transclusion-get-string-to-plist'.
 Must be set in `org-transclusion-keyword-value-functions'."
   (when (string-match ":treesit?" string)
-    (list :treesit t)))
+	(list :treesit t)))
 
 (defun org-transclusion-keyword-plist-to-string-ox-ngd-treesit (plist)
   "Convert keyword property list `PLIST' to string."
@@ -137,66 +155,66 @@ under the heading LINK resolves to."
 
 (defun export-face-colors (name)
   (let ((fl-exported (exported-faces-list)))
-    (with-temp-buffer
-      (insert (format "[data-theme=\"%s\"] {\n" name))
-      (let* ((face-map (htmlize-make-face-map (cl-adjoin 'default fl-exported))))
-        ;; default
-        (insert "  /* default */\n")
-        (insert (format "  --org-src-default-fg: %s;\n"
-                        (htmlize-fstruct-foreground (gethash 'default face-map))))
-        (insert (format "  --org-src-default-bg: %s;\n"
-                        (htmlize-fstruct-background (gethash 'default face-map))))
-        ;; go through the faces
-        (insert "  /* faces */\n")
-        (dolist (face fl-exported)
-          (let ((fstruct (gethash face face-map)))
-            (when (htmlize-fstruct-foreground fstruct)
-              (insert (format "  --org-src-%s-fg: %s;\n"
-                              (htmlize-fstruct-css-name fstruct)
-                              (htmlize-fstruct-foreground fstruct))))
+	(with-temp-buffer
+	  (insert (format "[data-theme=\"%s\"] {\n" name))
+	  (let* ((face-map (htmlize-make-face-map (cl-adjoin 'default fl-exported))))
+		;; default
+		(insert "  /* default */\n")
+		(insert (format "  --org-src-default-fg: %s;\n"
+						(htmlize-fstruct-foreground (gethash 'default face-map))))
+		(insert (format "  --org-src-default-bg: %s;\n"
+						(htmlize-fstruct-background (gethash 'default face-map))))
+		;; go through the faces
+		(insert "  /* faces */\n")
+		(dolist (face fl-exported)
+		  (let ((fstruct (gethash face face-map)))
+			(when (htmlize-fstruct-foreground fstruct)
+			  (insert (format "  --org-src-%s-fg: %s;\n"
+							  (htmlize-fstruct-css-name fstruct)
+							  (htmlize-fstruct-foreground fstruct))))
 
-            (when (htmlize-fstruct-background fstruct)
-              (insert (format "  --org-src-%s-bg: %s;\n"
-                              (htmlize-fstruct-css-name fstruct)
-                              (htmlize-fstruct-background fstruct)))))))
-      (insert "}\n\n")
-      (buffer-string))))
+			(when (htmlize-fstruct-background fstruct)
+			  (insert (format "  --org-src-%s-bg: %s;\n"
+							  (htmlize-fstruct-css-name fstruct)
+							  (htmlize-fstruct-background fstruct)))))))
+	  (insert "}\n\n")
+	  (buffer-string))))
 
 (defun export-faces ()
   (let ((fl-exported (exported-faces-list)))
-    (with-temp-buffer
-      (let* ((face-map (htmlize-make-face-map (cl-adjoin 'default fl-exported))))
-        ;; default
-        (insert "/* default */\n")
-        (insert ".org-src-container {\n")
-        (insert "  color: var(--org-src-default-fg);\n")
-        (insert "  background-color: var(--org-src-default-bg);\n")
-        (insert "}\n\n")
-        ;; go through the faces
-        (insert "/* faces */\n")
-        (dolist (face fl-exported)
-          (let* ((fstruct (gethash face face-map))
-                 (css-name (htmlize-fstruct-css-name fstruct)))
-            (insert (format ".org-%s {\n" css-name))
-            (when (htmlize-fstruct-foreground fstruct)
+	(with-temp-buffer
+	  (let* ((face-map (htmlize-make-face-map (cl-adjoin 'default fl-exported))))
+		;; default
+		(insert "/* default */\n")
+		(insert ".org-src-container {\n")
+		(insert "  color: var(--org-src-default-fg);\n")
+		(insert "  background-color: var(--org-src-default-bg);\n")
+		(insert "}\n\n")
+		;; go through the faces
+		(insert "/* faces */\n")
+		(dolist (face fl-exported)
+		  (let* ((fstruct (gethash face face-map))
+				 (css-name (htmlize-fstruct-css-name fstruct)))
+			(insert (format ".org-%s {\n" css-name))
+			(when (htmlize-fstruct-foreground fstruct)
 
-              (insert (format "  color: var(--org-src-%s-fg);\n" css-name)))
-            (when (htmlize-fstruct-background fstruct)
-              (insert (format "  background-color: var(--org-src-%s-bg);\n" css-name)))
-            (when (htmlize-fstruct-boldp fstruct)
-              (insert "  font-weight: bold;\n"))
+			  (insert (format "  color: var(--org-src-%s-fg);\n" css-name)))
+			(when (htmlize-fstruct-background fstruct)
+			  (insert (format "  background-color: var(--org-src-%s-bg);\n" css-name)))
+			(when (htmlize-fstruct-boldp fstruct)
+			  (insert "  font-weight: bold;\n"))
 
-            (when (htmlize-fstruct-italicp fstruct)
-              (insert "  font-style: italic;\n"))
-            (when (htmlize-fstruct-underlinep fstruct)
-              (insert "  text-decoration: underline;\n"))
-            (when (htmlize-fstruct-overlinep fstruct)
-              (insert "  text-decoration: overline;\n"))
-            (when (htmlize-fstruct-strikep fstruct)
-              (insert "  text-decoration: line-through;\n"))
-            (insert "}\n\n")
-            )))
-      (buffer-string))))
+			(when (htmlize-fstruct-italicp fstruct)
+			  (insert "  font-style: italic;\n"))
+			(when (htmlize-fstruct-underlinep fstruct)
+			  (insert "  text-decoration: underline;\n"))
+			(when (htmlize-fstruct-overlinep fstruct)
+			  (insert "  text-decoration: overline;\n"))
+			(when (htmlize-fstruct-strikep fstruct)
+			  (insert "  text-decoration: line-through;\n"))
+			(insert "}\n\n")
+			)))
+	  (buffer-string))))
 
 (defun do-the-thing ()
   (with-temp-buffer
@@ -212,7 +230,7 @@ under the heading LINK resolves to."
 
 ;;; Brutally copy-pasted from org-html-export-to-html (with required changes for ngd).
 (defun org-ngd-export-to-html
-    (&optional async subtreep visible-only body-only ext-plist)
+	(&optional async subtreep visible-only body-only ext-plist)
   (interactive)
   ;; Changed: set org-html-htmlize-output-type to 'css, see: https://github.com/emacsmirror/org/blob/master/lisp/ox-html.el#L2027C13-L2027C41
   (let* ((org-html-htmlize-output-type 'css)
@@ -224,8 +242,8 @@ under the heading LINK resolves to."
 						 "html")))
 		 (file (org-export-output-file-name extension subtreep))
 		 (org-export-coding-system org-html-coding-system))
-    (org-export-to-file 'ngd file 		; Change: 'ngd symbol instead of 'html.
-      async subtreep visible-only body-only ext-plist)))
+	(org-export-to-file 'ngd file 		; Change: 'ngd symbol instead of 'html.
+	  async subtreep visible-only body-only ext-plist)))
 
 (defun ngd--inline-noir-info (backend)
   "Inline Noir version and submodule path (relative to repo
@@ -351,15 +369,15 @@ global communication INFO plist."
    (format "<title>%s</title>\n" (org-html-plain-text
 								  (org-element-interpret-data (plist-get info :title)) info))
    (format "<meta charset=\"%s\">\n"
-           (coding-system-get org-html-coding-system 'mime-charset))
+		   (coding-system-get org-html-coding-system 'mime-charset))
    "<meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\">\n"
    (format "<meta name=\"author\" content=\"%s\">\n"
-           (org-export-data (plist-get info :author) info))
+		   (org-export-data (plist-get info :author) info))
    (org-html--build-head info)
    "</head>\n"
    "<body>\n"
    (format "<header>\n<h1 class=\"title\">%s</h1>\n</header>\n"
-           (org-export-data (or (plist-get info :title) "") info))
+		   (org-export-data (or (plist-get info :title) "") info))
    "<div id=\"main-wrap\">\n"
    contents
    "</div>\n"
@@ -374,7 +392,7 @@ global communication INFO plist."
   (concat
    ;; Table of contents.
    (let ((depth (plist-get info :with-toc)))
-     (when depth (org-html-toc depth info)))
+	 (when depth (org-html-toc depth info)))
    ;; Document contents.
    "<div id=\"content-wrap\">"
    "<main id=\"content\">\n"
