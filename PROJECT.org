@@ -1,0 +1,99 @@
+#+STARTUP: indent logdone logdrawer content
+# ------------------------------------------------------
+#+TITLE: Project Planning: tree_sitter_noir
+#+LANGUAGE: en
+
+** Development
+
+*** DONE Update tree-sitter from 0.24.3 to 0.25.3
+CLOSED: [2025-04-22 Tue 16:43]
+
+Part of updating tree-sitter means taking advantage of improvements. I skimmed the release notes a few weeks ago and there's some good stuff (especially with putting generated bindings somewhere other than top-level).
+
+**** DONE Changelog goodies
+CLOSED: [2025-04-22 Tue 15:28]
+
+***** Actively useful
+
+****** Internal ABI bump to 15
+
+Language name, version, supertype info, and reserved words are added to the parsers. Requires =tree-sitter.json= to get this information from.
+
+****** Add reserved keywords to grammar DSL
+
+Implemented: https://github.com/tree-sitter/tree-sitter/pull/3896
+
+******* TODO Take advantage of this for Noir's grammar
+
+****** RustRegex added to grammar DSL
+
+Supports more powerful regex features than JavaScript's.
+
+Implemented: https://github.com/tree-sitter/tree-sitter/pull/4076
+
+****** Set output directory for generated binding sources
+
+Implemented: https://github.com/tree-sitter/tree-sitter/pull/2614
+
+****** CLI version subcommand to bump version in all generated binding sources
+
+Implemented: https://github.com/tree-sitter/tree-sitter/pull/3786
+
+****** CLI parse command pretty print output
+
+Provide ~--cst~ or ~-c~ to ~parse~ subcommand.
+
+Implemented: https://github.com/tree-sitter/tree-sitter/pull/3762
+
+****** CLI test filter by name
+
+Provide ~--include~ of test names to ~test~ subcommand.
+
+Implemented: https://github.com/tree-sitter/tree-sitter/pull/4095
+
+****** Show parse times, and edit times in testing output
+
+Implemented: https://github.com/tree-sitter/tree-sitter/pull/3939
+Implemented: https://github.com/tree-sitter/tree-sitter/pull/4016
+
+****** CLI parse, highlight, query, tag, accept arguments from stdin
+
+Implemented: https://github.com/tree-sitter/tree-sitter/pull/4054
+
+***** Good to know about
+
+****** Schema for tree-sitter.json
+
+Implemented: https://github.com/tree-sitter/tree-sitter/pull/3947
+Schema: https://tree-sitter.github.io/tree-sitter/assets/schemas/config.schema.json
+
+****** Query nodes with MISSING
+
+Implemented: https://github.com/tree-sitter/tree-sitter/pull/3887
+
+****** CLI HTML output classes instead of inline styles
+
+Implemented: https://github.com/tree-sitter/tree-sitter/pull/3879
+
+****** Get SuperType information
+
+Implemented: https://github.com/tree-sitter/tree-sitter/pull/3938
+
+****** JSON parser generate errors
+
+Implemented: https://github.com/tree-sitter/tree-sitter/pull/4048
+
+****** More detailed project boilerplate generation
+
+Useful to just see what extra configuration might be good.
+
+Implemented: https://github.com/tree-sitter/tree-sitter/pull/4142
+
+****** Support Bun single-file executable
+
+Implemented: https://github.com/tree-sitter/tree-sitter/pull/3905
+Related: https://github.com/tree-sitter/tree-sitter-typescript/pull/318
+
+****** Guidance on common DSL node naming conventions
+
+Implemented: https://github.com/tree-sitter/tree-sitter/pull/4148/files
