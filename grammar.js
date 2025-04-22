@@ -53,12 +53,18 @@ module.exports = grammar({
 
     rules: {
         // Conceptually a `program` (in Noir's parser parlance).
-        source_file: ($) => repeat($._definitions),
+        source_file: ($) => repeat($._statement),
 
         // Conceptually a `module` (in Noir's parser parlance).
-        _definitions: ($) => choice($.function_definition, $.attribute),
+        _statement: ($) => choice($._expression_statement, $._declaration_statement),
 
-        // * * * * * * * * * * * * * * * * * * * * * * * * * TOP-LEVEL-STATEMENTS
+        _expression_statement: ($) => seq($._expression, ';'),
+
+        _declaration_statement: ($) => choice($.function_definition),
+
+        _expression: ($) => 'foo',
+
+        // * * * * * * * * * * * * * * * * * * * * * * * * * DECLARATIONS
 
         // TODO: Complete coverage.
         function_definition: ($) =>
@@ -109,6 +115,9 @@ module.exports = grammar({
                 ']',
             ),
 
+        // TODO: Actual logic for this, nesting, aliases etc after all the rest of the grammar is complete.
+        use_tree: ($) => seq('use', /.*/, ';'),
+
         // TODO: When mostly done see if this is generic or specific to attributes, i.e. rename to just `path` and remove all the aliases elsewhere?
         // TODO: Come back to a field name for this later when what's going on with attributes is more locked down.
         attribute_path: ($) => seq(repeat1(choice(' ', REG_ALPHABETIC, REG_NUMERIC, REG_ASCII_PUNCTUATION))),
@@ -121,6 +130,8 @@ module.exports = grammar({
         // TODO: Change this to explicit or implicit return statement (with or without return keyword) as well as `;` affecting returning a value or not.
         // return_statement: $ => seq(
         // ),
+
+        // * * * * * * * * * * * * * * * * * * * * * * * * * EXPRESSIONS
 
         // Currently this is the canonical identifier representation.
         identifier: ($) => /[a-zA-Z_][a-zA-Z0-9_]*/,

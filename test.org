@@ -1,6 +1,8 @@
 TODO: Managing different files is getting annoying, plus I want to check against what Nargo thinks for correct behaviour which involves a lot of duplicating stuff. Would rather have _something_ manage that; instead of re-inventing the wheel I'll have org render out specific things to nargo files as well as tree-sitter tests.
 TODO: Logic for :extract
 
+TODO: Default visibility in this file should be outline only (all headings visible but not their content), and all property drawers folded.
+
 * Functions
 :PROPERTIES:
 :export_file_name: functions.txt
@@ -286,3 +288,61 @@ Foo
 *** Top-level
 *************** TODO Are top-level naked visibility modifiers valid...?
 *************** END
+
+* Use Tree
+:PROPERTIES:
+:export_file_name: use_tree.txt
+:END:
+
+** Simple
+
+Private, public, and public crate scoped.
+#+begin_test
+use foo;
+
+pub use foo;
+
+pub(crate) use foo;
+
+---
+
+(source_file
+  (use_tree))
+
+(source_file
+  (use_tree))
+
+(source_file
+  (use_tree))
+#+end_test
+
+*** Alias
+#+begin_test
+use foo as bar;
+#+end_test
+
+** Complex
+
+*** Kind prefixes
+#+begin_test
+use crate::foo;
+
+use dep::foo;
+
+use super::foo;
+#+end_test
+
+*** List
+#+begin_test
+use foo::{bar, baz};
+#+end_test
+
+With trailing commas.
+#+begin_test
+use foo::{bar, baz, };
+#+end_test
+
+With kind prefixes.
+#+begin_test
+use crate::foo{foo, bar};
+#+end_test
