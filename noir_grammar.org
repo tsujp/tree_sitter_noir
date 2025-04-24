@@ -185,7 +185,7 @@ Foo
 **** TODO OuterDocComments
 Foo
 
-**** TODO ItemKind                                                :node:
+**** TODO ItemKind                                                     :node:
 
 - [[InnerAttribute]].
 - [[Attributes]] by [[Modifiers]].
@@ -1885,10 +1885,3 @@ Have the following checkbox list created dynamically from headings, and also lin
 *************** TODO tree-sitter anonymous node queries
 When writing queries eventually, can use anonymous node queries also e.g. ~(function_modifiers "foo")~.
 *************** END
-
-# Local Variables:
-# org-todo-keyword-faces: (
-#                          ("TOIMPL" . org-warning)
-# ("BLOCK" . org-verbatim))
-# org-babel-header-args:js: '((treesit . :any))
-# End:
