@@ -185,7 +185,7 @@ Foo
 **** TODO OuterDocComments
 Foo
 
-**** TODO ItemKind                                                     :node:
+**** TODO ItemKind                                                :node:
 
 - [[InnerAttribute]].
 - [[Attributes]] by [[Modifiers]].
@@ -255,6 +255,7 @@ CLOSED: [2024-11-01 Fri 19:56]
 :PROPERTIES:
 :CUSTOM_ID: h:46B8EF89-89A5-4346-9B5B-04630DAEF262
 :END:
+
 #+begin_src js
 visibility_modifier: ($) => seq('pub', optional('(crate)'))
 #+end_src
@@ -1012,7 +1013,8 @@ TODO: Reorganise this subtree since I added :treesit transclusion.
 :END:
 
 ******* Definition
-#+begin_src js :comments org
+
+#+begin_src js :comments noweb :treesit
 function_definition: ($) => seq(
 	optional($.visibility_modifier),
 	optional($.function_modifiers),
@@ -1025,11 +1027,12 @@ function_definition: ($) => seq(
 	$.block,
 	// TODO: It's block or ';' see Parser::parse_function()
 )
+// Yolo
 #+end_src
 
 ******* Modifiers
 
-#+begin_src js
+#+begin_src js :treesit
 function_modifiers: ($) => repeat1(choice(MODIFIERS.Unconstrained, MODIFIERS.Comptime))
 #+end_src
 
@@ -1063,13 +1066,7 @@ Parser: [[file:noir/compiler/noirc_frontend/src/parser/parser/function.rs::fn pa
 
 TODO: Is ~FunctionParameters~ only used when _DECLARING_ a function or also when calling? If the former then this node can go under ~Function~ i.e. ~function_definition~.
 
-*************** TODO Are missing parens in function parameters actually valid?
-Checked on a concrete Noir source file against 0.36.0 a function ~fn foo {}~ is accepted by the frontend, even though its suggested (in doc comments of said frontend) that ~(~ and ~)~ are required i.e. ~fn foo() {}~. Which is truly valid here? For now assume the latter.
-
-~parse_function_parameters~ returns an empty ~Vec~ if it doesn't eat a left paren first, which currently does not raise any kind of parsing error.
-*************** END
-
-#+begin_src js :treesit t
+#+begin_src js
 function_parameters: ($) => seq(
 	'(',
 	// TODO: The rest.
@@ -1079,6 +1076,12 @@ function_parameters: ($) => seq(
 
 #+begin_src js :treesit t
 const foobar = 'yoloscoped'
+#+end_src
+
+****** Subtrees also?
+
+#+begin_src js :treesit t
+const foobar = 'HOWDY'
 #+end_src
 
 ****** TODO FunctionParametersList
@@ -1096,7 +1099,6 @@ Split by =,= until =)=, each parsed as FunctionParameter.
   - nb :: split on =,= until =)= encountered.
   - [ ] ~parse_function_parameter()~.
 
-
 ****** TODO FunctionParameter
 :PROPERTIES:
 :CUSTOM_ID: h:9554D746-C88F-4E3D-B065-B1A5C5F9B57B
@@ -1107,7 +1109,6 @@ Split by =,= until =)=, each parsed as FunctionParameter.
 + Type. (td: link)
 
 Parser: [[file:noir/compiler/noirc_frontend/src/parser/parser/function.rs::fn parse_function_parameter(&mut self, allow_self: bool)][parse_function_parameter()]]
-
 
 ***** TODO Generics                                                    :node:
 :PROPERTIES:
@@ -1640,19 +1641,24 @@ function sepBy1(rule, sep) {
 :header-args+: :noweb-ref Declarations
 :END:
 
+**** FunctionParameters
+#+transclude: [[#h:B635EAF3-0AE1-47E0-8817-7174186912D8]] :treesit
+
 **** ItemVisibility
-#+transclude: [[./noir_grammar.org::#h:46B8EF89-89A5-4346-9B5B-04630DAEF262][ItemVisibility]] :treesit
+#+transclude: [[#h:46B8EF89-89A5-4346-9B5B-04630DAEF262][ItemVisibility]] :treesit
 
 **** Function
-#+transclude: [[#h:B635EAF3-0AE1-47E0-8817-7174186912D8][FunctionParameters]] :treesit
 
-**** Foo
-#+transclude: [[./noir_grammar.org::#h:30A04BE4-E1C5-40E1-B2B2-DA0747C66D48][other thing]] :treesit
+#+transclude: [[#h:30A04BE4-E1C5-40E1-B2B2-DA0747C66D48][Definition / Modifiers]] :treesit
 
 *** Expressions
 :PROPERTIES:
 :header-args+: :noweb-ref Expressions
 :END:
+
+#+begin_src js
+foo
+#+end_src
 
 * TODO Old stuff bin or categorise
 ** TODO Attribute
