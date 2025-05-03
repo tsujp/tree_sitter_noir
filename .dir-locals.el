@@ -1,4 +1,8 @@
 ((nil . ((project-vc-name . "tree_sitter_noir")))
+ ("noir/" . ((nil . ((auto-save-mode . 0)
+                     (backup-inhibited . t)
+                     (buffer-read-only . t)))))
+                     ;; (kill-buffer-delete-auto-save-files . t)))))
  ;; XXX: Not using require because then a provide in ox-ngd and ox-tst would be required, and we'd have to modify the load-path here too. If the day comes ox-ngd and ox-tst won't change a lot we can swap to a require but for now reloading them every time is best.
  (org-mode . ((eval . (progn
                         (require 'org-inlinetask)
