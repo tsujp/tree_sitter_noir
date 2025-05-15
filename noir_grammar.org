@@ -1284,14 +1284,40 @@ Used here and elsewhere that Token::Int is. Look at parse_visibility's body and 
 :END:
 :pgd:
 + ={=
-+ (rep0) Statement
++ (rep0) [[#h:788ECB8C-0A48-4255-B35E-F5850902AA32][Statement]]
 + =}=
 :end:
 
-Parser: [[file:noir/compiler/noirc_frontend/src/parser/parser/expression.rs::fn parse_block(&mut self)][parse_block()]]
+Parser: [[file:noir/compiler/noirc_frontend/src/parser/parser/expression.rs::fn parse_block(&mut self)][parse_block()]] returns ~BlockExpression~.
+
 #+transclude: [[file:noir/compiler/noirc_frontend/src/parser/parser/expression.rs][Block doc]] :lines 721-721 :src rust
 
+Split by nothing until =}= each parsed as a [[#h:788ECB8C-0A48-4255-B35E-F5850902AA32][Statement]] via [[file:noir/compiler/noirc_frontend/src/parser/parser/expression.rs::fn parse_statement_in_block(&mut self)][parse_statement_in_block()]].
+#+transclude: [[file:noir/compiler/noirc_frontend/src/parser/parser/expression.rs][parse_many block statements]] :lines 727-731 :src rust
+
+All statements except the last require a semicolon at the end, see [[file:noir/compiler/noirc_frontend/src/parser/parser/expression.rs::fn check_statements_require_semicolon(][check_statements_require_semicolon()]]. For the last statement a semicolon is optional. It is an error for non-terminal statements to NOT have a semicolon.
+
 *************** TODO Put this node elsewhere or is it fine here? i.e. is it under ItemKind really?
+*************** END
+*************** TODO Blocks without statements are not allowed in Noir
+But the pseudo-grammar says it is, so what is it really?
+*************** END
+
+***** TODO Statement                                                   :node:
+:PROPERTIES:
+:CUSTOM_ID: h:788ECB8C-0A48-4255-B35E-F5850902AA32
+:END:
+:pgd:
++ Attributes
++ StatementKind
++ (opt) =;=
+:end:
+
+Parser: [[file:noir/compiler/noirc_frontend/src/parser/parser/statement.rs::fn parse_statement(&mut self)][parse_statement()]]
+
+#+transclude: [[file:noir/compiler/noirc_frontend/src/parser/parser/statement.rs][Statement doc]] :lines 25-25 :src rust
+
+*************** TODO StatementKind and below... holy there are a lot
 *************** END
 
 ***** TODO Generics                                                    :node:
@@ -1773,6 +1799,58 @@ Guaranteed to NOT have a colon =:= following it.
 #+transclude: [[file:noir/compiler/noirc_frontend/src/lexer/token.rs::1093][`self` is not a keyword]] :lines 1093-1094 :src rust
 :end:
 
+*** TODO Literals                                                       :lex:
+:PROPERTIES:
+:CUSTOM_ID: h:3446FD3E-4526-4DBF-80AB-64BD9078C4F5
+:END:
+
+Constructed by the lexer.
+
+**** Int
+:PROPERTIES:
+:CUSTOM_ID: h:CA7F6441-C376-4A8E-9C59-B128CC1F841A
+:END:
+:pgd:
+- TODO
+:end:
+
+#+begin_src js :treesit t
+int_literal: (_) => token(seq(
+    choice(
+        '/[0-9][0-9_]*/',
+        '/0x[0-9a-fA-F_]+/',
+    )
+))
+#+end_src
+
+Lexer:
+
+~Token::Int~
+
+*************** TODO Put this TODO elsewhere, this describes a Token::Int
+Note a Token::Int is not the same as a Token::IntType. Token::Int is a literal integer e.g. 42 whereas Token::IntType is say u32 or i8 etc.
+
+eat_alpha_numeric -> eat_digit
+
+eat_alpha_numeric if the initial char is 0..9 call eat_digit
+
+eat_digit continues to eat while each character is ascii digit, or ascii hexdigit, or 'x' or '_'.
+
+Underscore cannot appear at the end (invalid). Underscore at start is an identifier not a Token::Int. Cannot have multiple consecutive underscores.
+
+Appears to be an error for:
+        let integer_str = self.eat_while(Some(initial_char), |ch| {
+            ch.is_ascii_digit() | ch.is_ascii_hexdigit() | (ch == 'x') | (ch == '_')
+        });
+
+This means we can have integers like 0xxxx123 be valid? Or 0x123x123x123 (note the multiple x).
+
+Should also link stuff as appropriate. This is lexing documentation.
+*************** END
+*************** TODO Update reg for error on multiple consecutive _ and if a trailing _
+As it is is fine for now however.
+*************** END
+
 ** Internal
 
 *** [[file:noir/compiler/noirc_frontend/src/parser/parser/parse_many.rs::9][Parser::parse_many(items, sep)]]
@@ -1809,6 +1887,7 @@ module.exports = grammar({
 
         // Noirc: Module.
         _statement: ($) => choice($._expression_statement, $._declaration_statement),
+
         _expression_statement: ($) => seq($._expression, ';'),
         _declaration_statement: ($) => choice($.function_definition),
 
@@ -1825,6 +1904,10 @@ module.exports = grammar({
         // * * * * * * * * * * * * * * * * * * * * * * * * * EXPRESSIONS
 
         <<Expressionsz>>,
+
+        // * * * * * * * * * * * * * * * * * * * * * * * * * LITERALS
+
+        <<Literals>>,
     },
 })
 
@@ -1871,6 +1954,15 @@ function sepBy1(rule, sep) {
 #+begin_src js
 foo
 #+end_src
+
+*** Literals
+:PROPERTIES:
+:header-args+: :noweb-ref Literals
+:END:
+
+These almost entirely come from lexing.
+
+#+transclude: [[#h:CA7F6441-C376-4A8E-9C59-B128CC1F841A][Int]] :treesit
 
 * TODO Old stuff bin or categorise
 ** TODO Attribute
