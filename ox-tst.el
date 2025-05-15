@@ -225,7 +225,7 @@ plist with contextual information."
   "Transcode HEADLINE org element to tree-sitter test text.
 CONTENTS holds headline's contents. INFO is global communication
 plist with contextual information."
-  (if-let ((export-file-name (org-element-property :EXPORT_FILE_NAME headline)))
+  (if-let* ((export-file-name (org-element-property :EXPORT_FILE_NAME headline)))
       (tst--write-string-to-file
        (replace-regexp-in-string "\n\\(^\\)===+\n.+\\(?:\n.+\\)*\n===+" "\n\n" contents nil t 1)
        export-file-name)
