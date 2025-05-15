@@ -3,7 +3,52 @@
 #+TITLE: Project Planning: tree_sitter_noir
 #+LANGUAGE: en
 
+** Taxy Notes
+https://github.com/alphapapa/taxy.el
+https://www.gnu.org/software/emacs/manual/html_node/cl/Structures.html
+
+Programmable rules to put arbitrary things (objects) in nested groups.
+
+- Dynamic :: automatic runtime classification based on object's attributes.
+- Reusable :: taxy definitions storable in variables, reusable elsewhere.
+
+Programmatically, taxys are structs so they may be stored in variables and used in other structs. Be sure to copy the root taxy with ~taxy-emptied~ before filling in such a use-case.
+
+*** Creating taxys
+
+Create a taxy with ~make-taxy~.
+
+#+begin_src elisp
+(make-taxy :name "Numbery"
+           :description "A silly taxonomy of numbers."
+           :predicate #'numberp
+           :then #'ignore
+           :taxys (list ...))
+#+end_src
+
+~:predicate~ function determines if an object is in that taxy. If it is ~taxy-fill~ adds the object to that taxy's descendent ~:taxys~ (if present), otherwise to the taxy's own ~:items~. Default is ~identity~.
+
+~:then~ function processes an object after it's added to that taxy's ~:items~. If non-nil is returned that value is applied to other taxys at the same level until one of their ~:then~ functions returns nil, or no more taxys remain. Default is ~ignore~.
+
+Returning =nil= from ~:then~ means that taxy has "consumed" the object. If you use ~identity~ (for example) instead of ~ignore~ then the taxy doesn't "consume" the object making it eligible to be taken into subsequent taxys or appear in the parent taxy's items.
+
+*** Populating taxys
+
+Call ~taxy-fill~ with created taxy from ~make-taxy~ and a list of objects to fill the taxy's hierarchy.
+
+*Note*: ~taxy-fill~ modifies the taxy given to it, filling it's ~:items~ and those of ~:taxys~. If using a statically defined taxy (e.g. one defined with ~defvar~), you should pass ~taxy-fill~ a taxy copied with ~taxy-emptied~, which recursively copies a taxy without ~:items~.
+
+~taxy-plain~ returns a taxy with only relevant fields included.
+
+~taxy-mapcar~ can replace items in a taxy.
+
 ** Development
+
+*** TODO When noir_grammar.org is opened have transclusion for Grammar heading run
+
+Want to trigger transclusion on that subheading and all it's children only (by default) because babel tangle or saving the file triggers export so we could accidentally export a partially constructed grammar.js if those transclusions are not automatically made.
+
+To be clear those transclusions are the targets to other js source blocks for the tree-sitter js dsl.
 
 *** DONE Update tree-sitter from 0.24.3 to 0.25.3
 CLOSED: [2025-04-22 Tue 16:43]
