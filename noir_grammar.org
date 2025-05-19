@@ -158,7 +158,7 @@ TODO: Organise this and where/how we're putting lexing info.
 
 ** Structure                                                       :bingbong:
 
-Noir *Program* contains *Module* which is comprised of [[./noir_grammar.org::#h:C58B2CB4-FF62-49BB-AFFD-1BADF4462B9D][InnerDocComments]] followed by (repeat) [[./noir_grammar.org::#h:8CC1D239-66B1-45A9-BB71-66AF07161479][Item]].
+Noir *Program* contains *Module* which is comprised of [[#h:C58B2CB4-FF62-49BB-AFFD-1BADF4462B9D][InnerDocComments]] followed by (rep0) [[#h:8CC1D239-66B1-45A9-BB71-66AF07161479][Item]].
 
 Program:
 #+transclude: [[file:noir/compiler/noirc_frontend/src/parser/parser.rs][Parser::parse_program()]] :lines 115-119 :src rust
@@ -176,6 +176,23 @@ So, the following example list reads "(A followed by B) OR (C followed by D foll
 :   + D
 :   + E
 
+*** TODO Program                                                       :node:
+:PROPERTIES:
+:CUSTOM_ID: h:A8A4AE5F-6FDB-4091-87DA-E4BCE320452C
+:END:
+:pgd:
++ [[#h:649C4EE8-8F15-4F45-8EA6-3AD48A893930][Module]].
+:end:
+
+*** TODO Module                                                        :node:
+:PROPERTIES:
+:CUSTOM_ID: h:649C4EE8-8F15-4F45-8EA6-3AD48A893930
+:END:
+:pgd:
++ [[#h:C58B2CB4-FF62-49BB-AFFD-1BADF4462B9D][InnerDocComments]].
++ (rep0) [[#h:8CC1D239-66B1-45A9-BB71-66AF07161479][Item]].
+:end:
+
 *** TODO InnerDocComments
 :PROPERTIES:
 :CUSTOM_ID: h:C58B2CB4-FF62-49BB-AFFD-1BADF4462B9D
@@ -186,13 +203,18 @@ Foo
 :PROPERTIES:
 :CUSTOM_ID: h:8CC1D239-66B1-45A9-BB71-66AF07161479
 :END:
-
-- [[OuterDocComments]] by [[ItemKind]].
+:pgd:
++ [[#h:FB5478BF-5E66-4686-931B-733349F83FD8][OuterDocComments]].
++ [[#h:D661B191-E117-4EB9-B6F7-322B7B67A79F][ItemKind]].
+:end:
 
 - Parsed without separator (~Parser::parse_module_items~).
 - ~Parser::parse_module_item_in_list~.
 
 **** TODO OuterDocComments
+:PROPERTIES:
+:CUSTOM_ID: h:FB5478BF-5E66-4686-931B-733349F83FD8
+:END:
 Foo
 
 **** TODO ItemKind                                             :node:cluster:
@@ -201,7 +223,7 @@ Foo
 :END:
 :pgd:
 - [[#h:AE3747A8-8CA3-4B6D-AF09-3553CE24CD70][InnerAttribute]].
-- [[#h:FF901AEF-D40D-44AB-9BA6-C324F3531088][Attributes]] by [[#h:2A9D09A5-2E52-4B8C-ABA1-0B3B953F093C][Modifiers]] by:
+- [[#h:FF901AEF-D40D-44AB-9BA6-C324F3531088][Attributes]] by [[#h:2A9D09A5-2E52-4B8C-ABA1-0B3B953F093C][Modifiers]] by (grp):
   - [[#h:ADB184CE-E43C-423B-803F-DE1679A91829][Use]].
   - ModOrContract
   - Struct
@@ -216,7 +238,7 @@ TODO: Does this mean that in a list of attributes #[foo] #[bar] #![bing] #[bong]
 
 maybe:
 
-#+transclude: [[file:noir/compiler/noirc_frontend/src/parser/parser/item.rs][Parser::parse_item_kind()]] :lines 97-109 :src rust
+#+transclude: [[file:noir/compiler/noirc_frontend/src/parser/parser/item.rs][Parser::parse_item_kind()]] :lines 97-108 :src rust
 
 ***** TODO InnerAttribute                                              :node:
 :PROPERTIES:
@@ -1262,6 +1284,15 @@ Parser: [[file:noir/compiler/noirc_frontend/src/parser/parser/function.rs::fn pa
 - NIL
 :end:
 
+#+begin_src js :treesit t
+// Noirc: Visibility.
+visibility: ($) => optional(choice(
+    'pub',
+    'return_data',
+    seq('call_data(', $.int_literal ,')'),
+))
+#+end_src
+
 Parser: [[file:noir/compiler/noirc_frontend/src/parser/parser/function.rs::fn parse_visibility(&mut self)][parse_visibility()]]
 
 #+transclude: [[file:noir/compiler/noirc_frontend/src/parser/parser/function.rs][Visibility]] :lines 213-217 :src rust
@@ -1287,6 +1318,14 @@ Used here and elsewhere that Token::Int is. Look at parse_visibility's body and 
 + (rep0) [[#h:788ECB8C-0A48-4255-B35E-F5850902AA32][Statement]]
 + =}=
 :end:
+
+#+begin_src js :treesit t
+block_expression: _ => seq(
+    '(',
+    // TODO: Optionally repeated Statement.
+    ')',
+)
+#+end_src
 
 Parser: [[file:noir/compiler/noirc_frontend/src/parser/parser/expression.rs::fn parse_block(&mut self)][parse_block()]] returns ~BlockExpression~.
 
@@ -1931,6 +1970,8 @@ function sepBy1(rule, sep) {
 
 #+transclude: [[#h:F5A79701-65C9-4FEA-83D8-2413C585A5FA][ItemVisibility]] :treesit
 
+#+transclude: [[#h:17BBA21C-65D3-447D-93DE-2F13E16575C5][Visibility]] :treesit
+
 **** FunctionParameters
 
 #+transclude: [[#h:B635EAF3-0AE1-47E0-8817-7174186912D8]] :treesit
@@ -1950,6 +1991,8 @@ function sepBy1(rule, sep) {
 :PROPERTIES:
 :header-args+: :noweb-ref Expressions
 :END:
+
+#+transclude: [[#h:B34CADE5-71B4-41F2-AB54-00483EE593A6][Block]] :treesit
 
 #+begin_src js
 foo
