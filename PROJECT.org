@@ -44,6 +44,46 @@ Call ~taxy-fill~ with created taxy from ~make-taxy~ and a list of objects to fil
 
 ** Development
 
+*** Scratch
+
+2025/05/19 2:25 pm
+Currently looking at Program = Module top-level, added two headlines Program, Module simply trying to get proper documentation. Basically, is:
+       // Noirc: Program.
+        source_file: ($) => repeat($._statement),
+
+        // Noirc: Module.
+        _statement: ($) => choice($._expression_statement, $._declaration_statement),
+in rendered grammar correct? Specifically the COMMENTS. I think the comments might've been from old parser-combinator frontend.
+
+2025/05/19 2:31 pm
+Looking at ATTRIBUTES. Let's get that into hithere.js
+
+*** Coverage TODOs
+
+It's a bit hard (currently) to track general-coverage TODOs within =noir_grammar.org= itself, and I have yet to dive-deep into org-agenda which might be able to construct such a view. However there are a lot of other TODOs specific to each headline they are under. Here is a general "overview" of areas of the grammar that need to be done as a way to "save progress" for when future Jordan comes back to work on =noir_grammar.org=.
+
+**** TODO Literal grammar.js to tangled hithere.js
+
+Finish converting the various forms that are in the literal =grammar.js= to tangled versions (currently in) =hithere.js=.
+
+- [-] Declarations
+  - [ ] Function definition
+  - [X] Visibility modifier
+  - [ ] Function modifiers
+  - [ ] Parameter list (i.e. function parameters)
+  - [ ] Block
+  - [ ] Attribute
+  - [ ] Use tree
+  - [ ] Attribute path
+- [ ] Expressions
+  - [ ] Identifier
+- [ ] Top-of-file
+  - [ ] REG_ALPHANUMERIC
+  - [ ] REG_NUMERIC
+  - [ ] REG_ASCII_PUNCTUATION
+  - [ ] Modifiers
+  - [ ] Numeric types
+ 
 *** TODO When noir_grammar.org is opened have transclusion for Grammar heading run
 
 Want to trigger transclusion on that subheading and all it's children only (by default) because babel tangle or saving the file triggers export so we could accidentally export a partially constructed grammar.js if those transclusions are not automatically made.
