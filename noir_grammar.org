@@ -46,6 +46,12 @@ Newline, tab, carriage return, ASCII space.
 :CUSTOM_ID: h:489553F6-ECE8-4E3B-8C00-54FFF4B24FCB
 :END:
 
+*************** TODO Go through the lexing for attributes again
+Lexer first marks attributes as either ~TokenKind::Attribute~ or ~TokenKind::InnerAttribute~.
+
+Further
+*************** END
+
 Primary or Secondary; depending on how many can be applied to a function.
 
 - Primary: one (alters a functions ACIR output).
@@ -244,10 +250,13 @@ maybe:
 
 #+transclude: [[file:noir/compiler/noirc_frontend/src/parser/parser/item.rs][Parser::parse_item_kind()]] :lines 97-108 :src rust
 
-***** TODO InnerAttribute                                              :node:
+***** TODO InnerAttribute                                              :leaf:
 :PROPERTIES:
 :CUSTOM_ID: h:AE3747A8-8CA3-4B6D-AF09-3553CE24CD70
 :END:
+:pgd:
+- TODO
+:end:
 
 No special parse logic, merely checks type of lexed token.
 TODO: Link to Attribute (lex) subheading Lex process via that star syntax.
@@ -280,7 +289,7 @@ Multiple attributes are parsed and collected within =Parser::parse_item_kind()= 
 :end:
 
 #+begin_src js :treesit t
-// Modifiers except for visibility (in order).
+// Noirc: Modifiers -- except for visibility (in order).
 const MODIFIERS = {
     Unconstrained: 'unconstrained',
     Comptime: 'comptime',
@@ -300,8 +309,11 @@ Remaining keywords consumed as their literal selves:
 *************** END
 *************** TODO Decide on and note that we do not support legacy unconstrained ordering because it complicates things massively.
 *************** END
+*************** TODO Apparently Traits call parse_modifiers
+Using eglot to show the call hierarchy Traits apparently call this parser, so when we ge to Traits have a looksey I guess.
+*************** END
 
-****** DONE ItemVisibility                                 :declaration:leaf:
+***** DONE ItemVisibility                                  :declaration:leaf:
 CLOSED: [2024-11-01 Fri 19:56]
 :PROPERTIES:
 :CUSTOM_ID: h:F5A79701-65C9-4FEA-83D8-2413C585A5FA
@@ -1907,6 +1919,8 @@ Constructed grammar from investigating Noir compiler frontend.
 
 #+begin_src js :noweb yes :tangle hithere.js
 
+<<Modifiers>>
+
 <<AttributeKeywords>>
 
 module.exports = grammar({
@@ -1950,6 +1964,13 @@ function sepBy1(rule, sep) {
     return seq(rule, repeat(seq(sep, rule)))
 }
 #+end_src
+
+*** Modifiers
+:PROPERTIES:
+:header-args+: :noweb-ref Modifiers :noweb-sep "\n\n"
+:END:
+
+#+transclude: [[#h:2A9D09A5-2E52-4B8C-ABA1-0B3B953F093C][Modifiers]] :treesit
 
 *** AttributeKeywords
 :PROPERTIES:
