@@ -277,9 +277,12 @@ Any valid ~TokenKind::InnerAttribute~ parsed as InnerAttribute.
 Multiple attributes are parsed and collected within =Parser::parse_item_kind()= via call to:
 #+transclude: [[file:noir/compiler/noirc_frontend/src/parser/parser/attributes.rs][Parser::parse_attributes]] :lines 20-30 :src rust
 
-***** TODO Modifiers                                                   :node:
+***** SPEC Modifiers                                                   :node:
 :PROPERTIES:
 :CUSTOM_ID: h:2A9D09A5-2E52-4B8C-ABA1-0B3B953F093C
+:END:
+:LOGBOOK:
+- State "SPEC"       from "TODO"       [2025-05-20 Tue 18:06]
 :END:
 :pgd:
 + [[#h:F5A79701-65C9-4FEA-83D8-2413C585A5FA][ItemVisibility]].
