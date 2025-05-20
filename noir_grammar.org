@@ -193,6 +193,10 @@ So, the following example list reads "(A followed by B) OR (C followed by D foll
 + (rep0) [[#h:8CC1D239-66B1-45A9-BB71-66AF07161479][Item]].
 :end:
 
+*************** TODO Re-evaluate the docstring for this in tangle grammar template
+Is _statement actually Module for example. This might be a remnant from the old parser-combinator frontend code. This is a super SUPER nitpick so do this last, even if it bugs you every time you glance at it until then. How strong is my will!
+*************** END
+
 *** TODO InnerDocComments
 :PROPERTIES:
 :CUSTOM_ID: h:C58B2CB4-FF62-49BB-AFFD-1BADF4462B9D
@@ -635,7 +639,7 @@ Parser: [[file:noir/compiler/noirc_frontend/src/parser/parser/types.rs::fn parse
 + =(= by =)=.
 :end:
 
-#+begin_src js :treesit
+#+begin_src js :treesit t
 unit_type: _ => seq('(', ')')
 #+end_src
 
@@ -1232,16 +1236,6 @@ function_parameters: ($) => seq(
     // TODO: The rest.
     ')',
 )
-#+end_src
-
-#+begin_src js :treesit t
-const foobar = 'yoloscoped'
-#+end_src
-
-****** Subtrees also?
-
-#+begin_src js :treesit t
-const foobar = 'HOWDY'
 #+end_src
 
 ****** TODO FunctionParametersList
@@ -1942,7 +1936,7 @@ module.exports = grammar({
 
         // * * * * * * * * * * * * * * * * * * * * * * * * * EXPRESSIONS
 
-        <<Expressionsz>>,
+        <<Expressions>>,
 
         // * * * * * * * * * * * * * * * * * * * * * * * * * LITERALS
 
@@ -1978,7 +1972,7 @@ function sepBy1(rule, sep) {
 
 **** Function
 
-,#+transclude: [[#h:30A04BE4-E1C5-40E1-B2B2-DA0747C66D48][Definition / Modifiers]] :treesit
+#+transclude: [[#h:B3C4609F-307A-42A1-B420-DBBAB6CDE6E5][Function]] :treesit
 
 *** Types
 :PROPERTIES:
@@ -1993,10 +1987,6 @@ function sepBy1(rule, sep) {
 :END:
 
 #+transclude: [[#h:B34CADE5-71B4-41F2-AB54-00483EE593A6][Block]] :treesit
-
-#+begin_src js
-foo
-#+end_src
 
 *** Literals
 :PROPERTIES:
