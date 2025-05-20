@@ -1,4 +1,4 @@
-#+TODO: TODO(t@) TOIMPL(i@) BLOCK(b@) | DONE(d!)
+#+TODO: TODO(t@) TOIMPL(i@) SPEC(r@) BLOCK(b@) | DONE(d!)
 #+STARTUP: indent logdone logdrawer content
 # ------------------------------------------------------
 #+NOIR_TEMPLATE_URL: https://github.com/noir-lang/noir/blob/%h/%p#L%lC%c-L%lC%s
@@ -628,11 +628,12 @@ i.e. no literal string keyword that lookup_keyword matches.
 
 Parser: [[file:noir/compiler/noirc_frontend/src/parser/parser/types.rs::fn parse_parentheses_type(&mut self)][parse_parentheses_type()]]
 
-******* TOIMPL Unit                                                    :leaf:
+******* SPEC Unit                                                      :leaf:
 :PROPERTIES:
 :CUSTOM_ID: h:9653A5E5-2857-4FB4-8698-5D9F6F0E8755
 :END:
 :LOGBOOK:
+- State "SPEC"       from "TOIMPL"     [2025-05-20 Tue 17:11]
 - State "TOIMPL"     from "TODO"       [2024-11-15 Fri 20:24]
 :END:
 :pgd:
