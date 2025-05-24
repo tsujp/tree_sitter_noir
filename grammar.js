@@ -133,6 +133,7 @@ module.exports = grammar({
             $.array_or_slice_type,
             $.mutable_reference_type,
             $.function_type,
+            // TODO: TraitAsType, AsTraitPathType, UnresolvedNamedType
         ),
         
         primitive_type: ($) => choice(
@@ -233,6 +234,52 @@ module.exports = grammar({
         
         // Noirc: OrderedTypeArg.
         _ordered_type_arg: _ => alias($.TODO_TYPE_OR_TYPE_EXPRESSION, $.ordered_type_arg),
+        
+        // Using 'expr' in-place of 'expression' so-as-to not conflate with _real_ expressions.
+        // Noirc: TypeExpression -- (see: UnresolvedTypeExpression).
+        type_expr: ($) => choice(
+            $.term_type_expr,
+            $.binary_type_expr,
+        ),
+        
+        binary_type_expr: ($) => choice(
+            prec.left(10, seq(
+                field('left', $.type_expr),
+                field('operator', choice('*', '/', '%')),
+                field('right', $.type_expr),
+            )),
+            prec.left(9, seq(
+                field('left', $.type_expr),
+                field('operator', choice('+', '-')),
+                field('right', $.type_expr),
+            )),    
+        ),
+        
+        // Noirc: TermTypeExpression.
+        term_type_expr: ($) => choice(
+            seq('-', $.atom_type_expr),
+            $.atom_type_expr,
+        ),
+        
+        // Noirc: AtomTypeExpression.
+        atom_type_expr: ($) => choice(
+            $.constant_type_expr,
+            // $.variable_type_expr,
+            $.parenthesized_type_expr,
+        ),
+        
+        // Noirc: ConstantTypeExpression.
+        constant_type_expr: ($) => $.int_literal,
+        
+        // Noirc: VariableTypeExpression.
+        variable_type_expr: ($) => 'PATH_UNKNOWN__TODO',
+        
+        // Noirc: ParenthesizedTypeExpression.
+        parenthesized_type_expr: ($) => seq(
+            '(',
+            $.type_expr,
+            ')',
+        ),
 
         // * * * * * * * * * * * * * * * * * * * * * * * * * EXPRESSIONS
 
