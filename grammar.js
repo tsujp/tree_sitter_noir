@@ -1,29 +1,25 @@
-const REG_ALPHABETIC = /[a-zA-Z]/
-const REG_NUMERIC = /[0-9]/
-const REG_ASCII_PUNCTUATION = /[!"#$%&'()*+,\-./:;<=>?@\[\\\]^_`\{|\}~]/
+// TODO: Put this in appropriate tangle location instead of literally part of the tangle template maybe? See PrimitiveType > IntegerType.
+const INTEGER_TYPES = [
+    'u1',
+    'u8',
+    'u16',
+    'u32',
+    'u64',
+    //
+    'i1',
+    'i8',
+    'i16',
+    'i32',
+    'i64',    
+]
 
-// Modifiers except for visibility (in order).
+// Noirc: Modifiers -- except for visibility (in order).
 const MODIFIERS = {
     Unconstrained: 'unconstrained',
     Comptime: 'comptime',
     Mut: 'mut',
 }
 
-// Noir no longer allows arbitrarily-sized integers. Also, `U128` is a struct not a numeric type.
-const NUMERIC_TYPES = [
-    // Signed.
-    'u1',
-    'u8',
-    'u32',
-    'u64',
-    // Unsigned
-    'i1',
-    'i8',
-    'i32',
-    'i64',
-]
-
-// TODO: Attributes have some further captures in the Noir lexer, e.g. `foreign` captures a name afterwards. So do that also (and for the secondary attributes).
 // Functions can only have one primary attribute.
 const PRIMARY_ATTRIBUTES = [
     'foreign',
@@ -33,107 +29,200 @@ const PRIMARY_ATTRIBUTES = [
     'recursive',
     'fold',
     'no_predicates',
+    'inline_always',
     'test',
     'field',
 ]
 
 // Functions can have any number of secondary attributes.
-const SECONDARY_ATTRIBUTES = ['deprecated', 'contract_library_method', 'abi', 'export']
-
-// TODO: Code whitespace is \t \n \r and literal space.
-// TODO: Whitespace attributes like #[bing bong] are valid.. cancer. What does the canonical noir compiler think the attribute is called? `bing bong`?
-// Keyword::Pub
+const SECONDARY_ATTRIBUTES = [
+    'deprecated',
+    'contract_library_method',
+    'abi',
+    'export',
+    'varargs',
+    'use_callers_scope',
+    'allow',
+]
 
 module.exports = grammar({
     name: 'noir',
 
     extras: ($) => [/\s/],
-
     word: ($) => $.identifier,
 
     rules: {
-        // Conceptually a `program` (in Noir's parser parlance).
+        // Noirc: Program.
         source_file: ($) => repeat($._statement),
 
-        // Conceptually a `module` (in Noir's parser parlance).
+        // Noirc: Module.
         _statement: ($) => choice($._expression_statement, $._declaration_statement),
 
         _expression_statement: ($) => seq($._expression, ';'),
-
         _declaration_statement: ($) => choice($.function_definition),
 
         _expression: ($) => 'foo',
 
+        // TODO: Consider all Noirc 'statements' except we enforce trailing semicolon where required? Or just have a statements section idk yet.
+        statement: ($) => choice(
+            // TODO: Attributes.
+        ),
+        
+        // Noirc: StatementKind.,
+        
+        // Statements ending in blocks, thus not requiring semicolons.
+        _block_ending_statements: ($) => choice(
+            $.for_statement,
+            $.interned_statement,
+            $.block,
+            $.unsafe_expression,
+            $.interned_expression,
+            $.if_statement,
+        ),
+        
+        // Noirc: BreakStatement.
+        break_statement: _ => seq('break'),
+        
+        // Noirc: ContinueStatement.
+        continue_statement: _ => seq('continue'),
+        
+        // Noirc: BlockStatement.
+        block_statement: ($) => choice(
+            // TODO
+        ),
+
         // * * * * * * * * * * * * * * * * * * * * * * * * * DECLARATIONS
 
-        // TODO: Complete coverage.
-        function_definition: ($) =>
-            seq(
-                // TODO: Attributes.
-                optional($.visibility_modifier),
-                optional($.function_modifiers),
-                'fn',
-                field('name', $.identifier),
-                // TODO: Generics.
-                $.parameter_list,
-                // TODO: Function return type.
-                $.block,
-            ),
-
+        // Noirc: ItemVisibility.
         visibility_modifier: ($) => seq('pub', optional('(crate)')),
-
-        // TODO: Make this a granular list instead of all leaf nodes currently being anonymous?
-        // TODO: Is comptime function-specific? I don't think it is.
-        // TODO: Need to enforce the order of this.
-        // function_modifiers: ($) => repeat1(choice('unconstrained', 'comptime')),
-
-        // OPT: I personally don't think tree-sitter should report back a syntax tree as being correct if it isn't, and there's currently no easy way to have epsilon rules (save maybe a custom scanner). Look into this later. Other major languages like Rust don't have this in their tree-sitter grammar either, so for example: `pub unsafe async fn main()` is _invalid_ Rust syntax but tree-sitter will parse that and produce a CST without an error node, the correct form is `pub async unsafe fn main()` which tree-sitter also parses (this time correctly) to a CST without an error node.
+        
+        // Noirc: Visibility.
+        visibility: ($) => optional(choice(
+            'pub',
+            'return_data',
+            seq('call_data(', $.int_literal ,')'),
+        )),
+        
+        function_parameters: ($) => seq(
+            '(',
+            // TODO: The rest.
+            ')',
+        ),
+        
+        function_definition: ($) => seq(
+            optional($.visibility_modifier),
+            optional($.function_modifiers),
+            'fn',
+            field('name', $.identifier),
+            // TODO: Generics
+            $.function_parameters,
+            optional(seq('->' /* TODO: Return visibility and type */)),
+            // TODO: Where clause
+            $.block,
+            // TODO: It's block or ';' see Parser::parse_function()
+        ),
+        
         function_modifiers: ($) => repeat1(choice(MODIFIERS.Unconstrained, MODIFIERS.Comptime)),
 
-        parameter_list: ($) =>
-            seq(
-                '(',
-                // TODO: Parameters.
-                ')',
-            ),
+        // * * * * * * * * * * * * * * * * * * * * * * * * * TYPES
 
-        // TODO: Does Noir support empty blocks?
-        block: ($) =>
-            seq(
-                '{',
-                // repeat($._statement),
-                '}',
-            ),
-
-        attribute: ($) =>
-            seq(
-                '#',
-                optional('!'), // Marks an InnerAttribute.
-                '[',
-                optional("'"), // Marks an attribute Tag.
-                alias(repeat1(choice(' ', REG_ALPHABETIC, REG_NUMERIC, REG_ASCII_PUNCTUATION)), $.content),
-                ']',
-            ),
-
-        // TODO: Actual logic for this, nesting, aliases etc after all the rest of the grammar is complete.
-        use_tree: ($) => seq('use', /.*/, ';'),
-
-        // TODO: When mostly done see if this is generic or specific to attributes, i.e. rename to just `path` and remove all the aliases elsewhere?
-        // TODO: Come back to a field name for this later when what's going on with attributes is more locked down.
-        attribute_path: ($) => seq(repeat1(choice(' ', REG_ALPHABETIC, REG_NUMERIC, REG_ASCII_PUNCTUATION))),
-
-        // _statement: $ => choice(
-        //     $.return_statement
-        //     // TODO: Other statements.
-        // ),
-
-        // TODO: Change this to explicit or implicit return statement (with or without return keyword) as well as `;` affecting returning a value or not.
-        // return_statement: $ => seq(
-        // ),
+        // Ours: Type.
+        _type: ($) => choice(
+            $.primitive_type,
+            $.parentheses_type,
+        ),
+        
+        primitive_type: ($) => choice(
+            $.field_type,
+            $.integer_type,
+            $.bool_type,
+            $.string_type,
+            $.format_string_type,
+        ),
+        
+        field_type: _ => 'Field',
+        
+        integer_type: _ => choice(...INTEGER_TYPES),
+        
+        bool_type: _ => 'bool',
+        
+        string_type: ($) => seq(
+            'str',
+            '<',
+            // TODO: TypeExpression goes here.
+            '>',
+        ),
+        
+        format_string_type: _ => 'fmtstr',
+        
+        parentheses_type: ($) => choice(
+            $.unit_type,
+            $.tuple_type,
+        ),
+        
+        unit_type: _ => seq('(', ')'),
+        
+        tuple_type: ($) => seq(
+            '(',
+            sepBy1($._type, ','),
+            optional(','),
+            ')',
+        ),
+        
+        // TODO: If GenericTypeArgsList is referenced by anything else in addition to GenericTypeArgs, then it needs to be its own rule so we can re-use it. Here it's been inlined.
+        // Noirc: GenericTypeArgs.
+        generic_type_args: ($) => seq(
+            '<',
+            sepBy($.generic_type_arg, ','), // Inlined Noirc: GenericTypeArgsList.
+            optional(','),
+            '>',
+        ),
+        
+        // Noirc: GenericTypeArg.
+        generic_type_arg: ($) => choice(
+            $.named_type_arg,
+            $._ordered_type_arg,
+        ),
+        
+        // Noirc: NamedTypeArg.
+        named_type_arg: ($) => seq(
+            $.identifier,
+            '=',
+            $._type,
+        ),
+        
+        // Noirc: OrderedTypeArg.
+        _ordered_type_arg: _ => alias($.TODO_TYPE_OR_TYPE_EXPRESSION, $.ordered_type_arg),
 
         // * * * * * * * * * * * * * * * * * * * * * * * * * EXPRESSIONS
 
-        // Currently this is the canonical identifier representation.
-        identifier: ($) => /[a-zA-Z_][a-zA-Z0-9_]*/,
+        block_expression: _ => seq(
+            '{',
+            // TODO: Optionally repeated Statement.
+            '}',
+        ),
+
+        // * * * * * * * * * * * * * * * * * * * * * * * * * LITERALS
+
+        int_literal: _ => token(seq(
+            choice(
+                '/[0-9][0-9_]*/',
+                '/0x[0-9a-fA-F_]+/',
+            )
+        )),
+        
+        // Noir does not support Unicode Identifiers (UAX#31) so XID_Start/XID_Continue. Only ASCII.
+        // Noirc: Token::Ident.
+        identifier: _ => /[a-zA-Z_][a-zA-Z0-9_]*/,
     },
 })
+
+// Match one or more occurrences of rule separated by sep.
+function sepBy1(rule, sep) {
+    return seq(rule, repeat(seq(sep, rule)))
+}
+
+// Match zero or more occurrences of rule separated by sep.
+function sepBy(rule, sep) {
+    return optional(sepBy1(rule, sep))
+}

@@ -401,6 +401,14 @@ Foo
 - [[#h:F2E3D7E1-0978-44DF-A49E-EBE348F9D973][UnresolvedNamedType]].
 :end:
 
+#+begin_src js :treesit t
+// Ours: Type.
+_type: ($) => choice(
+    $.primitive_type,
+    $.parentheses_type,
+)
+#+end_src
+
 Parser: [[file:noir/compiler/noirc_frontend/src/parser/parser/types.rs::fn parse_type(&mut self)][parse_type()]]
 
 TODO: Look at enum ~UnresolvedTypeData~, read the doc string and look at it's elements. Good stuff.
@@ -437,49 +445,70 @@ When lexing [[file:noir/compiler/noirc_frontend/src/lexer/token.rs::fn lookup_ke
   Explored the parsing function for all its subtypes, but there are some non-trivial recursive dependencies (going back to Type) and also some quoted and interned stuff so blocked for now.
 :END:
 :pgd:
-- [[#h:B5115CEE-F6AE-4BB2-82EE-13F65B7EDC43][FieldType]].
-- [[#h:8343D34F-D36E-4E46-A343-A9A99A1F3200][IntegerType]].
-- [[#h:57CAEB11-8421-4186-A495-818CC08D5810][BoolType]].
-- [[#h:C405DA7F-97A3-4DCF-8946-7480E43D2CC2][StringType]].
-- [[#h:12C0CC82-5210-45ED-97F4-0266E1CAA6F1][FormatStringType]].
-- [[#h:98FC5657-8034-42F7-A263-3172EFEEEB23][ComptimeType]].
-- [[#h:87984AE0-613D-4D9A-A64D-D3FD8BD51C98][ResolvedType]].
-- [[#h:21789349-305A-46D0-8D87-D7B8647482CF][InternedType]].
+- [[#h:B5115CEE-F6AE-4BB2-82EE-13F65B7EDC43][FieldType]]
+- [[#h:8343D34F-D36E-4E46-A343-A9A99A1F3200][IntegerType]]
+- [[#h:57CAEB11-8421-4186-A495-818CC08D5810][BoolType]]
+- [[#h:C405DA7F-97A3-4DCF-8946-7480E43D2CC2][StringType]]
+- [[#h:12C0CC82-5210-45ED-97F4-0266E1CAA6F1][FormatStringType]]
+- [[#h:98FC5657-8034-42F7-A263-3172EFEEEB23][ComptimeType]] (TODO: Not viable in AST, see heading for more ignoring for now but leaving here)
+- [[#h:87984AE0-613D-4D9A-A64D-D3FD8BD51C98][ResolvedType]] (TODO: Also ignore, similar reasons for now)
+- [[#h:21789349-305A-46D0-8D87-D7B8647482CF][InternedType]] (TODO: Also ignore, similar reasons for now)
 :end:
+
+#+begin_src js :treesit t
+primitive_type: ($) => choice(
+    $.field_type,
+    $.integer_type,
+    $.bool_type,
+    $.string_type,
+    $.format_string_type,
+)
+#+end_src
 
 Parser: [[file:noir/compiler/noirc_frontend/src/parser/parser/types.rs::fn parse_primitive_type(&mut self)][parse_primitive_type()]]
 
-******* TOIMPL FieldType                                               :leaf:
+******* SPEC FieldType                                                 :leaf:
 :PROPERTIES:
 :CUSTOM_ID: h:B5115CEE-F6AE-4BB2-82EE-13F65B7EDC43
 :END:
 :LOGBOOK:
+- State "SPEC"       from "TOIMPL"     [2025-05-24 Sat 22:10]
 - State "TOIMPL"     from "TODO"       [2024-11-03 Sun 12:24]
 :END:
 :pgd:
-+ =Field=.
++ =Field= (kw)
 :end:
+
+#+begin_src js :treesit t
+field_type: _ => 'Field'
+#+end_src
 
 Parser: [[file:noir/compiler/noirc_frontend/src/parser/parser/types.rs::fn parse_field_type(&mut self)][parse_field_type()]]
 
-******* TOIMPL IntegerType                                             :leaf:
+******* SPEC IntegerType                                               :leaf:
 :PROPERTIES:
 :CUSTOM_ID: h:8343D34F-D36E-4E46-A343-A9A99A1F3200
 :END:
 :LOGBOOK:
+- State "SPEC"       from "TOIMPL"     [2025-05-24 Sat 22:10]
 - State "TOIMPL"     from "TODO"       [2024-11-03 Sun 14:50]
 :END:
 :pgd:
-+ =i= OR =u=.
-+ =1= OR =8= OR =16= OR =32= OR =64=.
++ =i= OR =u=
++ =1= OR =8= OR =16= OR =32= OR =64=
 :end:
+
+#+begin_src js :treesit t
+integer_type: _ => choice(...INTEGER_TYPES)
+#+end_src
 
 Parser: [[file:noir/compiler/noirc_frontend/src/parser/parser/types.rs::fn parse_int_type(&mut self)][parse_int_type()]]
 
 Both signed and unsigned: 1, 8, 16, 32, and 64 bits.
 #+transclude: [[file:noir/compiler/noirc_frontend/src/ast/mod.rs::61][IntegerBitSize::allowed_sizes()]] :lines 61-65 :src rust
 
-TODO: Is there a bug in this version of Noir that doesn't allow 16-bit integers? See the above transclude missing ~Self::Sixteen~.
+*************** TODO Is there a bug in this version of Noir that doesn't allow 16-bit integers? See the above transclude missing ~Self::Sixteen~.
+*************** END
 
 :callstack:
 - [X] [[file:noir/compiler/noirc_frontend/src/parser/parser.rs::fn eat_int_type(&mut self)][eat_int_type()]]
@@ -508,16 +537,21 @@ Parser: [[file:noir/compiler/noirc_frontend/src/lexer/token.rs::fn lookup_int_ty
 2. Remaining string ~word~ contents attempt parse into bit-size 32-bit integer.
 3. [[file:noir/compiler/noirc_frontend/src/lexer/token.rs::enum IntType][Token::IntType]] created with signedness and bit-size value.
 
-******* TOIMPL BoolType                                                :leaf:
+******* SPEC BoolType                                                  :leaf:
 :PROPERTIES:
 :CUSTOM_ID: h:57CAEB11-8421-4186-A495-818CC08D5810
 :END:
 :LOGBOOK:
+- State "SPEC"       from "TOIMPL"     [2025-05-24 Sat 22:13]
 - State "TOIMPL"     from "TODO"       [2024-11-03 Sun 12:21]
 :END:
 :pgd:
-+ =bool=.
++ =bool= (kw)
 :end:
+
+#+begin_src js :treesit t
+bool_type: _ => 'bool'
+#+end_src
 
 Parser: [[file:noir/compiler/noirc_frontend/src/parser/parser/types.rs::fn parse_bool_type(&mut self)][parse_bool_type()]]
 
@@ -532,11 +566,20 @@ Parses the literal /keyword/ =bool= *and not* literal words =true= or =false=.
   TypeExpression completion.
 :END:
 :pgd:
-+ =str= (kw).
-+ =<=.
-+ [[#h:0DEF3192-4840-41B3-A941-714798677092][TypeExpression]].
-+ =>=.
++ =str= (kw)
++ =<=
++ [[#h:0DEF3192-4840-41B3-A941-714798677092][TypeExpression]]
++ =>=
 :end:
+
+#+begin_src js :treesit t
+string_type: ($) => seq(
+    'str',
+    '<',
+    // TODO: TypeExpression goes here.
+    '>',
+)
+#+end_src
 
 Parser: [[file:noir/compiler/noirc_frontend/src/parser/parser/types.rs::fn parse_str_type(&mut self)][parse_str_type()]]
 
@@ -546,16 +589,21 @@ What's going on here specifically when it returns Some(UnresolvedTypeExpression)
 It looks like it _is_ a parser error so..?
 *************** END
 
-******* TOIMPL FormatStringType                                        :node:
+******* SPEC FormatStringType                                          :node:
 :PROPERTIES:
 :CUSTOM_ID: h:12C0CC82-5210-45ED-97F4-0266E1CAA6F1
 :END:
 :LOGBOOK:
+- State "SPEC"       from "TOIMPL"     [2025-05-24 Sat 22:16]
 - State "TOIMPL"     from "TODO"       [2024-11-16 Sat 18:24]
 :END:
 :pgd:
-+ =fmtstr= (kw).
++ =fmtstr= (kw)
 :end:
+
+#+begin_src js :treesit t
+format_string_type: _ => 'fmtstr'
+#+end_src
 
 Parser: [[file:noir/compiler/noirc_frontend/src/parser/parser/types.rs::fn parse_fmtstr_type(&mut self)][parse_fmtstr_type()]]
 
@@ -565,26 +613,28 @@ Return ~AST::UnresolvedTypeData::FormatString~.
 Missing docs, on paper I note that FmtStrType can be a TypeExpression or a Type (both recursively) but I don't have those notes right here in the org file. Looking at the linked parser I see the logic, so note that here under this heading since that informs the grammar construction and we want this info in the actual org file.
 *************** END
 
-******* TOIMPL ComptimeType                                            :leaf:
+******* ComptimeType
 :PROPERTIES:
 :CUSTOM_ID: h:98FC5657-8034-42F7-A263-3172EFEEEB23
 :END:
 :LOGBOOK:
 - State "TOIMPL"     from "TODO"       [2024-11-15 Fri 19:29]
 :END:
-- =Expr=.
-- =Quoted=.
-- =TopLevelItem=.
-- =Type=.
-- =TypedExpr=.
-- =StructDefinition=.
-- =TraitConstraint=.
-- =TraitDefinition=.
-- =TraitImpl=.
-- =UnresolvedType=.
-- =FunctionDefinition=.
-- =Module=.
-- =CtString=.
+:pgd:
+- =Expr= (kw)
+- =Quoted= (kw)
+- =TopLevelItem= (kw)
+- =Type= (kw)
+- =TypedExpr= (kw)
+- =StructDefinition= (kw)
+- =TraitConstraint= (kw)
+- =TraitDefinition= (kw)
+- =TraitImpl= (kw)
+- =UnresolvedType= (kw)
+- =FunctionDefinition= (kw)
+- =Module= (kw)
+- =CtString= (kw)
+:end:
 
 Parser: [[file:noir/compiler/noirc_frontend/src/parser/parser/types.rs::fn parse_comptime_type(&mut self)][parse_comptime_type()]]
 
@@ -593,6 +643,8 @@ All ComptimeTypes returned as ~AST::UnresolvedTypeData::Quoted(X)~ where ~X~ is 
 
 *************** TODO This feels strage, are those literal keywords allowed in source?
 This feels like stuff a preprocessing step would inline or something. If one can literally write these keywords and them be valid then sure.
+
+2025/05/24: this is metaprogramming quoted type HIR(?) stuff, these cannot appear as literal keywords I'm 99% sure so not adding them for now.
 *************** END
 *************** TODO Check out hir_def/types.rs enum Type, good docs.
 *************** END
@@ -627,22 +679,31 @@ Parser: [[file:noir/compiler/noirc_frontend/src/parser/parser/types.rs::pub(supe
 i.e. no literal string keyword that lookup_keyword matches.
 *************** END
 
-****** BLOCK ParenthesesType                                           :node:
+****** SPEC ParenthesesType                                            :node:
 :PROPERTIES:
 :CUSTOM_ID: h:39A2690C-319F-4F34-A139-8549D70FCF26
 :END:
 :LOGBOOK:
+- State "SPEC"       from "BLOCK"      [2025-05-24 Sat 22:48] \\
+  Type isn't really a blocker, as Type becomes more complete so will the types which recursive with it. In this case only TupleType does.
 - State "BLOCK"      from "TODO"       [2024-11-16 Sat 17:09] \\
   Type completion.
 :END:
 :pgd:
-- [[#h:9653A5E5-2857-4FB4-8698-5D9F6F0E8755][Unit]].
-- [[#h:CF9505CB-8110-4FC2-8A6B-5D88A7EB1D06][TupleElement]].
+- [[#h:9653A5E5-2857-4FB4-8698-5D9F6F0E8755][UnitType]]
+- [[#h:CF9505CB-8110-4FC2-8A6B-5D88A7EB1D06][TupleType]]
 :end:
+
+#+begin_src js :treesit t
+parentheses_type: ($) => choice(
+    $.unit_type,
+    $.tuple_type,
+)
+#+end_src
 
 Parser: [[file:noir/compiler/noirc_frontend/src/parser/parser/types.rs::fn parse_parentheses_type(&mut self)][parse_parentheses_type()]]
 
-******* SPEC Unit                                                      :leaf:
+******* SPEC UnitType                                                  :leaf:
 :PROPERTIES:
 :CUSTOM_ID: h:9653A5E5-2857-4FB4-8698-5D9F6F0E8755
 :END:
@@ -651,7 +712,7 @@ Parser: [[file:noir/compiler/noirc_frontend/src/parser/parser/types.rs::fn parse
 - State "TOIMPL"     from "TODO"       [2024-11-15 Fri 20:24]
 :END:
 :pgd:
-+ =(= by =)=.
++ =(= by =)=
 :end:
 
 #+begin_src js :treesit t
@@ -660,22 +721,39 @@ unit_type: _ => seq('(', ')')
 
 Parser: /in slice of parent/.
 
-******* TODO TupleElement                                              :node:
+******* SPEC TupleType                                                 :node:
 :PROPERTIES:
 :CUSTOM_ID: h:CF9505CB-8110-4FC2-8A6B-5D88A7EB1D06
 :END:
+:LOGBOOK:
+- State "SPEC"       from "TODO"       [2025-05-24 Sat 22:47] \\
+  As Type gets more complete so will this (since it's recursive).
+:END:
 :pgd:
-+ =(=.
-+ [[#h:B3490B7C-F387-49C7-BF94-DC9CE8AC3581][Type]].
-+ (rep0 grp) =,= by [[#h:B3490B7C-F387-49C7-BF94-DC9CE8AC3581][Type]].
-+ (opt) =,=.
-+ =)=.
++ =(=
++ [[#h:B3490B7C-F387-49C7-BF94-DC9CE8AC3581][Type]]
++ (rep0 grp) =,= by [[#h:B3490B7C-F387-49C7-BF94-DC9CE8AC3581][Type]]
++ (opt) =,=
++ =)=
 :end:
+
+#+begin_src js :treesit t
+tuple_type: ($) => seq(
+    '(',
+    sepBy1($._type, ','),
+    optional(','),
+    ')',
+)
+#+end_src
 
 Parser: /in slice of parent/.
 #+transclude: [[file:noir/compiler/noirc_frontend/src/parser/parser/types.rs::387][parse_many_return_trailing_separator_if_any()]] :lines 387-397 :src rust
 
 If only one Type and no trailing comma return ~AST::UnresolvedTypeData::Parenthesized~, else return ~AST::UnresolvedTypeData::Tuple~.
+
+*************** TODO If 1 element in list and no trailing comma Parnthesized, else Tuple
+Is there a meaningful difference here for tree-sitter purposes?
+*************** END
 
 ****** BLOCK ArrayOrSliceType                                          :node:
 :PROPERTIES:
@@ -867,7 +945,7 @@ I also ASSUME the generic type args are optional (test concretely).
 :end:
 
 Compiler: [[file:noir/compiler/noirc_frontend/src/parser/parser/type_expression.rs::196][parse_type_or_type_expression()]]
-#+transclude: [[file:noir/compiler/noirc_frontend/src/parser/parser/type_expression.rs][TypeOrTypeExpression doc]] :lines 195-195 :src rust
+#+transclude: [[file:noir/compiler/noirc_frontend/src/parser/parser/type_expression.rs::195][TypeOrTypeExpression doc]] :lines 195-195 :src rust
 
 Parse logic when entered here attempts to parse any valid non-literal type, before finally calling ~parse_type()~ which /is/ [[#h:B3490B7C-F387-49C7-BF94-DC9CE8AC3581][Type]].
 
@@ -2211,6 +2289,53 @@ Guaranteed to NOT have a colon =:= following it.
 
 Constructed by the lexer.
 
+*************** TODO Make this tree (from Literals) about literals and tokens, generally things the lexer sets TokenKind on
+*************** END
+
+**** Token Lexing
+
+Function ~Lexer.next_token~ (<- TODO: linkify) is the major fork where ~Token~\s are created. After a series of whitespace, glue (TODO: link to glue), and single-character tokens are checked more complex tokens are then lexed:
+
+(TODO all these properly as appropriate):
+eat_string_literal for string literal escape sequences (e.g. \n).
+eat_format_string_or_alpha_numeric format strings or..?
+eat_raw_string_or_alpha_numeric raw strings 'r' and '#' or something..?
+eat_quote_or_alpha_numeric quote strings starting with 'q'
+eat_attribute
+
+
+eat_alpha_numeric called when character is_ascii_alphanumeric (rust stdlib function) or '_' then ~A-Za-z_~ calls to eat_word
+
+eat_word calls lex_word and then lookup_word_token
+
+lex_word keeps eating while rust stdlib is_ascii_alphabetic (A-Za-z) or rust is_numeric (0-9) or _
+
+Lookup word token checks if the word is a keyword  via ~Keyword::lookup_keyword~ (TODO: Nice list of keywords). Checks if its an int type ~IntType::lookup_int_type~. If both of those fail its then an identifier ~Token::Ident~.
+
+We don't need to give tree-sitter a literal list of keywords since we can rely on automatic keyword extraction (TODO: doc this here, the ts keyword extraction and how we set it in the grammar file). So, our identifier syntax is ~A-Za-z0-9_~ of which those not consumed as ~Token::IntType~.
+
+Looking at lookup_int_type this means literal numbers prefixed with u or i will be int types. We probably don't need a regex to exclude these since we can rely on precedence. Via the lexer logic we clearly see that attempting to parse an int type is higher precedence (checks and returns first, last resort is identifier).
+
+
+*************** TODO How is that for result in lexer thing even populated (top of Lexer struct)
+Once that's clear all the call syntax etc up to Lexer.next_token can be documented. Perhaps just ask in Rust IRC.
+*************** END
+
+**** Ident
+:PROPERTIES:
+:CUSTOM_ID: h:65B0176B-B46F-4679-8535-C504870AC048
+:END:
+
+Appears only place ~Token::Ident~ is created is within [[file:noir/compiler/noirc_frontend/src/lexer/lexer.rs::fn lookup_word_token(][lookup_word_token()]].
+
+~Token::Ident~.
+
+#+begin_src js :treesit t
+// Noir does not support Unicode Identifiers (UAX#31) so XID_Start/XID_Continue. Only ASCII.
+// Noirc: Token::Ident.
+identifier: _ => /[a-zA-Z_][a-zA-Z0-9_]*/
+#+end_src
+
 **** Int
 :PROPERTIES:
 :CUSTOM_ID: h:CA7F6441-C376-4A8E-9C59-B128CC1F841A
@@ -2220,7 +2345,7 @@ Constructed by the lexer.
 :end:
 
 #+begin_src js :treesit t
-int_literal: (_) => token(seq(
+int_literal: _ => token(seq(
     choice(
         '/[0-9][0-9_]*/',
         '/0x[0-9a-fA-F_]+/',
@@ -2276,7 +2401,22 @@ TODO: Don't think I need to document parse_many_return blah blah, that's a compi
 
 Constructed grammar from investigating Noir compiler frontend.
 
-#+begin_src js :noweb yes :tangle hithere.js
+#+begin_src js :noweb yes :tangle grammar.js
+
+// TODO: Put this in appropriate tangle location instead of literally part of the tangle template maybe? See PrimitiveType > IntegerType.
+const INTEGER_TYPES = [
+    'u1',
+    'u8',
+    'u16',
+    'u32',
+    'u64',
+    //
+    'i1',
+    'i8',
+    'i16',
+    'i32',
+    'i64',    
+]
 
 <<Modifiers>>
 
@@ -2375,7 +2515,7 @@ function sepBy(rule, sep) {
 :header-args+: :noweb-ref Types
 :END:
 
-#+transclude: [[#h:9653A5E5-2857-4FB4-8698-5D9F6F0E8755][Unit]] :treesit
+#+transclude: [[#h:B3490B7C-F387-49C7-BF94-DC9CE8AC3581][Type]] :treesit
 
 **** Generics
 
@@ -2396,6 +2536,9 @@ function sepBy(rule, sep) {
 These almost entirely come from lexing.
 
 #+transclude: [[#h:CA7F6441-C376-4A8E-9C59-B128CC1F841A][Int]] :treesit
+
+#+transclude: [[#h:65B0176B-B46F-4679-8535-C504870AC048][Ident]] :treesit
+
 
 * TODO Old stuff bin or categorise
 ** TODO Attribute
