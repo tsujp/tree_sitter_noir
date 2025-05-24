@@ -406,6 +406,9 @@ Foo
 _type: ($) => choice(
     $.primitive_type,
     $.parentheses_type,
+    $.array_or_slice_type,
+    $.mutable_reference_type,
+    $.function_type,
 )
 #+end_src
 
@@ -755,65 +758,100 @@ If only one Type and no trailing comma return ~AST::UnresolvedTypeData::Parenthe
 Is there a meaningful difference here for tree-sitter purposes?
 *************** END
 
-****** BLOCK ArrayOrSliceType                                          :node:
+****** SPEC ArrayOrSliceType                                           :node:
 :PROPERTIES:
 :CUSTOM_ID: h:FAB3845D-97FD-454B-B8C8-09FEEB41FC3D
 :END:
 :LOGBOOK:
+- State "SPEC"       from "BLOCK"      [2025-05-24 Sat 23:05] \\
+  More complete as Type/TypeExpression increase in completeness.
 - State "BLOCK"      from "TODO"       [2024-11-16 Sat 17:09] \\
   Type and TypeExpression completion.
 :END:
 :pgd:
-+ =[=.
++ =[=
 + [[#h:B3490B7C-F387-49C7-BF94-DC9CE8AC3581][Type]] by:
-  - =]= returns ~AST::UnresolvedTypeData::Slice~.
-  - =;= by [[#h:0DEF3192-4840-41B3-A941-714798677092][TypeExpression]] by =]= returns ~AST::UnresolvedTypeData::Array~.
+  - =]= returns ~AST::UnresolvedTypeData::Slice~
+  - =;= by [[#h:0DEF3192-4840-41B3-A941-714798677092][TypeExpression]] by =]= returns ~AST::UnresolvedTypeData::Array~
 :end:
+
+#+begin_src js :treesit t
+array_or_slice_type: ($) => seq(
+    '[',
+    $._type,
+    optional(seq(
+        ';',
+        $.type_expression, // TODO: this rule
+    )),
+    ']',
+)
+#+end_src
 
 Parser: [[file:noir/compiler/noirc_frontend/src/parser/parser/types.rs::fn parse_array_or_slice_type(&mut self)][parse_array_or_slice_type()]]
 
 *************** TODO What about slice literal syntax?
 What about the &[0; 2] syntax for slice literals? This node doesn't appear to do any ampersand parsing? Check higher up the call chain though since there's A LOT of nesting and what not going on currently.
 *************** END
+*************** TODO Not going to differentiate between Array or Slice, also technically the first Type calls up to parse_type_or_error does it make a diff from ts pov?
+*************** END
 
-****** BLOCK MutableReferenceType                                      :node:
+****** SPEC MutableReferenceType                                       :node:
 :PROPERTIES:
 :CUSTOM_ID: h:C1EF6337-B3F1-44D9-B5E6-FF5A0215FCC5
 :END:
 :LOGBOOK:
+- State "SPEC"       from "BLOCK"      [2025-05-24 Sat 23:09] \\
+  More complete alongside Type.
 - State "BLOCK"      from "TODO"       [2024-11-16 Sat 17:09] \\
   Block on Type completion.
 :END:
 :pgd:
-+ =&=.
-+ =mut= (kw).
-+ [[#h:B3490B7C-F387-49C7-BF94-DC9CE8AC3581][Type]].
++ =&=
++ =mut= (kw)
++ [[#h:B3490B7C-F387-49C7-BF94-DC9CE8AC3581][Type]]
 :end:
+
+#+begin_src js :treesit t
+mutable_reference_type: ($) => seq(
+    '&',
+    'mut',
+    $._type,
+)
+#+end_src
 
 Parser: [[file:noir/compiler/noirc_frontend/src/parser/parser/types.rs::fn parses_mutable_reference_type(&mut self)][parse_mutable_reference_type()]]
 
-Return: ~AST::UnresolvedTypeData::MutableReference~,
+Return: ~AST::UnresolvedTypeData::MutableReference~.
 
-*************** TODO Get all these return types by using rust-analyser or something? Once we know the parsing function (should still do this manually), give that to rust-analyser to inline the return type here instead of manually maintaining it.
-Assuming it will be accurate.
-*************** END
-
-****** BLOCK FunctionType                                              :node:
+****** SPEC FunctionType                                               :node:
 :PROPERTIES:
 :CUSTOM_ID: h:96043AA8-9EC3-4E80-AA5D-CBFFE60A9072
 :END:
 :LOGBOOK:
+- State "SPEC"       from "BLOCK"      [2025-05-24 Sat 23:13] \\
+  More complete alongside Type.
 - State "BLOCK"      from "TODO"       [2024-11-16 Sat 17:37] \\
   Type completion.
 :END:
 :pgd:
-+ (opt) =unconstrained= (kw).
-+ =fn= (kw).
-+ (opt) [[#h:4E68CB10-4122-4C09-B99F-DE7F57651E02][CaptureEnvironment]].
-+ [[#h:FC1E33B7-033B-4F6F-9EFD-2CDC784E572C][Parameter]].
-+ =->=.
-+ [[#h:B3490B7C-F387-49C7-BF94-DC9CE8AC3581][Type]].
++ (opt) =unconstrained= (kw)
++ =fn= (kw)
++ (opt) [[#h:4E68CB10-4122-4C09-B99F-DE7F57651E02][CaptureEnvironment]]
++ [[#h:FC1E33B7-033B-4F6F-9EFD-2CDC784E572C][Parameter]]
++ =->=
++ [[#h:B3490B7C-F387-49C7-BF94-DC9CE8AC3581][Type]]
 :end:
+
+#+begin_src js :treesit t
+function_type: ($) => seq(
+    'unconstrained',
+    'fn',
+    optional($.capture_environment),
+    $.parameter_list,
+    '->',
+    $._type,
+)
+#+end_src
 
 Parser: [[file:noir/compiler/noirc_frontend/src/parser/parser/types.rs::fn parse_function_type(&mut self)][parse_function_type()]]
 
@@ -823,38 +861,58 @@ Return: ~AST::UnresolvedTypeData::Function~.
 Because there's already a function for parsing a function declaration in the compiler frontend as far as I can see and that function does not support environment capture. It's been a while but I believe I have some environment capture stuff in Tikan from old noir, see how that's used and if that pattern is still valid in current Noir (as well as consulting the compiler tests) to determine what is valid now if there's still uncertainty once all frontend paths are documented.
 *************** END
 
-******* BLOCK CaptureEnvironment                                       :node:
+******* SPEC CaptureEnvironment                                        :node:
 :PROPERTIES:
 :CUSTOM_ID: h:4E68CB10-4122-4C09-B99F-DE7F57651E02
 :END:
 :LOGBOOK:
+- State "SPEC"       from "BLOCK"      [2025-05-24 Sat 23:22] \\
+  More complete alongside Type.
 - State "BLOCK"      from "TODO"       [2024-11-16 Sat 17:34] \\
   Type completion.
 :END:
 :pgd:
-+ =[=.
-+ [[#h:B3490B7C-F387-49C7-BF94-DC9CE8AC3581][Type]].
-+ =]=.
++ =[=
++ [[#h:B3490B7C-F387-49C7-BF94-DC9CE8AC3581][Type]]
++ =]=
 :end:
+
+#+begin_src js :treesit t
+capture_environment: ($) => seq(
+    '[',
+    $._type,
+    ']',
+)
+#+end_src
 
 Function capture environment syntax, e.g. =fn foo[Env]()= where =[Env]= is the environment specifier valid for the function to be called within.
 
 Parser: /within slice of parent/
 #+transclude: [[file:noir/compiler/noirc_frontend/src/parser/parser/types.rs::252][FunctionType CaptureEnvironment]] :lines 252-258 :src rust
 
-******* BLOCK Parameter                                                :node:
+******* SPEC Parameter                                                 :node:
 :PROPERTIES:
 :CUSTOM_ID: h:FC1E33B7-033B-4F6F-9EFD-2CDC784E572C
 :END:
 :LOGBOOK:
+- State "SPEC"       from "BLOCK"      [2025-05-24 Sat 23:22] \\
+  More complete alongside Type.
 - State "BLOCK"      from "TODO"       [2024-11-16 Sat 17:34] \\
   Type completion.
 :END:
 :pgd:
-+ =(=.
-+ (rep0 grp) [[#h:B3490B7C-F387-49C7-BF94-DC9CE8AC3581][Type]] by =,=.
-+ =)=.
++ =(=
++ (rep0 grp) [[#h:B3490B7C-F387-49C7-BF94-DC9CE8AC3581][Type]] by =,=
++ =)=
 :end:
+
+#+begin_src js :treesit t
+parameter_list: ($) => seq(
+    '(',
+    sepBy($._type, ','),
+    ')',
+)
+#+end_src
 
 Parser: /within slice of parent/ and [[file:noir/compiler/noirc_frontend/src/parser/parser/types.rs::fn parse_parameter(&mut self)][parse_parameter()]]
 #+transclude: [[file:noir/compiler/noirc_frontend/src/parser/parser/types.rs::271][parse_many()]] :lines 271-275 :src rust
@@ -863,6 +921,11 @@ Parser: /within slice of parent/ and [[file:noir/compiler/noirc_frontend/src/par
 Could easily validate with a concrete syntax test however.
 
 The documentation for (rep0 grp) here differs from other lsits because in those other cases at least one element was required before the optional repeating, as this TODO states unsure if the "at least one" is required here.
+
+No trailing comma here either right?
+*************** END
+*************** TODO Move this node parameter_list elsewhere?
+It feels pretty generic, so we should put it somewhere in grammar.js that reflects that (as appropriate).
 *************** END
 
 ****** BLOCK TraitAsType                                               :node:

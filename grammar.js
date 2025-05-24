@@ -130,6 +130,9 @@ module.exports = grammar({
         _type: ($) => choice(
             $.primitive_type,
             $.parentheses_type,
+            $.array_or_slice_type,
+            $.mutable_reference_type,
+            $.function_type,
         ),
         
         primitive_type: ($) => choice(
@@ -166,6 +169,43 @@ module.exports = grammar({
             '(',
             sepBy1($._type, ','),
             optional(','),
+            ')',
+        ),
+        
+        array_or_slice_type: ($) => seq(
+            '[',
+            $._type,
+            optional(seq(
+                ';',
+                $.type_expression, // TODO: this rule
+            )),
+            ']',
+        ),
+        
+        mutable_reference_type: ($) => seq(
+            '&',
+            'mut',
+            $._type,
+        ),
+        
+        function_type: ($) => seq(
+            'unconstrained',
+            'fn',
+            optional($.capture_environment),
+            $.parameter_list,
+            '->',
+            $._type,
+        ),
+        
+        capture_environment: ($) => seq(
+            '[',
+            $._type,
+            ']',
+        ),
+        
+        parameter_list: ($) => seq(
+            '(',
+            sepBy($._type, ','),
             ')',
         ),
         
