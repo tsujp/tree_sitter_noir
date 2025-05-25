@@ -161,16 +161,29 @@ In source its listed as Attribute::Secondary but the comment for secondary attri
 *** next_token
 TODO: Organise this and where/how we're putting lexing info.
 
+** Parsing
+:PROPERTIES:
+:CUSTOM_ID: h:DB42728E-09AF-4189-B2BE-E48853E5C1D9
+:END:
+
+Parser entry at [[file:noir/compiler/noirc_frontend/src/parser/parser.rs::pub fn parse_program(source_program: &str)][parse_program()]], yields a ~ParsedModule~ struct.
+#+transclude: [[file:noir/compiler/noirc_frontend/src/parser/mod.rs::84][ParsedModule struct]] :lines 84-89 :src rust
+
+From ~ParsedModule~ we see ~Item~ and ~ItemKind~ which reveals some intial top-level structure:
+#+transclude: [[file:noir/compiler/noirc_frontend/src/parser/mod.rs::133][ItemKind enum]] :lines 133-145 :src rust
+
+*************** TODO Continue exploring parser/mod.rs which has other structs like ParsedSubModule
+These help inform the general structure for the tree-sitter grammar. Especially now as I am currently trying to get the top-level stuff coarse enough to reach the fine-grained things which have been 'implemented' but which cannot yet be tested since a full CST is required.
+*************** END
+
 ** Structure                                                       :bingbong:
 
-Noir *Program* contains *Module* which is comprised of [[#h:C58B2CB4-FF62-49BB-AFFD-1BADF4462B9D][InnerDocComments]] followed by (rep0) [[#h:8CC1D239-66B1-45A9-BB71-66AF07161479][Item]].
+This subtree layout is for documentation, and does not (in it's raw source form) 1:1 represent Noir's AST as there are many nested, recursive, and cross-referencing nodes (which is to be expected). Org-mode is strictly hierarchical so what is literally in-source here are logical groupings for notes and grammar construction.
 
-Program:
-#+transclude: [[file:noir/compiler/noirc_frontend/src/parser/parser.rs][Parser::parse_program()]] :lines 115-119 :src rust
+A graph of the relationship between AST nodes (so showing Noir's AST) can be exported via graphviz (TODO: link and document that custom exporter).
 
-Module:
-#+transclude: [[file:noir/compiler/noirc_frontend/src/parser/parser.rs][Parser::parse_module()]] :lines 122-125 :src rust
-
+*************** TODO This line and the following one review/change as required
+*************** END
 
 The first list under each /Noir/ heading represents grammar where each element (-) is a logic OR and each element (+) is an ordered item type (also inlined via =by=).
 
@@ -181,50 +194,87 @@ So, the following example list reads "(A followed by B) OR (C followed by D foll
 :   + D
 :   + E
 
-*** TODO Program                                                       :node:
+*** DONE Program                                                       :node:
+CLOSED: [2025-05-25 Sun 17:51]
 :PROPERTIES:
 :CUSTOM_ID: h:A8A4AE5F-6FDB-4091-87DA-E4BCE320452C
 :END:
+:LOGBOOK:
+- State "DONE"       from "TODO"       [2025-05-25 Sun 17:51]
+:END:
 :pgd:
-+ [[#h:649C4EE8-8F15-4F45-8EA6-3AD48A893930][Module]].
++ [[#h:649C4EE8-8F15-4F45-8EA6-3AD48A893930][Module]]
 :end:
 
-*** TODO Module                                                        :node:
+Parser: [[file:noir/compiler/noirc_frontend/src/parser/parser.rs::pub(crate) fn parse_program(&mut self)][parse_program()]]
+#+transclude: [[file:noir/compiler/noirc_frontend/src/parser/parser.rs::115][Program doc]] :lines 115-115 :src fundamental
+
+*** SPEC Module                                                        :node:
 :PROPERTIES:
 :CUSTOM_ID: h:649C4EE8-8F15-4F45-8EA6-3AD48A893930
 :END:
+:LOGBOOK:
+- State "SPEC"       from "TODO"       [2025-05-25 Sun 17:52]
+:END:
 :pgd:
-+ [[#h:C58B2CB4-FF62-49BB-AFFD-1BADF4462B9D][InnerDocComments]].
-+ (rep0) [[#h:8CC1D239-66B1-45A9-BB71-66AF07161479][Item]].
++ [[#h:C58B2CB4-FF62-49BB-AFFD-1BADF4462B9D][InnerDocComments]]
++ (rep0) [[#h:8CC1D239-66B1-45A9-BB71-66AF07161479][Item]]
 :end:
 
-*************** TODO Re-evaluate the docstring for this in tangle grammar template
-Is _statement actually Module for example. This might be a remnant from the old parser-combinator frontend code. This is a super SUPER nitpick so do this last, even if it bugs you every time you glance at it until then. How strong is my will!
-*************** END
+This /is/ ~ParsedModule~ (see: [[#h:DB42728E-09AF-4189-B2BE-E48853E5C1D9][Parsing]]). So a Module represents one parsed source-file.
 
-*** TODO InnerDocComments
+Parser: [[file:noir/compiler/noirc_frontend/src/parser/parser.rs::pub(crate) fn parse_module(&mut self, nested: bool)][parse_module()]]
+#+transclude: [[file:noir/compiler/noirc_frontend/src/parser/parser.rs::122][Module doc]] :lines 122-122 :src fundamental
+
+*** TODO DocComments
+:LOGBOOK:
+- State "TODO"       from              [2025-05-25 Sun 20:33] \\
+  Restructure, putting {Inner,Outer}DocComments under this.
+:END:
+
+InnerDocComments and OuterDocComments only differ in the ~DocStyle~ associated (see [[#h:E866B8E1-2736-4A62-938B-0FD416C4A088][comment lexing]]). They are both comprised of [[#h:E866B8E1-2736-4A62-938B-0FD416C4A088][comment]], are both allowed at top-level, and have effectively identical parsing. For brevity, they are parsed generally via:
+
+Calls [[#h:AC5A6E2C-59EC-44C6-9D1E-52553E56C3F9][eat_kind]] with ~TokenKind::{Inner,Outer}DocComment~, so matched tokens from lexing are [[#h:155F78B1-495B-4F49-BFED-82369979A23E][line_comment]] and [[#h:5B512D17-7FD5-4FD5-B4AA-C1B27A9E6FCA][block_comment]] so long as they have ~DocStyle::{Inner,Outer}~.
+
+A string of the matched comments contents is then returned. The contents (see lexing) exclude the glue-token prefix and (closing suffix for block comments).
+
+**** TODO InnerDocComments                                             :leaf:
 :PROPERTIES:
 :CUSTOM_ID: h:C58B2CB4-FF62-49BB-AFFD-1BADF4462B9D
 :END:
-Foo
+:pgd:
++ (rep0) [[#h:E866B8E1-2736-4A62-938B-0FD416C4A088][comment]] (token, with ~DocStyle::Inner~)
+:end:
+
+Parser: [[file:noir/compiler/noirc_frontend/src/parser/parser/doc_comments.rs::pub(super) fn parse_inner_doc_comments(&mut self)][parse_inner_doc_comments()]], [[file:noir/compiler/noirc_frontend/src/parser/parser/doc_comments.rs::fn parse_inner_doc_comment(&mut self)][parse_inner_doc_comment()]]
+#+transclude: [[file:noir/compiler/noirc_frontend/src/parser/parser/doc_comments.rs::6][InnerDocComments doc]] :lines 6-6 :src fundamental
+
+*************** TODO Look at BorrowedToken
+Not strictly related to this headline only, just while looking around. In token.rs enum BorrowedToken represents a token in noirs grammar. So, all the token types are there.
+*************** END
+
+**** TODO OuterDocComments                                             :leaf:
+:PROPERTIES:
+:CUSTOM_ID: h:FB5478BF-5E66-4686-931B-733349F83FD8
+:END:
+:pgd:
++ (rep0) [[#h:E866B8E1-2736-4A62-938B-0FD416C4A088][comment]] (token, with ~DocStyle::Outer~)
+:end:
+
+Parser: [[file:noir/compiler/noirc_frontend/src/parser/parser/doc_comments.rs::pub(super) fn parse_outer_doc_comments(&mut self)][parse_outer_doc_comments()]], [[file:noir/compiler/noirc_frontend/src/parser/parser/doc_comments.rs::fn parse_outer_doc_comment(&mut self)][parse_outer_doc_comment()]]
+#+transclude: [[file:noir/compiler/noirc_frontend/src/parser/parser/doc_comments.rs::19][OuterDocComments doc]] :lines 19-19 :src fundamental
 
 *** TODO Item                                                          :node:
 :PROPERTIES:
 :CUSTOM_ID: h:8CC1D239-66B1-45A9-BB71-66AF07161479
 :END:
 :pgd:
-+ [[#h:FB5478BF-5E66-4686-931B-733349F83FD8][OuterDocComments]].
-+ [[#h:D661B191-E117-4EB9-B6F7-322B7B67A79F][ItemKind]].
++ [[#h:FB5478BF-5E66-4686-931B-733349F83FD8][OuterDocComments]]
++ [[#h:D661B191-E117-4EB9-B6F7-322B7B67A79F][ItemKind]]
 :end:
 
 - Parsed without separator (~Parser::parse_module_items~).
 - ~Parser::parse_module_item_in_list~.
-
-**** TODO OuterDocComments
-:PROPERTIES:
-:CUSTOM_ID: h:FB5478BF-5E66-4686-931B-733349F83FD8
-:END:
-Foo
 
 **** TODO ItemKind                                             :node:cluster:
 :PROPERTIES:
@@ -2465,6 +2515,103 @@ Looking at lookup_int_type this means literal numbers prefixed with u or i will 
 Once that's clear all the call syntax etc up to Lexer.next_token can be documented. Perhaps just ask in Rust IRC.
 *************** END
 
+**** Glue
+:PROPERTIES:
+:CUSTOM_ID: h:47747650-8CB5-48B1-A085-AFAF3C469B8B
+:END:
+
+Lexer (master): [[file:noir/compiler/noirc_frontend/src/lexer/lexer.rs::fn glue(&mut self, prev_token: Token)][glue()]]
+
+Some tokens can contain more than 1 character, e.g. =!== (not equal-to), such tokens are formed by being 'glued' together during lexing.
+
+Starting glue tokens are: =<=, =>=, ===, =/=, =.=, =:=, =!=, =-=.
+#+transclude: [[file:noir/compiler/noirc_frontend/src/lexer/lexer.rs::115][Lexer.next_token() glue matches]] :lines 115-122 :src fundamental
+
+Since ~next_token~ (TODO: link) has already incremented the cursor when the [[file:noir/compiler/noirc_frontend/src/lexer/lexer.rs::fn glue(&mut self, prev_token: Token)][glue()]] lexer is called (in next_tokens pattern match arm), glue is given the prior (initial) ~Token~ it is to start attempting to match from and begins subsequently.
+
+*************** TODO Copy prior notes on glue from elsewhere to here
+I've taken notes on this before, put glue stuff here as appropriate.
+*************** END
+
+**** TODO comment
+:PROPERTIES:
+:CUSTOM_ID: h:E866B8E1-2736-4A62-938B-0FD416C4A088
+:END:
+:LOGBOOK:
+- State "TODO"       from              [2025-05-25 Sun 18:05] \\
+  Need to document how this is lexed since parser grabs it by Token type only.
+:END:
+
+Lexer (sop): [[file:noir/compiler/noirc_frontend/src/lexer/lexer.rs::222][glue() Token::Slash match arm]]
+
+Look at next char, if:
+- =/= switch to [[#h:155F78B1-495B-4F49-BFED-82369979A23E][line_comment]], else if
+- =*= switch to [[#h:5B512D17-7FD5-4FD5-B4AA-C1B27A9E6FCA][block_comment]]
+
+Both lexers for line/block comment are called with the start position on the character /after/ their (now completed) glue-token.
+
+Comments can optionally have a [[file:noir/compiler/noirc_frontend/src/lexer/token.rs::pub enum DocStyle {][DocStyle enum]], ~Outer~ or ~Inner~.
+
+~Outer~ means the comment applies to the subsequent AST node after it (i.e. immediately preceding the element it is outside of).
+~Inner~ means the comment applies to its parent AST node (i.e. the element it is within).
+
+*************** TODO Outer comments are... and Inner comments are...?
+*************** END
+
+***** TODO line_comment
+:PROPERTIES:
+:CUSTOM_ID: h:155F78B1-495B-4F49-BFED-82369979A23E
+:END:
+:LOGBOOK:
+- State "TODO"       from              [2025-05-25 Sun 19:00]
+:END:
+:pgd:
++ =//=
++ (opt grp):
+  - =!= (marks ~DocStyle::Inner~)
+  - =/= (marks ~DocStyle::Outer~)
++ ASCII until newline
+:end:
+
+Lexer: [[file:noir/compiler/noirc_frontend/src/lexer/lexer.rs::fn parse_comment(&mut self, start: u32)][parse_comment()]]
+
+Continue eating asii characters (via Rust stdlib ~is_ascii~) until newline is encountered.
+
+It looks like quadruple forward-slash =////= will disqualify a comment from having ~DocStyle::Outer~, it must be exactly triple. [[file:noir/compiler/noirc_frontend/src/lexer/lexer.rs::Some('/') if self.peek2_char() != '/'.into() => {][See this line of the lexer]].
+
+So =////= has no DocStyle.
+
+*************** TODO It looks like comments are lexed (and then parsed) WITHOUT the comment prefixes
+So a comment like // Foo is parsed as "Foo" (but we know its a comment), the leading characters are dropped. Shall we do this too for ts? Likely we have a comment node and then a "value" or "contents" field on it which is everything after the leading token type
+*************** END
+
+***** TODO block_comment
+:PROPERTIES:
+:CUSTOM_ID: h:5B512D17-7FD5-4FD5-B4AA-C1B27A9E6FCA
+:END:
+:LOGBOOK:
+- State "TODO"       from              [2025-05-25 Sun 19:03]
+:END:
+:pgd:
++ =/*=
++ (opt grp):
+  - =!= (marks ~DocStyle::Inner~)
+  - =*= (marks ~DocStyle::Outer~)
++ ASCII until balanced =*/=
+:end:
+
+Lexer: [[file:noir/compiler/noirc_frontend/src/lexer/lexer.rs::fn parse_block_comment(&mut self, start: u32)][parse_block_comment()]]
+
+Continue eating ascii characters (via Rust stdlib ~is_ascii~) until =*/= encountered such that all opening =/*= and closing =*/= pairs are balanced.
+
+It looks like an empty ~DocStyle::Outer~ block comment is not possible, so =/***/=. It must at least have some content =/** foo */=. [[file:noir/compiler/noirc_frontend/src/lexer/lexer.rs::Some('*') if !matches!(self.peek2_char(), Some('*' | '/')) => {][See this line of the lexer]].
+
+So =/***/= has no DocStyle.
+
+*************** TODO Nested block comments are not multiple AST nodes but a single block comment then?
+Looks like it but confirm later on
+*************** END
+
 **** Ident
 :PROPERTIES:
 :CUSTOM_ID: h:65B0176B-B46F-4679-8535-C504870AC048
@@ -2480,7 +2627,7 @@ Appears only place ~Token::Ident~ is created is within [[file:noir/compiler/noir
 identifier: _ => /[a-zA-Z_][a-zA-Z0-9_]*/
 #+end_src
 
-**** Int
+**** Int                                                               :leaf:
 :PROPERTIES:
 :CUSTOM_ID: h:CA7F6441-C376-4A8E-9C59-B128CC1F841A
 :END:
@@ -2538,6 +2685,17 @@ Parses list of items separated by sep, can optionally end when another (differen
 
 TODO: Don't think I need to document parse_many_return blah blah, that's a compiler implementation detail (unless in future we have problems relating to it).
 
+*** [[file:noir/compiler/noirc_frontend/src/parser/parser.rs::fn eat_kind(&mut self, kind: TokenKind)][Parser.eat_kind(kind)]]
+:PROPERTIES:
+:CUSTOM_ID: h:AC5A6E2C-59EC-44C6-9D1E-52553E56C3F9
+:END:
+
+Parameter =kind= (~TokenKind~) is compared to the parsers current token kind, and if they match ~Some(current_token)~ is returned and the parser is incremented one token forward (via bump).
+
+Checking token kind goes down to [[file:noir/compiler/noirc_frontend/src/lexer/token.rs::355][SpannedToken.kind()]] to [[file:noir/compiler/noirc_frontend/src/lexer/token.rs::497][Token.kind()]] which is the following pattern match:
+
+#+transclude: [[file:noir/compiler/noirc_frontend/src/lexer/token.rs::498][Token.kind() pattern match]] :lines 498-522 :src rust
+
 * Grammar
 :PROPERTIES:
 :header-args: :noweb-sep ",\n\n"
@@ -2569,14 +2727,16 @@ const INTEGER_TYPES = [
 module.exports = grammar({
     name: 'noir',
 
+    // TODO: What else for these extras?
     extras: ($) => [/\s/],
+
+    // TODO: Need to document (for myself) keyword extraction to check we're doing it properly.
     word: ($) => $.identifier,
 
     rules: {
-        // Noirc: Program.
+        // Noirc: Module -- top-level AST node is really Program but it immediately wraps Module.
         source_file: ($) => repeat($._statement),
 
-        // Noirc: Module.
         _statement: ($) => choice($._expression_statement, $._declaration_statement),
 
         _expression_statement: ($) => seq($._expression, ';'),
