@@ -3,6 +3,61 @@ TODO: Logic for :extract
 
 TODO: Default visibility in this file should be outline only (all headings visible but not their content), and all property drawers folded.
 
+* Comments
+:PROPERTIES:
+:export_file_name: comments.txt
+:END:
+
+** Line
+
+#+begin_test
+// Foobar
+// Lorem
+//Whitespace at comment glue-tokens doesn't matter
+//// Four slashes is also a normal line comment!
+//
+//             Big leading whitespace
+
+---
+
+(line_comment)
+(line_comment)
+(line_comment)
+(line_comment)
+(line_comment)
+(line_comment)
+#+end_test
+
+** Line Doc
+
+* Types
+:PROPERTIES:
+:export_file_name: types.txt
+:END:
+
+** Unit
+#+begin_test
+type Foo = ();
+
+---
+
+(source_file
+  (unit_type))
+#+end_test
+
+** TypeExpressions
+
+*** Literal
+#+begin_test
+fn main() {
+  let foo: [Field; 69] = [0; 69];
+}
+
+---
+
+(source_file)
+#+end_test
+
 * Functions
 :PROPERTIES:
 :export_file_name: functions.txt

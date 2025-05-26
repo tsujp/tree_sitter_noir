@@ -832,7 +832,7 @@ array_or_slice_type: ($) => seq(
     $._type,
     optional(seq(
         ';',
-        $.type_expression, // TODO: this rule
+        $.type_expr, // TODO: this rule
     )),
     ']',
 )
@@ -1481,9 +1481,9 @@ function_definition: ($) => seq(
     field('name', $.identifier),
     // TODO: Generics
     $.function_parameters,
-    optional(seq('->' /* TODO: Return visibility and type */)),
+    // optional(seq('->' /* TODO: Return visibility and type */)), // TODO: Temp commented out
     // TODO: Where clause
-    $.block,
+    // $.block, // TODO: Temp commented out
     // TODO: It's block or ';' see Parser::parse_function()
 )
 #+end_src
@@ -1731,11 +1731,11 @@ We'll want to take note of that for the grammar.
 // Statements ending in blocks, thus not requiring semicolons.
 _block_ending_statements: ($) => choice(
     $.for_statement,
-    $.interned_statement,
-    $.block,
-    $.unsafe_expression,
-    $.interned_expression,
-    $.if_statement,
+    // $.interned_statement, // TODO: Commented temporarily.
+    //$.block,
+    // $.unsafe_expression, // TODO: Commented temporarily.
+    // $.interned_expression, // TODO: Commented temporarily.
+    // $.if_statement, // TODO: Commented temporarily.
 )
 #+end_src
 
@@ -1866,6 +1866,10 @@ I don't think we need to do that these attributes come from Statement, so long a
 :LOGBOOK:
 - State "TODO"       from              [2025-05-20 Tue 18:16]
 :END:
+
+#+begin_src js :treesit t
+for_statement: ($) => 'FOR_STATEMENT___TODO'
+#+end_src
 
 ******* TODO IfStatement
 :PROPERTIES:
@@ -2111,7 +2115,8 @@ Call to Type wrapped in ~parse_type_or_error~.
 
 #+begin_src js :treesit t
 // Noirc: OrderedTypeArg.
-_ordered_type_arg: _ => alias($.TODO_TYPE_OR_TYPE_EXPRESSION, $.ordered_type_arg)
+// _ordered_type_arg: _ => alias($.TODO_TYPE_OR_TYPE_EXPRESSION, $.ordered_type_arg)
+_ordered_type_arg: _ => 'ORDERED_TYPE_ARG___TODO'
 #+end_src
 
 *************** TODO How I structure TypeOrTypeExpression as a rule in the grammar directly affects this since it can simply be an alias for that
@@ -2542,6 +2547,13 @@ I've taken notes on this before, put glue stuff here as appropriate.
   Need to document how this is lexed since parser grabs it by Token type only.
 :END:
 
+#+begin_src js :treesit t
+comment: ($) => choice(
+    $.line_comment,
+    $.block_comment,
+)
+#+end_src
+
 Lexer (sop): [[file:noir/compiler/noirc_frontend/src/lexer/lexer.rs::222][glue() Token::Slash match arm]]
 
 Look at next char, if:
@@ -2573,6 +2585,13 @@ Comments can optionally have a [[file:noir/compiler/noirc_frontend/src/lexer/tok
 + ASCII until newline
 :end:
 
+#+begin_src js :treesit t
+line_comment: ($) => token(seq(
+    '//',
+    /.*/,
+))
+#+end_src
+
 Lexer: [[file:noir/compiler/noirc_frontend/src/lexer/lexer.rs::fn parse_comment(&mut self, start: u32)][parse_comment()]]
 
 Continue eating asii characters (via Rust stdlib ~is_ascii~) until newline is encountered.
@@ -2600,6 +2619,10 @@ So a comment like // Foo is parsed as "Foo" (but we know its a comment), the lea
 + ASCII until balanced =*/=
 :end:
 
+#+begin_src js :treesit t
+block_comment: ($) => 'BLOCK_COMMENT___TODO'
+#+end_src
+
 Lexer: [[file:noir/compiler/noirc_frontend/src/lexer/lexer.rs::fn parse_block_comment(&mut self, start: u32)][parse_block_comment()]]
 
 Continue eating ascii characters (via Rust stdlib ~is_ascii~) until =*/= encountered such that all opening =/*= and closing =*/= pairs are balanced.
@@ -2612,7 +2635,7 @@ So =/***/= has no DocStyle.
 Looks like it but confirm later on
 *************** END
 
-**** Ident
+**** ident
 :PROPERTIES:
 :CUSTOM_ID: h:65B0176B-B46F-4679-8535-C504870AC048
 :END:
@@ -2627,9 +2650,13 @@ Appears only place ~Token::Ident~ is created is within [[file:noir/compiler/noir
 identifier: _ => /[a-zA-Z_][a-zA-Z0-9_]*/
 #+end_src
 
-**** Int                                                               :leaf:
+**** SPEC int                                                          :leaf:
 :PROPERTIES:
 :CUSTOM_ID: h:CA7F6441-C376-4A8E-9C59-B128CC1F841A
+:END:
+:LOGBOOK:
+- State "SPEC"       from "TODO"       [2025-05-26 Mon 12:30]
+- State "TODO"       from              [2025-05-26 Mon 12:30]
 :END:
 :pgd:
 - TODO
@@ -2638,8 +2665,8 @@ identifier: _ => /[a-zA-Z_][a-zA-Z0-9_]*/
 #+begin_src js :treesit t
 int_literal: _ => token(seq(
     choice(
-        '/[0-9][0-9_]*/',
-        '/0x[0-9a-fA-F_]+/',
+        /[0-9][0-9_]*/,
+        /0x[0-9a-fA-F_]+/,
     )
 ))
 #+end_src
@@ -2728,7 +2755,10 @@ module.exports = grammar({
     name: 'noir',
 
     // TODO: What else for these extras?
-    extras: ($) => [/\s/],
+    extras: ($) => [
+        /\s/,
+        $.line_comment,
+    ],
 
     // TODO: Need to document (for myself) keyword extraction to check we're doing it properly.
     word: ($) => $.identifier,
@@ -2745,7 +2775,7 @@ module.exports = grammar({
         _expression: ($) => 'foo',
 
         // TODO: Consider all Noirc 'statements' except we enforce trailing semicolon where required? Or just have a statements section idk yet.
-        <<Statements>>,
+        <<Statements>>
 
         // * * * * * * * * * * * * * * * * * * * * * * * * * DECLARATIONS
 
@@ -2846,6 +2876,8 @@ A special kind of type intended for narrow usage.
 These almost entirely come from lexing.
 
 #+transclude: [[#h:CA7F6441-C376-4A8E-9C59-B128CC1F841A][Int]] :treesit
+
+#+transclude: [[#h:E866B8E1-2736-4A62-938B-0FD416C4A088][comment]] :treesit
 
 #+transclude: [[#h:65B0176B-B46F-4679-8535-C504870AC048][Ident]] :treesit
 

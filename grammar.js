@@ -48,14 +48,19 @@ const SECONDARY_ATTRIBUTES = [
 module.exports = grammar({
     name: 'noir',
 
-    extras: ($) => [/\s/],
+    // TODO: What else for these extras?
+    extras: ($) => [
+        /\s/,
+        $.line_comment,
+    ],
+
+    // TODO: Need to document (for myself) keyword extraction to check we're doing it properly.
     word: ($) => $.identifier,
 
     rules: {
-        // Noirc: Program.
+        // Noirc: Module -- top-level AST node is really Program but it immediately wraps Module.
         source_file: ($) => repeat($._statement),
 
-        // Noirc: Module.
         _statement: ($) => choice($._expression_statement, $._declaration_statement),
 
         _expression_statement: ($) => seq($._expression, ';'),
@@ -64,32 +69,7 @@ module.exports = grammar({
         _expression: ($) => 'foo',
 
         // TODO: Consider all Noirc 'statements' except we enforce trailing semicolon where required? Or just have a statements section idk yet.
-        statement: ($) => choice(
-            // TODO: Attributes.
-        ),
         
-        // Noirc: StatementKind.,
-        
-        // Statements ending in blocks, thus not requiring semicolons.
-        _block_ending_statements: ($) => choice(
-            $.for_statement,
-            $.interned_statement,
-            $.block,
-            $.unsafe_expression,
-            $.interned_expression,
-            $.if_statement,
-        ),
-        
-        // Noirc: BreakStatement.
-        break_statement: _ => seq('break'),
-        
-        // Noirc: ContinueStatement.
-        continue_statement: _ => seq('continue'),
-        
-        // Noirc: BlockStatement.
-        block_statement: ($) => choice(
-            // TODO
-        ),
 
         // * * * * * * * * * * * * * * * * * * * * * * * * * DECLARATIONS
 
@@ -116,9 +96,9 @@ module.exports = grammar({
             field('name', $.identifier),
             // TODO: Generics
             $.function_parameters,
-            optional(seq('->' /* TODO: Return visibility and type */)),
+            // optional(seq('->' /* TODO: Return visibility and type */)), // TODO: Temp commented out
             // TODO: Where clause
-            $.block,
+            // $.block, // TODO: Temp commented out
             // TODO: It's block or ';' see Parser::parse_function()
         ),
         
@@ -178,7 +158,7 @@ module.exports = grammar({
             $._type,
             optional(seq(
                 ';',
-                $.type_expression, // TODO: this rule
+                $.type_expr, // TODO: this rule
             )),
             ']',
         ),
@@ -233,7 +213,8 @@ module.exports = grammar({
         ),
         
         // Noirc: OrderedTypeArg.
-        _ordered_type_arg: _ => alias($.TODO_TYPE_OR_TYPE_EXPRESSION, $.ordered_type_arg),
+        // _ordered_type_arg: _ => alias($.TODO_TYPE_OR_TYPE_EXPRESSION, $.ordered_type_arg)
+        _ordered_type_arg: _ => 'ORDERED_TYPE_ARG___TODO',
         
         // Using 'expr' in-place of 'expression' so-as-to not conflate with _real_ expressions.
         // Noirc: TypeExpression -- (see: UnresolvedTypeExpression).
@@ -293,10 +274,22 @@ module.exports = grammar({
 
         int_literal: _ => token(seq(
             choice(
-                '/[0-9][0-9_]*/',
-                '/0x[0-9a-fA-F_]+/',
+                /[0-9][0-9_]*/,
+                /0x[0-9a-fA-F_]+/,
             )
         )),
+        
+        comment: ($) => choice(
+            $.line_comment,
+            $.block_comment,
+        ),
+        
+        line_comment: ($) => token(seq(
+            '//',
+            /.*/,
+        )),
+        
+        block_comment: ($) => 'BLOCK_COMMENT___TODO',
         
         // Noir does not support Unicode Identifiers (UAX#31) so XID_Start/XID_Continue. Only ASCII.
         // Noirc: Token::Ident.
