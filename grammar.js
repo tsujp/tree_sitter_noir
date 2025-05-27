@@ -284,10 +284,26 @@ module.exports = grammar({
             $.block_comment,
         ),
         
-        line_comment: ($) => token(seq(
+        __inner_line_comment_doc_style: _ => token.immediate(prec(2, '!')),
+        __outer_line_comment_doc_style: _ => token.immediate(prec(2, '/')),
+        
+        __line_comment_doc_style: ($) => choice(
+            alias($.__inner_line_comment_doc_style, $.inner_doc_style),
+            alias($.__outer_line_comment_doc_style, $.outer_doc_style),
+        ),
+        
+        line_comment: ($) => seq(
             '//',
-            /.*/,
-        )),
+            choice(
+                // Four forward-slashes is still a normal comment.
+                seq(token.immediate(prec(2, '//')), /.*/),
+                seq(
+                    field('style', $.__line_comment_doc_style),
+                    field('content', alias(/.*/, $.doc_comment)),
+                ),
+                /.*/,
+            ),
+        ),
         
         block_comment: ($) => 'BLOCK_COMMENT___TODO',
         

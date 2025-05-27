@@ -2570,11 +2570,13 @@ Comments can optionally have a [[file:noir/compiler/noirc_frontend/src/lexer/tok
 *************** TODO Outer comments are... and Inner comments are...?
 *************** END
 
-***** TODO line_comment
+***** DONE line_comment
+CLOSED: [2025-05-27 Tue 19:08]
 :PROPERTIES:
 :CUSTOM_ID: h:155F78B1-495B-4F49-BFED-82369979A23E
 :END:
 :LOGBOOK:
+- State "DONE"       from "TODO"       [2025-05-27 Tue 19:08]
 - State "TODO"       from              [2025-05-25 Sun 19:00]
 :END:
 :pgd:
@@ -2586,10 +2588,26 @@ Comments can optionally have a [[file:noir/compiler/noirc_frontend/src/lexer/tok
 :end:
 
 #+begin_src js :treesit t
-line_comment: ($) => token(seq(
+__inner_line_comment_doc_style: _ => token.immediate(prec(2, '!')),
+__outer_line_comment_doc_style: _ => token.immediate(prec(2, '/')),
+
+__line_comment_doc_style: ($) => choice(
+    alias($.__inner_line_comment_doc_style, $.inner_doc_style),
+    alias($.__outer_line_comment_doc_style, $.outer_doc_style),
+),
+
+line_comment: ($) => seq(
     '//',
-    /.*/,
-))
+    choice(
+        // Four forward-slashes is still a normal comment.
+        seq(token.immediate(prec(2, '//')), /.*/),
+        seq(
+            field('style', $.__line_comment_doc_style),
+            field('content', alias(/.*/, $.doc_comment)),
+        ),
+        /.*/,
+    ),
+)
 #+end_src
 
 Lexer: [[file:noir/compiler/noirc_frontend/src/lexer/lexer.rs::fn parse_comment(&mut self, start: u32)][parse_comment()]]
