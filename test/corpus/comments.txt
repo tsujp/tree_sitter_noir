@@ -1,0 +1,114 @@
+==================
+Line / No DocStyle
+==================
+
+// Foobar
+// Lorem
+//Whitespace at comment glue-tokens doesn't matter
+// Comments cannot be nested // So this line // Is a single comment // Not four
+//// Four slashes is also a normal line comment!
+//
+//             Big leading whitespace
+
+// !Not a doc comment because there's a space between the // and !
+
+// Lone
+
+// Wolf
+
+---
+
+(source_file
+  (line_comment)
+  (line_comment)
+  (line_comment)
+  (line_comment)
+  (line_comment)
+  (line_comment)
+  (line_comment)
+  (line_comment)
+  (line_comment)
+  (line_comment)
+)
+
+
+=====================
+Line / Inner DocStyle
+=====================
+
+//! Foobar inner line doc comment
+//!No whitespace at glue-token
+//! No nested //! Line doc /// Comments // Or normal
+//!         Big leading
+//!
+
+//! Lone
+
+//!         ~~~~~~Wolf~~~~~~!**!#$%#!^&@%$!#(!#^!@&(!@*&@!)) (lots of ascii spam)
+
+---
+
+(source_file
+  (line_comment
+    style: (inner_doc_style)
+    content: (doc_comment))
+  (line_comment
+    style: (inner_doc_style)
+    content: (doc_comment))
+  (line_comment
+    style: (inner_doc_style)
+    content: (doc_comment))
+  (line_comment
+    style: (inner_doc_style)
+    content: (doc_comment))
+  (line_comment
+    style: (inner_doc_style)
+    content: (doc_comment))
+  (line_comment
+    style: (inner_doc_style)
+    content: (doc_comment))
+  (line_comment
+    style: (inner_doc_style)
+    content: (doc_comment))
+)
+
+
+=====================
+Line / Outer DocStyle
+=====================
+
+/// Foobar outer line doc comment
+///No whitespace at glue-token
+/// No nested /// Line doc //! Comments // Or normal
+///         Big leading
+///
+
+/// Lone
+
+///         ~~~~~~Wolf~~~~~~!**!#$%#!^&@%$!#(!#^!@&(!@*&@!)) (lots of ascii spam)
+
+---
+
+(source_file
+  (line_comment
+    style: (outer_doc_style)
+    content: (doc_comment))
+  (line_comment
+    style: (outer_doc_style)
+    content: (doc_comment))
+  (line_comment
+    style: (outer_doc_style)
+    content: (doc_comment))
+  (line_comment
+    style: (outer_doc_style)
+    content: (doc_comment))
+  (line_comment
+    style: (outer_doc_style)
+    content: (doc_comment))
+  (line_comment
+    style: (outer_doc_style)
+    content: (doc_comment))
+  (line_comment
+    style: (outer_doc_style)
+    content: (doc_comment))
+)
