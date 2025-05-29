@@ -2638,7 +2638,19 @@ So a comment like // Foo is parsed as "Foo" (but we know its a comment), the lea
 :end:
 
 #+begin_src js :treesit t
-block_comment: ($) => 'BLOCK_COMMENT___TODO'
+__inner_block_comment_doc_style: _ => token.immediate(prec(2, '!')),
+__outer_block_comment_doc_style: _ => token.immediate(prec(2, '*')),
+
+__block_comment_doc_style: ($) => choice(
+    alias($.__inner_block_comment_doc_style, $.inner_doc_style),
+    alias($.__outer_block_comment_doc_style, $.outer_doc_style),
+),
+
+block_comment: ($) => seq(
+    '/*',
+    $._block_comment_content,
+    '*/',
+),
 #+end_src
 
 Lexer: [[file:noir/compiler/noirc_frontend/src/lexer/lexer.rs::fn parse_block_comment(&mut self, start: u32)][parse_block_comment()]]
@@ -2649,6 +2661,9 @@ It looks like an empty ~DocStyle::Outer~ block comment is not possible, so =/***
 
 So =/***/= has no DocStyle.
 
+*************** TODO It looks like outer doc comments must be exactly two asterisks like how outer line comments but be exactly three slashes, right?
+Confirm this later, also feeling a bit tired right now so could just be missing due to fatigue. For now will assume this is true.
+*************** END
 *************** TODO Nested block comments are not multiple AST nodes but a single block comment then?
 Looks like it but confirm later on
 *************** END
@@ -2772,10 +2787,15 @@ const INTEGER_TYPES = [
 module.exports = grammar({
     name: 'noir',
 
+    externals: ($) => [
+        $._block_comment_content,
+    ],
+
     // TODO: What else for these extras?
     extras: ($) => [
         /\s/,
         $.line_comment,
+        $.block_comment,
     ],
 
     // TODO: Need to document (for myself) keyword extraction to check we're doing it properly.

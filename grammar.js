@@ -48,10 +48,15 @@ const SECONDARY_ATTRIBUTES = [
 module.exports = grammar({
     name: 'noir',
 
+    externals: ($) => [
+        $._block_comment_content,
+    ],
+
     // TODO: What else for these extras?
     extras: ($) => [
         /\s/,
         $.line_comment,
+        $.block_comment,
     ],
 
     // TODO: Need to document (for myself) keyword extraction to check we're doing it properly.
@@ -305,7 +310,19 @@ module.exports = grammar({
             ),
         ),
         
-        block_comment: ($) => 'BLOCK_COMMENT___TODO',
+        __inner_block_comment_doc_style: _ => token.immediate(prec(2, '!')),
+        __outer_block_comment_doc_style: _ => token.immediate(prec(2, '*')),
+        
+        __block_comment_doc_style: ($) => choice(
+            alias($.__inner_block_comment_doc_style, $.inner_doc_style),
+            alias($.__outer_block_comment_doc_style, $.outer_doc_style),
+        ),
+        
+        block_comment: ($) => seq(
+            '/*',
+            $._block_comment_content,
+            '*/',
+        ),,
         
         // Noir does not support Unicode Identifiers (UAX#31) so XID_Start/XID_Continue. Only ASCII.
         // Noirc: Token::Ident.

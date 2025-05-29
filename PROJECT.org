@@ -56,7 +56,35 @@ Currently looking at Program = Module top-level, added two headlines Program, Mo
 in rendered grammar correct? Specifically the COMMENTS. I think the comments might've been from old parser-combinator frontend.
 
 2025/05/19 2:31 pm
-Looking at ATTRIBUTES. Let's get that into hithere.js
+Looking at ATTRIBUTES. Let's get that into hithere.js (2025/05/20: hard since re-review of lexer somewhat required, so save this for later I guess).
+
+2025/05/19 2:34 pm
+Perhaps also look at simply getting a basic org-export to HTML up and online. It can have only the styling it has now. Mostly to link to people to show (at a coarse level) what the final /documentation/ will look like.
+
+2025/05/24 4:02 pm
+Currently depth first PatternNoMut -> StructPattern (looking at ln 130 of pattern.rs for path before parse_struct_pattern)
+Part StructPattern is now going through Path from parse_path onwards
+Now currently at PathGenerics which has a call to parse_generic_type_args which is Noirc (GenericTypeArgs) so after finishing docs for PathGenerics will need to start looking at GenericTypeArgs.
+Got all of GenericTypeArgs set to SPEC, looking at IdentifierPattern (directly after, so double check "up the tree" from GenericTypeArgs I haven't skipped anything) since I really need to get the identifier rule in the grammar to begin testing stuff.
+
+NB: Modern :callstack: formatting under Function (for documenting)
+
+Also l
+
+Blockers:
+- InternedPattern
+
+Re-reviewed (done)
+- Pattern
+- TupplePattern
+- PatternList
+
+2025/05/25 2:01 am
+Need to add basic structure to the tree sitter grammar so it can reach the point of a function body, and a let binding within that. Currently I cannot write and run tests because we don't have the top-level items to reach down.
+
+So, look at getting whatever is needed for a function body, and then what goes inside etc so we can do some basic TypeExpressions tests.
+
+1073 in lexer.rs for good comment tests (and more)
 
 *** Coverage TODOs
 
@@ -69,7 +97,7 @@ Finish converting the various forms that are in the literal =grammar.js= to tang
 - [-] Declarations
   - [ ] Function definition
   - [X] Visibility modifier
-  - [ ] Function modifiers
+  - [X] Function modifiers
   - [ ] Parameter list (i.e. function parameters)
   - [ ] Block
   - [ ] Attribute
@@ -77,13 +105,18 @@ Finish converting the various forms that are in the literal =grammar.js= to tang
   - [ ] Attribute path
 - [ ] Expressions
   - [ ] Identifier
-- [ ] Top-of-file
+- [-] Top-of-file
   - [ ] REG_ALPHANUMERIC
   - [ ] REG_NUMERIC
   - [ ] REG_ASCII_PUNCTUATION
-  - [ ] Modifiers
+  - [X] Modifiers
   - [ ] Numeric types
- 
+
+
+*** TODO Clean up external scanner logic for block comment content
+
+=scanner.c= It works, and correctly (by current tests and parser complexity) fine. I hastily put it together so I think a bit of DRYing up may be warranted but DRY can be taken way too far so it could also be perfectly valid as-is. Either way, not a major concern right now at all and more of a "polish" item once the grammar is complete.
+
 *** TODO When noir_grammar.org is opened have transclusion for Grammar heading run
 
 Want to trigger transclusion on that subheading and all it's children only (by default) because babel tangle or saving the file triggers export so we could accidentally export a partially constructed grammar.js if those transclusions are not automatically made.

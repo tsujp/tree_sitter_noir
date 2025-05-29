@@ -112,3 +112,80 @@ Line / Outer DocStyle
     style: (outer_doc_style)
     content: (doc_comment))
 )
+
+
+===================
+Block / No DocStyle
+===================
+
+/* single line block comment */
+
+/*whitespace doesn't matter*/
+
+/*                big        padding           */
+
+/* single line /* nested /* block */ comment */ */
+
+/* multi line
+block comment */
+
+/* lots of ** asterisks * */
+
+/* no nesting kids /** */ /**/ /***/ /*!*/ /*! */ */
+
+/**/
+
+/***/
+
+/****/
+
+/*         ~~~~~~Wolf~~~~~~!**!#$%#!^&@%$!#(!#^!@&(!@*&@!)) (lots of ascii spam)
+//! no nested comments, mate
+// foo
+/// bar
+*/
+
+---
+
+(source_file
+  (block_comment)
+  (block_comment)
+  (block_comment)
+  (block_comment)
+  (block_comment)
+  (block_comment)
+  (block_comment)
+  (block_comment)
+  (block_comment)
+  (block_comment)
+  (block_comment)
+)
+
+
+================================
+Block / No DocStyle / Unmatched1
+:error
+================================
+
+/* unmatched single line
+---
+
+
+================================
+Block / No DocStyle / Unmatched2
+:error
+================================
+
+/* unmatched /* nested comment */
+---
+
+
+================================
+Block / No DocStyle / Unmatched3
+:error
+================================
+
+/* unmatched /*
+multiline /* nested
+comment */ */
+---
