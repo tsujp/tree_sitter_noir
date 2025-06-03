@@ -124,23 +124,35 @@ Block / No DocStyle
 
 /*                big        padding           */
 
-/* single line /* nested /* block */ comment */ */
-
 /* multi line
 block comment */
 
 /* lots of ** asterisks * */
 
-/* no nesting kids /** */ /**/ /***/ /*!*/ /*! */ */
-
 /**/
 
-/***/
+---
 
+(source_file
+  (block_comment)
+  (block_comment)
+  (block_comment)
+  (block_comment)
+  (block_comment)
+  (block_comment)
+)
+
+
+================================
+Block / No DocStyle / Degenerate
+================================
+
+/***/
 /****/
+/* n *//***/
 
 /*         ~~~~~~Wolf~~~~~~!**!#$%#!^&@%$!#(!#^!@&(!@*&@!)) (lots of ascii spam)
-//! no nested comments, mate
+//! lorem
 // foo
 /// bar
 */
@@ -153,10 +165,20 @@ block comment */
   (block_comment)
   (block_comment)
   (block_comment)
-  (block_comment)
-  (block_comment)
-  (block_comment)
-  (block_comment)
+)
+
+
+============================
+Block / No DocStyle / Nested
+============================
+
+/* single line /* nested /* block */ comment */ */
+
+/* no nesting kids /** */ /**/ /***/ /*!*/ /*! */ */
+
+---
+
+(source_file
   (block_comment)
   (block_comment)
 )
@@ -189,3 +211,72 @@ Block / No DocStyle / Unmatched3
 multiline /* nested
 comment */ */
 ---
+
+
+======================
+Block / Inner DocStyle
+======================
+
+/*! single */
+
+/*!whitespace doesn't matter*/
+
+/*!    big   padding    */
+
+/*! single /*! nested /* block */ comment */ */
+
+/*! multi line
+block comment */
+
+/*! lots of ** asterisks * */
+
+/*! no nesting kids /** */ /**/ /***/ /*!*/ /*! */ */
+
+/*!         ~~~~~~Wolf~~~~~~!**!#$%#!^&@%$!#(!#^!@&(!@*&@!)) (lots of ascii spam)
+//! nope
+// foo
+/// bar
+*/
+
+---
+
+(source_file
+  (block_comment
+    style: (inner_doc_style)
+    content: (doc_comment))
+  (block_comment
+    style: (inner_doc_style)
+    content: (doc_comment))
+  (block_comment
+    style: (inner_doc_style)
+    content: (doc_comment))
+  (block_comment
+    style: (inner_doc_style)
+    content: (doc_comment))
+  (block_comment
+    style: (inner_doc_style)
+    content: (doc_comment))
+  (block_comment
+    style: (inner_doc_style)
+    content: (doc_comment))
+  (block_comment
+    style: (inner_doc_style)
+    content: (doc_comment))
+  (block_comment
+    style: (inner_doc_style)
+    content: (doc_comment))
+)
+
+
+==============================
+Block / Inner DocStyle / Empty
+==============================
+
+/*!*/
+
+---
+
+(source_file
+  (block_comment
+    style: (inner_doc_style))
+)

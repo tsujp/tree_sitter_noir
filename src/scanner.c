@@ -5,7 +5,7 @@
 
 // Order must match that in grammar's `externals`, enumerants names need not match.
 enum TokenType {
-  BLOCK_COMMENT_CONTENT
+  BLOCK_COMMENT_CONTENT,
 };
 
 
@@ -45,61 +45,73 @@ void tree_sitter_noir_external_scanner_deserialize(
 }
 
 
+static inline void advance(TSLexer *lexer) { lexer->advance(lexer, false); }
+
+static inline void skip(TSLexer *lexer) { lexer->advance(lexer, true); }
+
+static inline bool is_ascii(TSLexer *lexer) {
+  return (0 <= lexer->lookahead && lexer->lookahead <= 127);
+}
+
+// Called with the parser cursor on the character immediately after the base block comment opening token: /*
+static inline bool scan_block_comment(TSLexer *lexer, const bool *valid_symbols) {
+  unsigned depth = 1;
+  bool has_content = false;
+
+  // Handling the case of an empty inner block comment: /*!*/
+  // Such a comment is still marked with the inner docstyle however it has no content, so there should be no content field on the node (requiring us to return false). This also requires us to include that docstyle marker as a token type otherwise it wouldn't be possible to tell if we've been called after /* or /*!
+
+  // Other such empty block comments are not possible and must have at least 1 character to have a content field (as one would expect).
+
+  while (!lexer->eof(lexer) && depth != 0) {
+    switch (lexer->lookahead) {
+    case '/':
+      advance(lexer);
+      if (lexer->lookahead == '*') { depth++; };
+
+      continue;
+      break;
+
+    case '*':
+      if (depth == 1) {
+        lexer->mark_end(lexer);
+        skip(lexer);
+      } else {
+        advance(lexer);
+      }
+
+      if (lexer->lookahead == '/') {
+        depth--;
+      }
+
+      continue;
+      break;
+
+    default:
+      if (is_ascii(lexer) == false) return false;
+      has_content = true;
+    }
+
+    lexer->mark_end(lexer);
+    advance(lexer);
+  }
+
+  if (depth == 0) {
+    lexer->result_symbol = BLOCK_COMMENT_CONTENT;
+    return true;
+  }
+
+  return false;
+}
+
+
 bool tree_sitter_noir_external_scanner_scan(
   void *payload,
   TSLexer *lexer,
   const bool *valid_symbols
 ) {
-  if (!valid_symbols[BLOCK_COMMENT_CONTENT]) return false;
-
-  // TODO: Clean up this scanners logic, hacked together for now. Maybe this is the best form but I doubt it.
-
-  unsigned depth = 0;
-
-  while (!lexer->eof(lexer)) {
-    // Is this: /*
-    if (lexer->lookahead == '/') {
-      lexer->advance(lexer, false);
-      if (lexer->lookahead == '*') {
-        lexer->advance(lexer, false);
-        depth++;
-      }
-        
-      continue;
-    }
-
-    // Is this: */
-    if (lexer->lookahead == '*') {
-      if (depth == 0) {
-        lexer->mark_end(lexer);
-      }
-      lexer->advance(lexer, false);
-      
-      if (lexer->lookahead == '/') {
-        lexer->advance(lexer, false);
-
-        if (depth == 0) {
-          lexer->result_symbol = BLOCK_COMMENT_CONTENT;
-          return true;
-        }
-        
-        depth--;
-      }
-        
-      continue;
-    }
-      
-    if (0 <= lexer->lookahead && lexer->lookahead <= 127) {
-      lexer->advance(lexer, false);
-    } else {
-      return false;
-    }
-  }
-
-  if (depth == 0) {
-    lexer->mark_end(lexer);
-    lexer->result_symbol = BLOCK_COMMENT_CONTENT;
-    return true;
+  if (valid_symbols[BLOCK_COMMENT_CONTENT]) {
+    return scan_block_comment(lexer, valid_symbols);
   }
 
   return false;

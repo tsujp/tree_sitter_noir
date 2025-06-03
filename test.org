@@ -128,23 +128,32 @@ TODO: Default visibility in this file should be outline only (all headings visib
 
 /*                big        padding           */
 
-/* single line /* nested /* block */ comment */ */
-
 /* multi line
 block comment */
 
 /* lots of ** asterisks * */
 
-/* no nesting kids /** */ /**/ /***/ /*!*/ /*! */ */
-
 /**/
 
-/***/
+---
 
+(block_comment)
+(block_comment)
+(block_comment)
+(block_comment)
+(block_comment)
+(block_comment)
+#+end_test
+
+**** Degenerate
+
+#+begin_test
+/***/
 /****/
+/* n *//***/
 
 /*         ~~~~~~Wolf~~~~~~!**!#$%#!^&@%$!#(!#^!@&(!@*&@!)) (lots of ascii spam)
-//! no nested comments, mate
+//! lorem
 // foo
 /// bar
 */
@@ -156,10 +165,17 @@ block comment */
 (block_comment)
 (block_comment)
 (block_comment)
-(block_comment)
-(block_comment)
-(block_comment)
-(block_comment)
+#+end_test
+
+**** Nested
+
+#+begin_test
+/* single line /* nested /* block */ comment */ */
+
+/* no nesting kids /** */ /**/ /***/ /*!*/ /*! */ */
+
+---
+
 (block_comment)
 (block_comment)
 #+end_test
@@ -184,7 +200,68 @@ comment */ */
 #+end_test
 
 *** Inner DocStyle
-TODO
+
+#+begin_test
+/*! single */
+
+/*!whitespace doesn't matter*/
+
+/*!    big   padding    */
+
+/*! single /*! nested /* block */ comment */ */
+
+/*! multi line
+block comment */
+
+/*! lots of ** asterisks * */
+
+/*! no nesting kids /** */ /**/ /***/ /*!*/ /*! */ */
+
+/*!         ~~~~~~Wolf~~~~~~!**!#$%#!^&@%$!#(!#^!@&(!@*&@!)) (lots of ascii spam)
+//! nope
+// foo
+/// bar
+*/
+
+---
+
+(block_comment
+  style: (inner_doc_style)
+  content: (doc_comment))
+(block_comment
+  style: (inner_doc_style)
+  content: (doc_comment))
+(block_comment
+  style: (inner_doc_style)
+  content: (doc_comment))
+(block_comment
+  style: (inner_doc_style)
+  content: (doc_comment))
+(block_comment
+  style: (inner_doc_style)
+  content: (doc_comment))
+(block_comment
+  style: (inner_doc_style)
+  content: (doc_comment))
+(block_comment
+  style: (inner_doc_style)
+  content: (doc_comment))
+(block_comment
+  style: (inner_doc_style)
+  content: (doc_comment))
+#+end_test
+
+**** Empty
+
+Empty inner-style block comments are possible.
+#+begin_test
+/*!*/
+
+---
+
+(block_comment
+  style: (inner_doc_style))
+#+end_test
 
 *** Outer DocStyle
 TODO

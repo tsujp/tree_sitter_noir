@@ -2599,7 +2599,7 @@ __line_comment_doc_style: ($) => choice(
 line_comment: ($) => seq(
     '//',
     choice(
-        // Four forward-slashes is still a normal comment.
+        // Four forward-slashes is still a normal line comment, not an outer-style.
         seq(token.immediate(prec(2, '//')), /.*/),
         seq(
             field('style', $.__line_comment_doc_style),
@@ -2648,9 +2648,19 @@ __block_comment_doc_style: ($) => choice(
 
 block_comment: ($) => seq(
     '/*',
+    // choice(
+    //     // Three asterisks is still a normal block comment, not an outer-style.
+    //     seq(token.immediate(prec(2, '**')), $._block_comment_content),
+    //     prec(2, seq(
+    //         field('style', $.__block_comment_doc_style),
+    //         // optional(field('content', alias($._block_comment_content, $.doc_comment))),
+    //         field('content', alias($._block_comment_content, $.doc_comment)),
+    //     )),
+    //     $._block_comment_content,
+    // ),
     $._block_comment_content,
     '*/',
-),
+)
 #+end_src
 
 Lexer: [[file:noir/compiler/noirc_frontend/src/lexer/lexer.rs::fn parse_block_comment(&mut self, start: u32)][parse_block_comment()]]
