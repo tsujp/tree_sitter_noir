@@ -2622,11 +2622,13 @@ So =////= has no DocStyle.
 So a comment like // Foo is parsed as "Foo" (but we know its a comment), the leading characters are dropped. Shall we do this too for ts? Likely we have a comment node and then a "value" or "contents" field on it which is everything after the leading token type
 *************** END
 
-***** TODO block_comment
+***** DONE block_comment
+CLOSED: [2025-06-04 Wed 19:29]
 :PROPERTIES:
 :CUSTOM_ID: h:5B512D17-7FD5-4FD5-B4AA-C1B27A9E6FCA
 :END:
 :LOGBOOK:
+- State "DONE"       from "TODO"       [2025-06-04 Wed 19:29]
 - State "TODO"       from              [2025-05-25 Sun 19:03]
 :END:
 :pgd:
