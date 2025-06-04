@@ -147,9 +147,29 @@ block comment */
 
 **** Degenerate
 
+An empty outer-style block comment is just a normal block comment.
+
 #+begin_test
 /***/
+
+---
+
+(block_comment)
+#+end_test
+
+Outer-style block comments must have exactly this starting delimiter =/**=, so =/****/= is not an outer-style block comment with content =*= but rather a normal block comment.
+
+#+begin_test
 /****/
+
+---
+
+(block_comment)
+#+end_test
+
+Remaining degenerate.
+
+#+begin_test
 /* n *//***/
 
 /*         ~~~~~~Wolf~~~~~~!**!#$%#!^&@%$!#(!#^!@&(!@*&@!)) (lots of ascii spam)
@@ -160,8 +180,6 @@ block comment */
 
 ---
 
-(block_comment)
-(block_comment)
 (block_comment)
 (block_comment)
 (block_comment)
@@ -217,6 +235,8 @@ block comment */
 
 /*! no nesting kids /** */ /**/ /***/ /*!*/ /*! */ */
 
+/*!!*/
+
 /*!         ~~~~~~Wolf~~~~~~!**!#$%#!^&@%$!#(!#^!@&(!@*&@!)) (lots of ascii spam)
 //! nope
 // foo
@@ -225,6 +245,9 @@ block comment */
 
 ---
 
+(block_comment
+  style: (inner_doc_style)
+  content: (doc_comment))
 (block_comment
   style: (inner_doc_style)
   content: (doc_comment))
@@ -264,7 +287,78 @@ Empty inner-style block comments are possible.
 #+end_test
 
 *** Outer DocStyle
-TODO
+
+#+begin_test
+/** single */
+
+/**whitespace doesn't matter*/
+
+/**    big   padding    */
+
+/** single /** nested /* block */ comment */ */
+
+/** multi line
+block comment */
+
+/** lots of ** asterisks * */
+
+/** no nesting kids /** */ /**/ /***/ /*!*/ /*! */ */
+
+/**         ~~~~~~Wolf~~~~~~!**!#$%#!^&@%$!#(!#^!@&(!@*&@!)) (lots of ascii spam)
+//! nope
+// foo
+/// bar
+*/
+
+---
+
+(block_comment
+  style: (outer_doc_style)
+  content: (doc_comment))
+(block_comment
+  style: (outer_doc_style)
+  content: (doc_comment))
+(block_comment
+  style: (outer_doc_style)
+  content: (doc_comment))
+(block_comment
+  style: (outer_doc_style)
+  content: (doc_comment))
+(block_comment
+  style: (outer_doc_style)
+  content: (doc_comment))
+(block_comment
+  style: (outer_doc_style)
+  content: (doc_comment))
+(block_comment
+  style: (outer_doc_style)
+  content: (doc_comment))
+(block_comment
+  style: (outer_doc_style)
+  content: (doc_comment))
+#+end_test
+
+**** Minimal
+
+Empty outer-style block comments are not possible, must be exactly the prefix =/**= followed by any non =*= character and then the closing delimiter =*/=.
+
+#+begin_test
+/** */
+/**x*/
+/**!*/
+
+---
+
+(block_comment
+  style: (outer_doc_style)
+  content: (doc_comment))
+(block_comment
+  style: (outer_doc_style)
+  content: (doc_comment))
+(block_comment
+  style: (outer_doc_style)
+  content: (doc_comment))
+#+end_test
 
 * Types
 :PROPERTIES:

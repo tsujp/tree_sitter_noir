@@ -148,7 +148,9 @@ Block / No DocStyle / Degenerate
 ================================
 
 /***/
+
 /****/
+
 /* n *//***/
 
 /*         ~~~~~~Wolf~~~~~~!**!#$%#!^&@%$!#(!#^!@&(!@*&@!)) (lots of ascii spam)
@@ -161,7 +163,9 @@ Block / No DocStyle / Degenerate
 
 (source_file
   (block_comment)
+
   (block_comment)
+
   (block_comment)
   (block_comment)
   (block_comment)
@@ -232,6 +236,8 @@ block comment */
 
 /*! no nesting kids /** */ /**/ /***/ /*!*/ /*! */ */
 
+/*!!*/
+
 /*!         ~~~~~~Wolf~~~~~~!**!#$%#!^&@%$!#(!#^!@&(!@*&@!)) (lots of ascii spam)
 //! nope
 // foo
@@ -241,6 +247,9 @@ block comment */
 ---
 
 (source_file
+  (block_comment
+    style: (inner_doc_style)
+    content: (doc_comment))
   (block_comment
     style: (inner_doc_style)
     content: (doc_comment))
@@ -279,4 +288,82 @@ Block / Inner DocStyle / Empty
 (source_file
   (block_comment
     style: (inner_doc_style))
+)
+
+
+======================
+Block / Outer DocStyle
+======================
+
+/** single */
+
+/**whitespace doesn't matter*/
+
+/**    big   padding    */
+
+/** single /** nested /* block */ comment */ */
+
+/** multi line
+block comment */
+
+/** lots of ** asterisks * */
+
+/** no nesting kids /** */ /**/ /***/ /*!*/ /*! */ */
+
+/**         ~~~~~~Wolf~~~~~~!**!#$%#!^&@%$!#(!#^!@&(!@*&@!)) (lots of ascii spam)
+//! nope
+// foo
+/// bar
+*/
+
+---
+
+(source_file
+  (block_comment
+    style: (outer_doc_style)
+    content: (doc_comment))
+  (block_comment
+    style: (outer_doc_style)
+    content: (doc_comment))
+  (block_comment
+    style: (outer_doc_style)
+    content: (doc_comment))
+  (block_comment
+    style: (outer_doc_style)
+    content: (doc_comment))
+  (block_comment
+    style: (outer_doc_style)
+    content: (doc_comment))
+  (block_comment
+    style: (outer_doc_style)
+    content: (doc_comment))
+  (block_comment
+    style: (outer_doc_style)
+    content: (doc_comment))
+  (block_comment
+    style: (outer_doc_style)
+    content: (doc_comment))
+)
+
+
+================================
+Block / Outer DocStyle / Minimal
+================================
+
+/** */
+/**x*/
+/**!*/
+
+---
+
+(source_file
+  (block_comment
+    style: (outer_doc_style)
+    content: (doc_comment))
+  (block_comment
+    style: (outer_doc_style)
+    content: (doc_comment))
+  (block_comment
+    style: (outer_doc_style)
+    content: (doc_comment))
 )

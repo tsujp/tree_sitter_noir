@@ -50,6 +50,8 @@ module.exports = grammar({
 
     externals: ($) => [
         $._block_comment_content,
+        $.__inner_block_comment_doc_style,
+        $.__outer_block_comment_doc_style,
     ],
 
     // TODO: What else for these extras?
@@ -74,7 +76,34 @@ module.exports = grammar({
         _expression: ($) => 'foo',
 
         // TODO: Consider all Noirc 'statements' except we enforce trailing semicolon where required? Or just have a statements section idk yet.
+        statement: ($) => choice(
+            // TODO: Attributes.
+        ),
         
+        // Noirc: StatementKind.,
+        
+        // Statements ending in blocks, thus not requiring semicolons.
+        _block_ending_statements: ($) => choice(
+            $.for_statement,
+            // $.interned_statement, // TODO: Commented temporarily.
+            //$.block,
+            // $.unsafe_expression, // TODO: Commented temporarily.
+            // $.interned_expression, // TODO: Commented temporarily.
+            // $.if_statement, // TODO: Commented temporarily.
+        ),
+        
+        // Noirc: BreakStatement.
+        break_statement: _ => seq('break'),
+        
+        // Noirc: ContinueStatement.
+        continue_statement: _ => seq('continue'),
+        
+        for_statement: ($) => 'FOR_STATEMENT___TODO',
+        
+        // Noirc: BlockStatement.
+        block_statement: ($) => choice(
+            // TODO
+        ),
 
         // * * * * * * * * * * * * * * * * * * * * * * * * * DECLARATIONS
 
@@ -300,7 +329,7 @@ module.exports = grammar({
         line_comment: ($) => seq(
             '//',
             choice(
-                // Four forward-slashes is still a normal comment.
+                // Four forward-slashes is still a normal line comment, not an outer-style.
                 seq(token.immediate(prec(2, '//')), /.*/),
                 seq(
                     field('style', $.__line_comment_doc_style),
@@ -310,8 +339,8 @@ module.exports = grammar({
             ),
         ),
         
-        __inner_block_comment_doc_style: _ => token.immediate(prec(2, '!')),
-        __outer_block_comment_doc_style: _ => token.immediate(prec(2, '*')),
+        // __inner_block_comment_doc_style: _ => token.immediate(prec(2, '!')),
+        // __outer_block_comment_doc_style: _ => token.immediate(prec(2, '*')),
         
         __block_comment_doc_style: ($) => choice(
             alias($.__inner_block_comment_doc_style, $.inner_doc_style),
@@ -320,9 +349,19 @@ module.exports = grammar({
         
         block_comment: ($) => seq(
             '/*',
-            $._block_comment_content,
+            optional(
+                choice(
+                    // Block comments with doc style (see external parser).
+                    seq(
+                        field('style', $.__block_comment_doc_style),
+                        optional(field('content', alias($._block_comment_content, $.doc_comment))),
+                    ),
+                    // Normal block comments (see external parser).
+                    $._block_comment_content,
+                ),
+            ),
             '*/',
-        ),,
+        ),
         
         // Noir does not support Unicode Identifiers (UAX#31) so XID_Start/XID_Continue. Only ASCII.
         // Noirc: Token::Ident.

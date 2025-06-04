@@ -6,6 +6,8 @@
 // Order must match that in grammar's `externals`, enumerants names need not match.
 enum TokenType {
   BLOCK_COMMENT_CONTENT,
+  INNER_BLOCK_COMMENT_DOC_STYLE,
+  OUTER_BLOCK_COMMENT_DOC_STYLE,
 };
 
 
@@ -55,6 +57,36 @@ static inline bool is_ascii(TSLexer *lexer) {
 
 // Called with the parser cursor on the character immediately after the base block comment opening token: /*
 static inline bool scan_block_comment(TSLexer *lexer, const bool *valid_symbols) {
+  char first = (char)lexer->lookahead;
+
+  // Matches: /*!
+  //            ^
+  if (valid_symbols[INNER_BLOCK_COMMENT_DOC_STYLE] && first == '!') {
+    lexer->result_symbol = INNER_BLOCK_COMMENT_DOC_STYLE;
+    advance(lexer);
+    return true;
+  }
+
+  // Matches: /**
+  //            ^
+  if (valid_symbols[OUTER_BLOCK_COMMENT_DOC_STYLE] && first == '*') {
+    advance(lexer);
+    lexer->mark_end(lexer);
+
+    // Matches: /**/ -- i.e. an empty normal block comment.
+    //             ^
+    if (lexer->lookahead == '/') return false;
+
+    // Matches: /**x -- where x is not *, ensuring exactly two asterisks and no more.
+    //             ^
+    if (lexer->lookahead != '*') {
+      lexer->result_symbol = OUTER_BLOCK_COMMENT_DOC_STYLE;
+      return true;
+    }
+  } else {
+    advance(lexer);
+  }
+  
   unsigned depth = 1;
   bool has_content = false;
 
@@ -96,7 +128,7 @@ static inline bool scan_block_comment(TSLexer *lexer, const bool *valid_symbols)
     advance(lexer);
   }
 
-  if (depth == 0) {
+  if (depth == 0 && valid_symbols[BLOCK_COMMENT_CONTENT]) {
     lexer->result_symbol = BLOCK_COMMENT_CONTENT;
     return true;
   }
@@ -110,7 +142,10 @@ bool tree_sitter_noir_external_scanner_scan(
   TSLexer *lexer,
   const bool *valid_symbols
 ) {
-  if (valid_symbols[BLOCK_COMMENT_CONTENT]) {
+  if (valid_symbols[BLOCK_COMMENT_CONTENT] ||
+      valid_symbols[INNER_BLOCK_COMMENT_DOC_STYLE] ||
+      valid_symbols[OUTER_BLOCK_COMMENT_DOC_STYLE]
+     ) {
     return scan_block_comment(lexer, valid_symbols);
   }
 

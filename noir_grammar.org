@@ -2638,8 +2638,8 @@ So a comment like // Foo is parsed as "Foo" (but we know its a comment), the lea
 :end:
 
 #+begin_src js :treesit t
-__inner_block_comment_doc_style: _ => token.immediate(prec(2, '!')),
-__outer_block_comment_doc_style: _ => token.immediate(prec(2, '*')),
+// __inner_block_comment_doc_style: _ => token.immediate(prec(2, '!')),
+// __outer_block_comment_doc_style: _ => token.immediate(prec(2, '*')),
 
 __block_comment_doc_style: ($) => choice(
     alias($.__inner_block_comment_doc_style, $.inner_doc_style),
@@ -2648,17 +2648,17 @@ __block_comment_doc_style: ($) => choice(
 
 block_comment: ($) => seq(
     '/*',
-    // choice(
-    //     // Three asterisks is still a normal block comment, not an outer-style.
-    //     seq(token.immediate(prec(2, '**')), $._block_comment_content),
-    //     prec(2, seq(
-    //         field('style', $.__block_comment_doc_style),
-    //         // optional(field('content', alias($._block_comment_content, $.doc_comment))),
-    //         field('content', alias($._block_comment_content, $.doc_comment)),
-    //     )),
-    //     $._block_comment_content,
-    // ),
-    $._block_comment_content,
+    optional(
+        choice(
+            // Block comments with doc style (see external parser).
+            seq(
+                field('style', $.__block_comment_doc_style),
+                optional(field('content', alias($._block_comment_content, $.doc_comment))),
+            ),
+            // Normal block comments (see external parser).
+            $._block_comment_content,
+        ),
+    ),
     '*/',
 )
 #+end_src
@@ -2799,6 +2799,8 @@ module.exports = grammar({
 
     externals: ($) => [
         $._block_comment_content,
+        $.__inner_block_comment_doc_style,
+        $.__outer_block_comment_doc_style,
     ],
 
     // TODO: What else for these extras?
@@ -2823,7 +2825,7 @@ module.exports = grammar({
         _expression: ($) => 'foo',
 
         // TODO: Consider all Noirc 'statements' except we enforce trailing semicolon where required? Or just have a statements section idk yet.
-        <<Statements>>
+        <<Statements>>,
 
         // * * * * * * * * * * * * * * * * * * * * * * * * * DECLARATIONS
 
