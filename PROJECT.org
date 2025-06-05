@@ -113,7 +113,8 @@ Finish converting the various forms that are in the literal =grammar.js= to tang
   - [ ] Numeric types
 
 
-*** TODO Clean up external scanner logic for block comment content
+*** DONE Clean up external scanner logic for block comment content
+CLOSED: [2025-06-05 Thu 16:37]
 
 =scanner.c= It works, and correctly (by current tests and parser complexity) fine. I hastily put it together so I think a bit of DRYing up may be warranted but DRY can be taken way too far so it could also be perfectly valid as-is. Either way, not a major concern right now at all and more of a "polish" item once the grammar is complete.
 

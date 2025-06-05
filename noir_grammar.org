@@ -2538,11 +2538,13 @@ Since ~next_token~ (TODO: link) has already incremented the cursor when the [[fi
 I've taken notes on this before, put glue stuff here as appropriate.
 *************** END
 
-**** TODO comment
+**** DONE comment
+CLOSED: [2025-06-05 Thu 16:39]
 :PROPERTIES:
 :CUSTOM_ID: h:E866B8E1-2736-4A62-938B-0FD416C4A088
 :END:
 :LOGBOOK:
+- State "DONE"       from "TODO"       [2025-06-05 Thu 16:39]
 - State "TODO"       from              [2025-05-25 Sun 18:05] \\
   Need to document how this is lexed since parser grabs it by Token type only.
 :END:
@@ -2640,9 +2642,6 @@ CLOSED: [2025-06-04 Wed 19:29]
 :end:
 
 #+begin_src js :treesit t
-// __inner_block_comment_doc_style: _ => token.immediate(prec(2, '!')),
-// __outer_block_comment_doc_style: _ => token.immediate(prec(2, '*')),
-
 __block_comment_doc_style: ($) => choice(
     alias($.__inner_block_comment_doc_style, $.inner_doc_style),
     alias($.__outer_block_comment_doc_style, $.outer_doc_style),
