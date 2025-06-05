@@ -1,3 +1,8 @@
+const REG_ALPHABETIC = /[a-zA-Z]/
+// TODO: Using this where Noir parser frontend checks for numeric which actually includes unicode stuff also, but the rest of Noir only allows ASCII so.. this is probably fine.
+const REG_NUMERIC = /[0-9]/
+const REG_ASCII_PUNCTUATION = /[!"#$%&'()*+,\-./:;<=>?@\[\\\]^_`\{|\}~]/
+
 // TODO: Put this in appropriate tangle location instead of literally part of the tangle template maybe? See PrimitiveType > IntegerType.
 const INTEGER_TYPES = [
     'u1',
@@ -71,7 +76,11 @@ module.exports = grammar({
         _statement: ($) => choice($._expression_statement, $._declaration_statement),
 
         _expression_statement: ($) => seq($._expression, ';'),
-        _declaration_statement: ($) => choice($.function_definition),
+        
+        _declaration_statement: ($) => choice(
+            $.attribute,
+            $.function_definition,
+        ),
 
         _expression: ($) => 'foo',
 
@@ -116,6 +125,19 @@ module.exports = grammar({
             'return_data',
             seq('call_data(', $.int_literal ,')'),
         )),
+        
+        // TODO: Differentiate between inner/non-inner in grammar, for now not doing so in order to focus on completing grammar entirely (broadly).
+        // Noirc: Attributes, and InnerAttribute.
+        attribute: ($) => seq(
+            '#',
+            optional('!'), // Marks InnerAttribute.
+            '[',
+            optional("'"), // Marks attribute as having a tag
+            alias($.attribute_content, $.content),
+            ']',
+        ),
+        
+        attribute_content: ($) => seq(repeat1(choice(' ', REG_ALPHABETIC, REG_NUMERIC, REG_ASCII_PUNCTUATION))),
         
         function_parameters: ($) => seq(
             '(',
@@ -338,9 +360,6 @@ module.exports = grammar({
                 /.*/,
             ),
         ),
-        
-        // __inner_block_comment_doc_style: _ => token.immediate(prec(2, '!')),
-        // __outer_block_comment_doc_style: _ => token.immediate(prec(2, '*')),
         
         __block_comment_doc_style: ($) => choice(
             alias($.__inner_block_comment_doc_style, $.inner_doc_style),

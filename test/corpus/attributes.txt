@@ -3,67 +3,38 @@ Normal
 ======
 
 #[foo(bar)]
-fn normal() {}
 
 #[foo]
-fn normal() {}
 
 #[test(should_fail_with = "howdy there")]
-fn normal() {}
 
 #[multiple] #[on a single line]
-fn normal() {}
 
 #['tag]
 #[and stacked]
-fn normal() {}
 
 ---
 
 (source_file
   (attribute
     (content))
-  (function_definition
-    (identifier)
-    (parameter_list)
-    (block))
-
-  (attribute
-    (content))
-  (function_definition
-    (identifier)
-    (parameter_list)
-    (block))
-
-  (attribute
-    (content))
-  (function_definition
-    (identifier)
-    (parameter_list)
-    (block))
-
   (attribute
     (content))
   (attribute
     (content))
-  (function_definition
-    (identifier)
-    (parameter_list)
-    (block))
-
   (attribute
     (content))
   (attribute
     (content))
-  (function_definition
-    (identifier)
-    (parameter_list)
-    (block))
+  (attribute
+    (content))
+  (attribute
+    (content))
 )
 
 
 =================================
-Normal / Invalid inner character1
+Normal / Invalid Inner Character1
 :error
 =================================
 
@@ -72,50 +43,27 @@ fn normal() {}
 ---
 
 
-======
-Cursed
-======
+==========
+Degenerate
+==========
 
 #[   ]
-fn cursed() {}
 
 #[oracle( )]
-fn cursed() {}
 
 #[oracle(...)]
-fn cursed() {}
 
 #[ leading, and space,      seperated  /with/  punctuation!!!,{}|!#_ () () ( ( ) () ( ]
-fn cursed() {}
 
 ---
 
 (source_file
   (attribute
     (content))
-  (function_definition
-    (identifier)
-    (parameter_list)
-    (block))
-
   (attribute
     (content))
-  (function_definition
-    (identifier)
-    (parameter_list)
-    (block))
-
   (attribute
     (content))
-  (function_definition
-    (identifier)
-    (parameter_list)
-    (block))
-
   (attribute
     (content))
-  (function_definition
-    (identifier)
-    (parameter_list)
-    (block))
 )

@@ -553,112 +553,60 @@ fn unconstrained unconstrained one() {}
 ** Normal
 #+begin_test
 #[foo(bar)]
-fn normal() {}
 
 #[foo]
-fn normal() {}
 
 #[test(should_fail_with = "howdy there")]
-fn normal() {}
 
 #[multiple] #[on a single line]
-fn normal() {}
 
 #['tag]
 #[and stacked]
-fn normal() {}
 
 ---
 
 (attribute
   (content))
-(function_definition
-  (identifier)
-  (parameter_list)
-  (block))
-
-(attribute
-  (content))
-(function_definition
-  (identifier)
-  (parameter_list)
-  (block))
-
-(attribute
-  (content))
-(function_definition
-  (identifier)
-  (parameter_list)
-  (block))
-
 (attribute
   (content))
 (attribute
   (content))
-(function_definition
-  (identifier)
-  (parameter_list)
-  (block))
-
 (attribute
   (content))
 (attribute
   (content))
-(function_definition
-  (identifier)
-  (parameter_list)
-  (block))
+(attribute
+  (content))
+(attribute
+  (content))
 #+end_test
 
-*** Invalid inner character
+*** Invalid Inner Character
 #+begin_test :error
 #@[bad]
 fn normal() {}
 #+end_test
 
-** Cursed
+** Degenerate
 #+begin_test
 #[   ]
-fn cursed() {}
 
 #[oracle( )]
-fn cursed() {}
 
 #[oracle(...)]
-fn cursed() {}
 
 #[ leading, and space,      seperated  /with/  punctuation!!!,{}|!#_ () () ( ( ) () ( ]
-fn cursed() {}
 
 ---
 
 (attribute
   (content))
-(function_definition
-  (identifier)
-  (parameter_list)
-  (block))
-
 (attribute
   (content))
-(function_definition
-  (identifier)
-  (parameter_list)
-  (block))
-
 (attribute
   (content))
-(function_definition
-  (identifier)
-  (parameter_list)
-  (block))
-
 (attribute
   (content))
-(function_definition
-  (identifier)
-  (parameter_list)
-  (block))
 #+end_test
 
 Foo

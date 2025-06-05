@@ -86,15 +86,18 @@ So, look at getting whatever is needed for a function body, and then what goes i
 
 1073 in lexer.rs for good comment tests (and more)
 
+2025/06/05 5:03 pm
+Comments rules and external scanner done. Upon refreshing my mind, SHOULD to continue on the ATTRIBUTES crusade to get that complete, but will instead continue on StatementKind > LetStatement > Pattern > PatternOrSelf
+
 *** Grammar Areas
 
 Areas to tackle to construct the tree-sitter grammar.
 
-**** Top-level Items
+**** Top-level
 
 General top-level items need doing (macro) so micro-level structures can be tested. Currently got a bunch of micro-level structures but not enough macro-level.
 
-
+Program contains Module which contains InnerDocComments and Item. Comments can appear anywhere, so Item is effectively our top-level.
 
 *** Coverage TODOs
 

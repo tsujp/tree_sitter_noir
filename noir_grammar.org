@@ -40,127 +40,6 @@ Whitespace is not significant in Noir.
 Newline, tab, carriage return, ASCII space.
 #+transclude: [[file:noir/compiler/noirc_frontend/src/lexer/lexer.rs][Lexer::is_code_whitespace()]] :lines 699-700 :src rust
 
-*** Attribute
-:PROPERTIES:
-:CUSTOM_ID: h:489553F6-ECE8-4E3B-8C00-54FFF4B24FCB
-:END:
-
-*************** TODO Go through the lexing for attributes again
-Lexer first marks attributes as either ~TokenKind::Attribute~ or ~TokenKind::InnerAttribute~.
-
-Further
-*************** END
-
-Primary or Secondary; depending on how many can be applied to a function.
-
-- Primary: one (alters a functions ACIR output).
-- Secondary: unlimited.
-
-#+transclude: [[file:noir/compiler/noirc_frontend/src/lexer/token.rs][Attribute]] :lines 727-734 :src rust
-
-*************** TODO Include tag, inner, and primary/secondary as part of tree-sitter parser or nah?
-*************** END
-*************** TODO Attribute splits on ( and ) as sub-tokens?
-*************** END
-*************** TODO Attributes further captures
-Attributes have some further captures in the Noir lexer, e.g. `foreign` captures a name afterwards. So do that also (and for the secondary attributes).
-*************** END
-
-
-**** PrimaryAttribute
-
-Also called FunctionAttribute.
-
-Predefined:
-
-#+begin_src js :treesit t
-// Functions can only have one primary attribute.
-const PRIMARY_ATTRIBUTES = [
-    'foreign',
-    'builtin',
-    'oracle',
-    'test',
-    'recursive',
-    'fold',
-    'no_predicates',
-    'inline_always',
-    'test',
-    'field',
-]
-#+end_src
-
-#+transclude: [[file:noir/compiler/noirc_frontend/src/lexer/token.rs][FunctionAttribute]] :lines 849-861 :src rust
-#+transclude: [[file:noir/compiler/noirc_frontend/src/lexer/token.rs][predefined primaries]] :lines 782-812 :src rust
-
-**** SecondaryAttribute
-:PROPERTIES:
-:CUSTOM_ID: h:175D41E7-445C-45EE-B35D-27448C1A9D5C
-:END:
-
-Include CustomAttribute and InnerAttribute.
-
-Predefined:
-#+begin_src js :treesit t
-// Functions can have any number of secondary attributes.
-const SECONDARY_ATTRIBUTES = [
-    'deprecated',
-    'contract_library_method',
-    'abi',
-    'export',
-    'varargs',
-    'use_callers_scope',
-    'allow',
-]
-#+end_src
-
-#+transclude: [[file:noir/compiler/noirc_frontend/src/lexer/token.rs][predefined secondaries]] :lines 814-842 :src text
-
-**** Lex process
-
-1. Starts with ~#~.
-   #+transclude: [[file:noir/compiler/noirc_frontend/src/lexer/lexer.rs][Lexer::next_token()]] :lines 142-142 :src rust
-2. Optionally by ~!~ making it an [[#h:175D41E7-445C-45EE-B35D-27448C1A9D5C][InnerAttribute]].
-   #+transclude: [[file:noir/compiler/noirc_frontend/src/lexer/lexer.rs][Lexer::eat_attribute()]] :lines 285-285 :src rust
-3. Immediately by ~[~.
-4. Optionally by ~'~ making the attribute a Tag.
-5. Eat everything until ~]~.
-
-- =word= is everything between enclosing braces ~[~ and ~]~, and in the case of a tag that excludes the initial ~'~.
-- =span= includes everything from starting ~#~ to closing ~]~, inclusive.
-
-Within =Attribute::lookup_attribute=
-
-6. [@6] Split =word= into segments at ~(~ and ~)~, drop all empty segments.
-   #+transclude: [[file:noir/compiler/noirc_frontend/src/lexer/token.rs][Attribute::lookup_attribute()]] :lines 754-757 :src rust
-7. Check all characters in =span= such that they are:
-   - ASCII alphabetic.
-   - Numeric
-     *NOTE* that this does NOT mean ASCII numeric, see [[https://doc.rust-lang.org/std/primitive.char.html#method.is_numeric][rust docs]].
-   - ASCII punctuation; any of: (see [[https://doc.rust-lang.org/std/primitive.char.html#method.is_ascii_punctuation][rust docs]]) ~! " # $ % & ' ( ) * + , - . / : ; < = > ? @ [ \ ] ^ _ ` { | } ~~.
-   - Literal ASCII whitespace.
-   #+transclude: [[file:noir/compiler/noirc_frontend/src/lexer/token.rs][Attribute::lookup_attribute()]] :lines 759-770 :src rust
-
-If the attribute was marked as a Tag a CustomAttribute within a [[SecondaryAttribute]] is created and returned.
-#+transclude: [[file:noir/compiler/noirc_frontend/src/lexer/token.rs][Attribute::lookup_attribute()]] :lines 773-777 :src rust
-
-*************** TODO Do CustomAttributes concern us from tree-sitter perspective?
-*************** END
-
-8. [@8] Each of the split =word= segments are matched and validated (as attribute).
-   #+transclude: [[file:noir/compiler/noirc_frontend/src/lexer/token.rs][Attribute::lookup_attribute()]] :lines 781-845 :src rust
-9. The created attribute is returned.
-
-If the attribute was marked as an [[InnerAttribute]] it cannot match the name of any primary (aka function) attribute. If it doesn't match (good) it's lexed as an [[InnerAttribute]].
-
-Non-inner attributes returned (tokenised) as either primary or secondary.
-
-*************** TODO Is the field attribute primary or secondary?
-In source its listed as Attribute::Secondary but the comment for secondary attributes begins after it. For now I've taken it as the comment describes (thus considering it a primary attribute).
-*************** END
-
-*** next_token
-TODO: Organise this and where/how we're putting lexing info.
-
 ** Parsing
 :PROPERTIES:
 :CUSTOM_ID: h:DB42728E-09AF-4189-B2BE-E48853E5C1D9
@@ -283,6 +162,9 @@ Parser: [[file:noir/compiler/noirc_frontend/src/parser/parser/doc_comments.rs::p
 + [[#h:D661B191-E117-4EB9-B6F7-322B7B67A79F][ItemKind]]
 :end:
 
+Parser: [[file:noir/compiler/noirc_frontend/src/parser/parser/item.rs::pub(crate) fn parse_module_items(&mut self, nested: bool)][parse_module_items()]], [[file:noir/compiler/noirc_frontend/src/parser/parser/item.rs::fn parse_module_item_in_list(&mut self, nested: bool)][parse_module_item_in_list()]], [[file:noir/compiler/noirc_frontend/src/parser/parser/item.rs::fn parse_item(&mut self)][parse_item()]]
+#+transclude: [[file:noir/compiler/noirc_frontend/src/parser/parser/item.rs::87][Item doc]] :lines 87-87 :src fundamental
+
 - Parsed without separator (~Parser::parse_module_items~).
 - ~Parser::parse_module_item_in_list~.
 
@@ -291,9 +173,9 @@ Parser: [[file:noir/compiler/noirc_frontend/src/parser/parser/doc_comments.rs::p
 :CUSTOM_ID: h:D661B191-E117-4EB9-B6F7-322B7B67A79F
 :END:
 :pgd:
-- [[#h:AE3747A8-8CA3-4B6D-AF09-3553CE24CD70][InnerAttribute]].
-- [[#h:FF901AEF-D40D-44AB-9BA6-C324F3531088][Attributes]] by [[#h:2A9D09A5-2E52-4B8C-ABA1-0B3B953F093C][Modifiers]] by (grp):
-  - [[#h:ADB184CE-E43C-423B-803F-DE1679A91829][Use]].
+- [[#h:AE3747A8-8CA3-4B6D-AF09-3553CE24CD70][InnerAttribute]]
+- [[#h:FF901AEF-D40D-44AB-9BA6-C324F3531088][Attribute]] by [[#h:2A9D09A5-2E52-4B8C-ABA1-0B3B953F093C][Modifiers]] by (grp):
+  - [[#h:ADB184CE-E43C-423B-803F-DE1679A91829][Use]]
   - ModOrContract
   - Struct
   - Impl
@@ -303,38 +185,81 @@ Parser: [[file:noir/compiler/noirc_frontend/src/parser/parser/doc_comments.rs::p
   - Function
 :end:
 
+
+Parser: [[file:noir/compiler/noirc_frontend/src/parser/parser/item.rs::fn parse_item_kind(&mut self)][parse_item_kind()]]
+
 TODO: Does this mean that in a list of attributes #[foo] #[bar] #![bing] #[bong] that foo and bar are grouped as attributes, the inner attribute bing breaks that group, and then bong is itself in another group later on? Given that inner attribute makes parse_item_kind return early.
 
-maybe:
+#+transclude: [[file:noir/compiler/noirc_frontend/src/parser/parser/item.rs::97][ItemKind doc]] :lines 97-108 :src fundamental
 
-#+transclude: [[file:noir/compiler/noirc_frontend/src/parser/parser/item.rs][Parser::parse_item_kind()]] :lines 97-108 :src rust
+***** DONE Attributes
+CLOSED: [2025-06-05 Thu 20:03]
+:LOGBOOK:
+- State "DONE"       from "TODO"       [2025-06-05 Thu 20:03]
+- State "TODO"       from              [2025-06-05 Thu 18:56] \\
+  To contain Attributes and InnerAttribute
+:END:
 
-***** TODO InnerAttribute                                              :leaf:
+Calls [[#h:AC5A6E2C-59EC-44C6-9D1E-52553E56C3F9][eat_kind]] with ~TokenKind::{Attribute,InnerAttribute}~, so matched tokens from lexing are [[#h:22DB13A6-D91E-4240-8711-10ED6DEE1C6E][attribute]].
+
+*************** TODO In Noir's AST are these really "declarations"? Organise as appropriate later
+I don't see such a thing yet, but given how closely Noir is modelled after Rust's syntax I'll bin these as declarations /for now/
+*************** END
+*************** TODO Organise this info from old attributes notes and structure
+Primary or Secondary; depending on how many can be applied to a function.
+
+- Primary: one (alters a functions ACIR output).
+- Secondary: unlimited.
+
+  [[file:noir/compiler/noirc_frontend/src/lexer/token.rs][FunctionAttribute]]
+*************** END
+*************** TODO Include tag, inner, and primary/secondary as part of tree-sitter parser or nah?
+*************** END
+*************** TODO Attribute splits on ( and ) as sub-tokens?
+*************** END
+*************** TODO Attributes further captures
+Attributes have some further captures in the Noir lexer, e.g. `foreign` captures a name afterwards. So do that also (and for the secondary attributes).
+*************** END
+
+****** DONE InnerAttribute                                             :leaf:
+CLOSED: [2025-06-05 Thu 20:03]
 :PROPERTIES:
 :CUSTOM_ID: h:AE3747A8-8CA3-4B6D-AF09-3553CE24CD70
 :END:
+:LOGBOOK:
+- State "DONE"       from "SPEC"       [2025-06-05 Thu 20:03]
+- State "SPEC"       from "TODO"       [2025-06-05 Thu 19:10]
+:END:
 :pgd:
-- TODO
++ [[#h:22DB13A6-D91E-4240-8711-10ED6DEE1C6E][attribute]] (token, with ~TokenKind::InnerAttribute~)
 :end:
 
-No special parse logic, merely checks type of lexed token.
-TODO: Link to Attribute (lex) subheading Lex process via that star syntax.
+Parser (sop): [[file:noir/compiler/noirc_frontend/src/parser/parser/item.rs::if let Some(kind) = self.parse_inner_attribute() {][parse_inner_attribute() parent]]
+Parser: [[file:noir/compiler/noirc_frontend/src/parser/parser/attributes.rs::pub(super) fn parse_inner_attribute(&mut self)][parse_inner_attribute()]]
+#+transclude: [[file:noir/compiler/noirc_frontend/src/parser/parser/attributes.rs::11][InnerAttribute doc]] :lines 11-11 :src fundamental
 
-#+transclude: [[file:noir/compiler/noirc_frontend/src/parser/parser/item.rs][parse InnerAttribute]] :lines 110-112 :src rust
-
+*************** TODO Relevance of this old comment and associated GH issue?
 Can be any valid [[SecondaryAttribute]] and is purely a syntactical convenience to apply to it's container versus attribute definitions piled at containers definition. See [[https://github.com/noir-lang/noir/issues/5875][issue]] for more.
-#+transclude: [[file:noir/compiler/noirc_frontend/src/lexer/token.rs][Token::InnerAttribute]] :lines 141-141 :src rust
+*************** END
 
-Any valid ~TokenKind::InnerAttribute~ parsed as InnerAttribute.
-#+transclude: [[file:noir/compiler/noirc_frontend/src/parser/parser/attributes.rs][Parser::parse_inner_attribute]] :lines 11-15 :src rust
-
-***** TODO Attributes                                                  :node:
+****** DONE Attribute                                                  :leaf:
+CLOSED: [2025-06-05 Thu 20:03]
 :PROPERTIES:
 :CUSTOM_ID: h:FF901AEF-D40D-44AB-9BA6-C324F3531088
 :END:
+:LOGBOOK:
+- State "DONE"       from "SPEC"       [2025-06-05 Thu 20:03]
+- State "SPEC"       from "TODO"       [2025-06-05 Thu 19:16]
+:END:
+:pgd:
++ (rep0) [[#h:22DB13A6-D91E-4240-8711-10ED6DEE1C6E][attribute]] (token, with ~TokenKind::Attribute~)
+:end:
 
-Multiple attributes are parsed and collected within =Parser::parse_item_kind()= via call to:
-#+transclude: [[file:noir/compiler/noirc_frontend/src/parser/parser/attributes.rs][Parser::parse_attributes]] :lines 20-30 :src rust
+Parser (sop): [[file:noir/compiler/noirc_frontend/src/parser/parser/item.rs::let attributes = self.parse_attributes();][parse_attributes() parent]]
+Parser: [[file:noir/compiler/noirc_frontend/src/parser/parser/attributes.rs::pub(super) fn parse_attributes(&mut self)][parse_attributes()]], [[file:noir/compiler/noirc_frontend/src/parser/parser/attributes.rs::fn parse_attribute(&mut self)][parse_attribute()]]
+#+transclude: [[file:noir/compiler/noirc_frontend/src/parser/parser/attributes.rs::20][Attributes doc]] :lines 20-20 :src fundamental
+
+In parent all the parsed attributes are collected.
 
 ***** SPEC Modifiers                                                   :node:
 :PROPERTIES:
@@ -1596,7 +1521,7 @@ Parser: [[file:noir/compiler/noirc_frontend/src/parser/parser/function.rs::fn pa
 :pgd:
 - =pub= (kw)
 - =return_data= (kw)
-- =call_data= (kw) by =(= by ~Token::Int~ by =)=
+- =call_data= (kw) by =(= by [[#h:CA7F6441-C376-4A8E-9C59-B128CC1F841A][int]] (token) by =)=
 - NIL
 :end:
 
@@ -1631,7 +1556,7 @@ Used here and elsewhere that Token::Int is. Look at parse_visibility's body and 
 :END:
 :pgd:
 + ={=.
-+ (rep0) [[#h:788ECB8C-0A48-4255-B35E-F5850902AA32][Statement]].
++ (rep0) [[#h:788ECB8C-0A48-4255-B35E-F5850902AA32][Statement]]
 + =}=.
 :end:
 
@@ -1666,7 +1591,7 @@ But the pseudo-grammar says it is, so what is it really?
 :END:
 :pgd:
 + Attributes (TODO link to).
-+ StatementKind.
++ [[#h:7BCA6405-C905-45AB-A3C7-1B7F6064454A][StatementKind]].
 + (opt) =;=.
 :end:
 
@@ -2503,7 +2428,7 @@ Constructed by the lexer.
 
 **** Token Lexing
 
-Function ~Lexer.next_token~ (<- TODO: linkify) is the major fork where ~Token~\s are created. After a series of whitespace, glue (TODO: link to glue), and single-character tokens are checked more complex tokens are then lexed:
+Function [[file:noir/compiler/noirc_frontend/src/lexer/lexer.rs::fn next_token(&mut self)][Lexer.next_token()]] is the major fork where ~Token~\s are created. After a series of whitespace is ignored attempts to lex [[#h:47747650-8CB5-48B1-A085-AFAF3C469B8B][Glue]], and single-character tokens are made followed by more complex tokens.
 
 (TODO all these properly as appropriate):
 eat_string_literal for string literal escape sequences (e.g. \n).
@@ -2512,6 +2437,7 @@ eat_raw_string_or_alpha_numeric raw strings 'r' and '#' or something..?
 eat_quote_or_alpha_numeric quote strings starting with 'q'
 eat_attribute
 
+- =#= for [[#h:22DB13A6-D91E-4240-8711-10ED6DEE1C6E][attribute]] ([[file:noir/compiler/noirc_frontend/src/lexer/lexer.rs::fn eat_attribute(&mut self)][eat_attribute()]])
 
 eat_alpha_numeric called when character is_ascii_alphanumeric (rust stdlib function) or '_' then ~A-Za-z_~ calls to eat_word
 
@@ -2706,6 +2632,110 @@ Appears only place ~Token::Ident~ is created is within [[file:noir/compiler/noir
 identifier: _ => /[a-zA-Z_][a-zA-Z0-9_]*/
 #+end_src
 
+**** AttributeKeywords
+:PROPERTIES:
+:CUSTOM_ID: h:0845FBC0-576F-4E44-B2A8-B7D7B17FBC84
+:END:
+
+Also called FunctionAttribute (predefined):
+#+begin_src js :treesit t
+// Functions can only have one primary attribute.
+const PRIMARY_ATTRIBUTES = [
+    'foreign',
+    'builtin',
+    'oracle',
+    'test',
+    'recursive',
+    'fold',
+    'no_predicates',
+    'inline_always',
+    'test',
+    'field',
+]
+#+end_src
+
+Include CustomAttribute and InnerAttribute (predefined):
+#+begin_src js :treesit t
+// Functions can have any number of secondary attributes.
+const SECONDARY_ATTRIBUTES = [
+    'deprecated',
+    'contract_library_method',
+    'abi',
+    'export',
+    'varargs',
+    'use_callers_scope',
+    'allow',
+]
+#+end_src
+
+**** DONE attribute
+CLOSED: [2025-06-05 Thu 20:02]
+:PROPERTIES:
+:CUSTOM_ID: h:22DB13A6-D91E-4240-8711-10ED6DEE1C6E
+:END:
+:LOGBOOK:
+- State "DONE"       from "TODO"       [2025-06-05 Thu 20:02]
+- State "TODO"       from              [2025-06-05 Thu 17:37] \\
+  Reviewing attribute lexing
+:END:
+:pgd:
++ =#=
++ (opt) =!= (marks ~Token::InnerAttribute~)
++ =[=
++ (opt) ='= (marks as a tag)
++ CHARS until first =]=
+:end:
+
+#+begin_src js :treesit t
+// TODO: Differentiate between inner/non-inner in grammar, for now not doing so in order to focus on completing grammar entirely (broadly).
+// Noirc: Attributes, and InnerAttribute.
+attribute: ($) => seq(
+    '#',
+    optional('!'), // Marks InnerAttribute.
+    '[',
+    optional("'"), // Marks attribute as having a tag
+    alias($.attribute_content, $.content),
+    ']',
+),
+
+attribute_content: ($) => seq(repeat1(choice(' ', REG_ALPHABETIC, REG_NUMERIC, REG_ASCII_PUNCTUATION)))
+#+end_src
+
+Lexer: [[file:noir/compiler/noirc_frontend/src/lexer/lexer.rs::fn eat_attribute(&mut self)][eat_attribute()]], [[file:noir/compiler/noirc_frontend/src/lexer/token.rs::pub(crate) fn lookup_attribute(][Attribute::lookup_attribute()]]
+Types: [[file:noir/compiler/noirc_frontend/src/lexer/token.rs::pub enum Attribute {][Attribute enum]] / [[file:noir/compiler/noirc_frontend/src/lexer/token.rs::pub enum FunctionAttribute {][FunctionAttribute enum]] / [[file:noir/compiler/noirc_frontend/src/lexer/token.rs::pub enum SecondaryAttribute {][SecondaryAttribute enum]] / [[file:noir/compiler/noirc_frontend/src/lexer/token.rs::pub struct CustomAttribute {][CustomAttribute struct]]
+
+If next immediate char is =!= it's a ~Token::InnerAttribute~, else a (normal) ~Token::Attribute~.
+
+The contents of the attribute are everything within the starting/ending =[= and =]=, excluding the tag mark (if present). In source this is ~word~, and ~span~ is everything from the starting =#= to closing =]= inclusive.
+
+After an all the characters of an attribute have been eaten (but before a concrete ~Token~ is created) [[file:noir/compiler/noirc_frontend/src/lexer/token.rs::pub(crate) fn lookup_attribute(][Attribute::lookup_attribute()]] is called to check if this is a predefined attribute, or a custom one.
+
+Parameter ~word~ split into segments at =(= and =)=, all empty segments dropped:
+#+transclude: [[file:noir/compiler/noirc_frontend/src/lexer/token.rs::754][lookup_attribute() word split]] :lines 754-757 :src rust
+
+Parameter ~span~ has all characters checked such that they are any of:
+- ASCII alphabetic.
+- Numeric :: *NOTE* that this does NOT mean ASCII numeric, see [[https://doc.rust-lang.org/std/primitive.char.html#method.is_numeric][rust docs]].
+- ASCII punctuation; any of (see [[https://doc.rust-lang.org/std/primitive.char.html#method.is_ascii_punctuation][rust docs]]): ~! " # $ % & ' ( ) * + , - . / : ; < = > ? @ [ \ ] ^ _ ` { | } ~~.
+- ASCII whitespace.
+
+#+transclude: [[file:noir/compiler/noirc_frontend/src/lexer/token.rs::759][lookup_attribute() slice check]] :lines 759-771 :src rust
+
+If attribute is a tag (via parameter ~is_tag~) an ~Attribute::Secondary~ (enumerant) is returned, itself containing a ~SecondaryAttribute~ (enum) with it's ~Tag~ set to a ~CustomAttribute~.
+#+transclude: [[file:noir/compiler/noirc_frontend/src/lexer/token.rs::773][lookup_attribute() tag return]] :lines 773-779 :src rust
+
+Otherwise each of the processed ~word~\s is checked to see if it's a predefined attribute and either a ~FunctionAttribute~ (enum) or ~SecondaryAttribute~ (enum) is returned as appropriate ([[file:noir/compiler/noirc_frontend/src/lexer/token.rs::781][lookup_attribute() top of predefined pattern-match]]).
+
+Penultimately if =!= was present (marking a ~Token::InnerAttribute~) and the return from lookup_attribute was a ~FunctionAttribute~ a lex error is thrown. If it was a ~SecondaryAttribute~ that return value is wrapped into a ~Token::InnerAttribute~ and returned.
+
+Otherwise a ~Token::Attribute~ wrapping the return value is returned.
+
+So ~Token::InnerAttribute~ cannot have the name of any ~FunctionAttribute~ (aka. Primary) attribute. ~Token::Attribute~ /can/ have the name of any ~FunctionAttribute~ (aka. Primary) or ~SecondaryAttribute~.
+
+*************** TODO Is the field attribute primary or secondary?
+In source its listed as Attribute::Secondary but the comment for secondary attributes begins after it. For now I've taken it as the comment describes (thus considering it a primary attribute).
+*************** END
+
 **** SPEC int                                                          :leaf:
 :PROPERTIES:
 :CUSTOM_ID: h:CA7F6441-C376-4A8E-9C59-B128CC1F841A
@@ -2787,6 +2817,10 @@ Checking token kind goes down to [[file:noir/compiler/noirc_frontend/src/lexer/t
 Constructed grammar from investigating Noir compiler frontend.
 
 #+begin_src js :noweb yes :tangle grammar.js
+const REG_ALPHABETIC = /[a-zA-Z]/
+// TODO: Using this where Noir parser frontend checks for numeric which actually includes unicode stuff also, but the rest of Noir only allows ASCII so.. this is probably fine.
+const REG_NUMERIC = /[0-9]/
+const REG_ASCII_PUNCTUATION = /[!"#$%&'()*+,\-./:;<=>?@\[\\\]^_`\{|\}~]/
 
 // TODO: Put this in appropriate tangle location instead of literally part of the tangle template maybe? See PrimitiveType > IntegerType.
 const INTEGER_TYPES = [
@@ -2805,7 +2839,7 @@ const INTEGER_TYPES = [
 
 <<Modifiers>>
 
-<<AttributeKeywords>>
+<<PrimarySecondaryAttributes>>
 
 module.exports = grammar({
     name: 'noir',
@@ -2833,7 +2867,11 @@ module.exports = grammar({
         _statement: ($) => choice($._expression_statement, $._declaration_statement),
 
         _expression_statement: ($) => seq($._expression, ';'),
-        _declaration_statement: ($) => choice($.function_definition),
+        
+        _declaration_statement: ($) => choice(
+            $.attribute,
+            $.function_definition,
+        ),
 
         _expression: ($) => 'foo',
 
@@ -2876,12 +2914,12 @@ function sepBy(rule, sep) {
 
 #+transclude: [[#h:2A9D09A5-2E52-4B8C-ABA1-0B3B953F093C][Modifiers]] :treesit
 
-*** AttributeKeywords
+*** PrimarySecondaryAttributes
 :PROPERTIES:
-:header-args+: :noweb-ref AttributeKeywords :noweb-sep "\n\n"
+:header-args+: :noweb-ref PrimarySecondaryAttributes :noweb-sep "\n\n"
 :END:
 
-#+transclude: [[#h:489553F6-ECE8-4E3B-8C00-54FFF4B24FCB][AttributeKeywords]] :treesit
+#+transclude: [[#h:0845FBC0-576F-4E44-B2A8-B7D7B17FBC84][AttributeKeywords]] :treesit
 
 *** Statements
 :PROPERTIES:
@@ -2898,6 +2936,8 @@ function sepBy(rule, sep) {
 #+transclude: [[#h:F5A79701-65C9-4FEA-83D8-2413C585A5FA][ItemVisibility]] :treesit
 
 #+transclude: [[#h:17BBA21C-65D3-447D-93DE-2F13E16575C5][Visibility]] :treesit
+
+#+transclude: [[#h:22DB13A6-D91E-4240-8711-10ED6DEE1C6E][attribute]] :treesit
 
 **** FunctionParameters
 
