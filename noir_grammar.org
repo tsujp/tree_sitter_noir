@@ -226,8 +226,10 @@ This /is/ ~ParsedModule~ (see: [[#h:DB42728E-09AF-4189-B2BE-E48853E5C1D9][Parsin
 Parser: [[file:noir/compiler/noirc_frontend/src/parser/parser.rs::pub(crate) fn parse_module(&mut self, nested: bool)][parse_module()]]
 #+transclude: [[file:noir/compiler/noirc_frontend/src/parser/parser.rs::122][Module doc]] :lines 122-122 :src fundamental
 
-*** TODO DocComments
+*** DONE DocComments
+CLOSED: [2025-06-05 Thu 16:59]
 :LOGBOOK:
+- State "DONE"       from "TODO"       [2025-06-05 Thu 16:59]
 - State "TODO"       from              [2025-05-25 Sun 20:33] \\
   Restructure, putting {Inner,Outer}DocComments under this.
 :END:
@@ -238,9 +240,13 @@ Calls [[#h:AC5A6E2C-59EC-44C6-9D1E-52553E56C3F9][eat_kind]] with ~TokenKind::{In
 
 A string of the matched comments contents is then returned. The contents (see lexing) exclude the glue-token prefix and (closing suffix for block comments).
 
-**** TODO InnerDocComments                                             :leaf:
+**** DONE InnerDocComments                                             :leaf:
+CLOSED: [2025-06-05 Thu 16:57]
 :PROPERTIES:
 :CUSTOM_ID: h:C58B2CB4-FF62-49BB-AFFD-1BADF4462B9D
+:END:
+:LOGBOOK:
+- State "DONE"       from "TODO"       [2025-06-05 Thu 16:57]
 :END:
 :pgd:
 + (rep0) [[#h:E866B8E1-2736-4A62-938B-0FD416C4A088][comment]] (token, with ~DocStyle::Inner~)
@@ -253,9 +259,13 @@ Parser: [[file:noir/compiler/noirc_frontend/src/parser/parser/doc_comments.rs::p
 Not strictly related to this headline only, just while looking around. In token.rs enum BorrowedToken represents a token in noirs grammar. So, all the token types are there.
 *************** END
 
-**** TODO OuterDocComments                                             :leaf:
+**** DONE OuterDocComments                                             :leaf:
+CLOSED: [2025-06-05 Thu 16:57]
 :PROPERTIES:
 :CUSTOM_ID: h:FB5478BF-5E66-4686-931B-733349F83FD8
+:END:
+:LOGBOOK:
+- State "DONE"       from "TODO"       [2025-06-05 Thu 16:57]
 :END:
 :pgd:
 + (rep0) [[#h:E866B8E1-2736-4A62-938B-0FD416C4A088][comment]] (token, with ~DocStyle::Outer~)
@@ -2568,6 +2578,8 @@ Comments can optionally have a [[file:noir/compiler/noirc_frontend/src/lexer/tok
 
 ~Outer~ means the comment applies to the subsequent AST node after it (i.e. immediately preceding the element it is outside of).
 ~Inner~ means the comment applies to its parent AST node (i.e. the element it is within).
+
+**Implemented in =extras= as comments can appear anywhere in code.**
 
 *************** TODO Outer comments are... and Inner comments are...?
 *************** END
