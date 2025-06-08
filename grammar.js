@@ -83,6 +83,7 @@ module.exports = grammar({
             $.attribute_item,
             $.use_declaration,
             $.module_or_contract_item,
+            $.struct_item,
         ),
 
         item_list: ($) => seq(
@@ -115,17 +116,6 @@ module.exports = grammar({
         ),
         
         attribute_content: ($) => seq(repeat1(choice(' ', REG_ALPHABETIC, REG_NUMERIC, REG_ASCII_PUNCTUATION))),
-        
-        // Noirc: ModOrContract.
-        module_or_contract_item: ($) => seq(
-            optional($.visibility_modifier),
-            choice('mod', 'contract'), // TODO: Discriminate kind into a field?
-            field('name', $.identifier),
-            choice(
-                ';',
-                field('body', $.item_list),
-            ),
-        ),
         
         // Noirc: Use.
         use_declaration: ($) => seq(
@@ -165,6 +155,45 @@ module.exports = grammar({
             field('scope', $.__path_no_kind_no_turbofish),
             'as',
             field('alias', $.identifier),
+        ),
+        
+        // Noirc: ModOrContract.
+        module_or_contract_item: ($) => seq(
+            optional($.visibility_modifier),
+            choice('mod', 'contract'), // TODO: Discriminate kind into a field?
+            field('name', $.identifier),
+            choice(
+                ';',
+                field('body', $.item_list),
+            ),
+        ),
+        
+        // Noirc: Struct.
+        struct_item: ($) => seq(
+            optional($.visibility_modifier),
+            'struct',
+            field('name', $.identifier),
+            // optional($.generics), // TODO: Generics
+            choice(
+                field('body', $.struct_field_list), // TODO: If this is similar to others, e.g. Impl or Enum we can reduce it to one.
+                ';', // Empty struct.
+            ),
+        ),
+        
+        // TODO: If this is general enough and in-use elsewhere like Impl or Enum then reduce it to 1.
+        // Noirc: StructField.
+        struct_field_item: ($) => seq(
+            optional($.visibility_modifier),
+            field('name', $.identifier),
+            ':',
+            field('type', $._type),
+        ),
+        
+        struct_field_list: ($) => seq(
+            '{',
+            sepBy($.struct_field_item, ','),
+            optional(','),
+            '}',
         ),
         
         function_parameters: ($) => seq(
@@ -233,7 +262,7 @@ module.exports = grammar({
         // Ours: Type.
         _type: ($) => choice(
             $.primitive_type,
-            $.parentheses_type,
+            $._parentheses_type,
             $.array_or_slice_type,
             $.mutable_reference_type,
             $.function_type,
@@ -241,29 +270,29 @@ module.exports = grammar({
         ),
         
         primitive_type: ($) => choice(
-            $.field_type,
-            $.integer_type,
-            $.bool_type,
-            $.string_type,
-            $.format_string_type,
+            $._field_type,
+            $._integer_type,
+            $._bool_type,
+            $._string_type,
+            $._format_string_type,
         ),
         
-        field_type: _ => 'Field',
+        _field_type: _ => 'Field',
         
-        integer_type: _ => choice(...INTEGER_TYPES),
+        _integer_type: _ => choice(...INTEGER_TYPES),
         
-        bool_type: _ => 'bool',
+        _bool_type: _ => 'bool',
         
-        string_type: ($) => seq(
+        _string_type: ($) => seq(
             'str',
             '<',
             // TODO: TypeExpression goes here.
             '>',
         ),
         
-        format_string_type: _ => 'fmtstr',
+        _format_string_type: _ => 'fmtstr',
         
-        parentheses_type: ($) => choice(
+        _parentheses_type: ($) => choice(
             $.unit_type,
             $.tuple_type,
         ),

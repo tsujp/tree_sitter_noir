@@ -503,6 +503,106 @@ mod foo::bar {};
 mod foo::bar { mod foo::bar };
 #+end_test
 
+** Struct
+
+*** Simple
+#+begin_test
+struct foo;
+struct foo {}
+pub struct foo;
+pub(crate) struct foo{}
+
+---
+
+(struct_item
+  name: (identifier))
+(struct_item
+  name: (identifier)
+  body: (struct_field_list))
+(struct_item
+  (visibility_modifier)
+  name: (identifier))
+(struct_item
+  (visibility_modifier)
+  name: (identifier)
+  body: (struct_field_list))
+#+end_test
+
+*** Fields
+#+begin_test
+struct foo {
+  x: i32,
+  pub y: Field,
+  pub(crate) yolo: (),
+}
+
+---
+
+(struct_item
+  name: (identifier)
+  body: (struct_field_list
+    (struct_field_item
+      name: (identifier)
+      type: (primitive_type))
+    (struct_field_item
+      (visibility_modifier)
+      name: (identifier)
+      type: (primitive_type))
+    (struct_field_item
+      (visibility_modifier)
+      name: (identifier)
+      type: (unit_type))))
+#+end_test
+
+*** Generic
+#+begin_test :skip
+struct foo<A, let B: u32> {}
+
+---
+
+TODO
+#+end_test
+
+*** Degenerate
+#+begin_test
+struct foo {,}
+struct foo {x:i32,}
+struct foo {pub(crate)x:(),}
+
+---
+
+(struct_item
+  name: (identifier)
+  body: (struct_field_list))
+(struct_item
+  name: (identifier)
+  body: (struct_field_list
+    (struct_field_item
+      name: (identifier)
+      type: (primitive_type))))
+(struct_item
+  name: (identifier)
+  body: (struct_field_list
+    (struct_field_item
+      (visibility_modifier)
+      name: (identifier)
+      type: (unit_type))))
+#+end_test
+
+*** Unclosed
+
+#+begin_test :error
+struct foo {
+#+end_test
+
+** Impl
+
+** Trait
+
+** Global
+
+** TypeAlias
+
 ** Functions
 
 *************** TODO The Functions subtree can be flattened out so modifiers test all things modifiers are applicable to instead of ONLY in the context of functions

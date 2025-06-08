@@ -181,7 +181,7 @@ Parser: [[file:noir/compiler/noirc_frontend/src/parser/parser/item.rs::pub(crate
 - [[#h:FF901AEF-D40D-44AB-9BA6-C324F3531088][Attribute]] by [[#h:2A9D09A5-2E52-4B8C-ABA1-0B3B953F093C][Modifiers]] by (grp):
   - [[#h:ADB184CE-E43C-423B-803F-DE1679A91829][Use]]
   - [[#h:9204514E-E5FC-488B-8066-66F0D9AF0C85][ModOrContract]]
-  - Struct
+  - [[#h:A53DF633-322A-464B-9947-E56B64A112C7][Struct]]
   - Impl
   - Trait
   - Global
@@ -191,7 +191,9 @@ Parser: [[file:noir/compiler/noirc_frontend/src/parser/parser/item.rs::pub(crate
 
 Parser: [[file:noir/compiler/noirc_frontend/src/parser/parser/item.rs::fn parse_item_kind(&mut self)][parse_item_kind()]]
 
+*************** TODO Some attribute thing from ages ago idk
 TODO: Does this mean that in a list of attributes #[foo] #[bar] #![bing] #[bong] that foo and bar are grouped as attributes, the inner attribute bing breaks that group, and then bong is itself in another group later on? Given that inner attribute makes parse_item_kind return early.
+*************** END
 
 #+transclude: [[file:noir/compiler/noirc_frontend/src/parser/parser/item.rs::97][ItemKind doc]] :lines 97-108 :src fundamental
 
@@ -515,10 +517,89 @@ Only the [[#h:F5A79701-65C9-4FEA-83D8-2413C585A5FA][ItemVisibility]] modifier is
 
 i.e. =mod foo;= is a module declaration and =mod { let x = 123; }= is a real module.
 
-***** TODO Struct
-Foo
+***** SPEC Struct
+:PROPERTIES:
+:CUSTOM_ID: h:A53DF633-322A-464B-9947-E56B64A112C7
+:END:
+:LOGBOOK:
+- State "SPEC"       from "DONE"       [2025-06-08 Sun 23:43] \\
+  Need to test generics also.
+- State "DONE"       from "TODO"       [2025-06-08 Sun 23:43]
+:END:
+:pgd:
++ =struct= (kw)
++ [[#h:65B0176B-B46F-4679-8535-C504870AC048][ident]] (token)
++ (opt) [[#h:BA1422E4-AB97-4099-8346-5845CA9223A1][Generics]]
++ (opt) =;= (returns via ~empty_struct~)
++ ={= by (rep0) [[#h:AE5E66EF-9D42-49F2-853D-5C1E7763416E][StructField]] by =}=
+:end:
 
+#+begin_src js :treesit t
+// Noirc: Struct.
+struct_item: ($) => seq(
+    optional($.visibility_modifier),
+    'struct',
+    field('name', $.identifier),
+    // optional($.generics), // TODO: Generics
+    choice(
+        field('body', $.struct_field_list), // TODO: If this is similar to others, e.g. Impl or Enum we can reduce it to one.
+        ';', // Empty struct.
+    ),
+)
+#+end_src
+
+Parser: [[file:noir/compiler/noirc_frontend/src/parser/parser/item.rs::if self.eat_keyword(Keyword::Struct) {][parse_struct() parent callsite]], [[file:noir/compiler/noirc_frontend/src/parser/parser/structs.rs::pub(crate) fn parse_struct(][parse_struct()]]
+Types: [[file:noir/compiler/noirc_frontend/src/ast/structure.rs::pub struct NoirStruct {][NoirStruct struct]]
 Only the [[#h:F5A79701-65C9-4FEA-83D8-2413C585A5FA][ItemVisibility]] modifier is applicable, all other [[#h:2A9D09A5-2E52-4B8C-ABA1-0B3B953F093C][Modifiers]] are parse errors.
+
+~empty_struct~ ([[file:noir/compiler/noirc_frontend/src/parser/parser/structs.rs::fn empty_struct(][src]]) is a [[file:noir/compiler/noirc_frontend/src/ast/structure.rs::pub struct NoirStruct {][NoirStruct]] with no ~fields~, it may still have a ~name~, associated ~attributes~, ~visibility~, and ~generics~.
+
+*************** TODO Struct BNF wrong
+Semicolon empty struct, and leading visibility modifier.
+*************** END
+
+****** DONE StructField                                                :node:
+CLOSED: [2025-06-08 Sun 23:43]
+:PROPERTIES:
+:CUSTOM_ID: h:AE5E66EF-9D42-49F2-853D-5C1E7763416E
+:END:
+:LOGBOOK:
+- State "DONE"       from "TODO"       [2025-06-08 Sun 23:43]
+:END:
+:pgd:
++ [[#h:FB5478BF-5E66-4686-931B-733349F83FD8][OuterDocComments]]
++ (opt) [[#h:F5A79701-65C9-4FEA-83D8-2413C585A5FA][ItemVisibility]]
++ [[#h:65B0176B-B46F-4679-8535-C504870AC048][ident]] (token)
++ =:=
++ [[#h:B3490B7C-F387-49C7-BF94-DC9CE8AC3581][Type]]
+:end:
+
+#+begin_src js :treesit t
+// TODO: If this is general enough and in-use elsewhere like Impl or Enum then reduce it to 1.
+// Noirc: StructField.
+struct_field_item: ($) => seq(
+    optional($.visibility_modifier),
+    field('name', $.identifier),
+    ':',
+    field('type', $._type),
+),
+    
+struct_field_list: ($) => seq(
+    '{',
+    sepBy($.struct_field_item, ','),
+    optional(','),
+    '}',
+)
+#+end_src
+
+Parser: [[file:noir/compiler/noirc_frontend/src/parser/parser/structs.rs::let fields = self.parse_many(][parse_struct_field() parent callsite]], [[file:noir/compiler/noirc_frontend/src/parser/parser/structs.rs::fn parse_struct_field(&mut self)][parse_struct_field()]]
+Types: [[file:noir/compiler/noirc_frontend/src/ast/structure.rs::pub struct StructField {][StructField struct]]
+
+Since [[#h:8E0DC05B-1ED6-47BE-9589-64DC06FAECCA][parse_many]] is used, and our callsite does not check, a trailing comma (the separator in use) is accepted.
+
+*************** TODO BNF for StructField is wrong
+Parses item visibility. Update at remote after grammar is done.
+*************** END
 
 ***** TODO Implementation
 Foo
@@ -555,7 +636,7 @@ Foo
 // Ours: Type.
 _type: ($) => choice(
     $.primitive_type,
-    $.parentheses_type,
+    $._parentheses_type,
     $.array_or_slice_type,
     $.mutable_reference_type,
     $.function_type,
@@ -611,15 +692,19 @@ When lexing [[file:noir/compiler/noirc_frontend/src/lexer/token.rs::fn lookup_ke
 
 #+begin_src js :treesit t
 primitive_type: ($) => choice(
-    $.field_type,
-    $.integer_type,
-    $.bool_type,
-    $.string_type,
-    $.format_string_type,
+    $._field_type,
+    $._integer_type,
+    $._bool_type,
+    $._string_type,
+    $._format_string_type,
 )
 #+end_src
 
 Parser: [[file:noir/compiler/noirc_frontend/src/parser/parser/types.rs::fn parse_primitive_type(&mut self)][parse_primitive_type()]]
+
+*************** TODO Convention is to have all primitive types be a single node, do we keep that?
+Double check other grammars none appear to go deeper on primitive types (intentionally). So for example =i32= or =Field= is an IntegerType and FieldType respectively but none actually make a CST node called that and instead both would be PrimitiveType. I suppose you can get the match region when tagging to determine what it is, or there's just too many nodes for primitives since convention shows people _do_ have CST nodes for arrays, unit types, etc. I'll follow convention for now and make all the primitive types anonymous nodes by default.
+*************** END
 
 ******* SPEC FieldType                                                 :leaf:
 :PROPERTIES:
@@ -634,7 +719,7 @@ Parser: [[file:noir/compiler/noirc_frontend/src/parser/parser/types.rs::fn parse
 :end:
 
 #+begin_src js :treesit t
-field_type: _ => 'Field'
+_field_type: _ => 'Field'
 #+end_src
 
 Parser: [[file:noir/compiler/noirc_frontend/src/parser/parser/types.rs::fn parse_field_type(&mut self)][parse_field_type()]]
@@ -653,7 +738,7 @@ Parser: [[file:noir/compiler/noirc_frontend/src/parser/parser/types.rs::fn parse
 :end:
 
 #+begin_src js :treesit t
-integer_type: _ => choice(...INTEGER_TYPES)
+_integer_type: _ => choice(...INTEGER_TYPES)
 #+end_src
 
 Parser: [[file:noir/compiler/noirc_frontend/src/parser/parser/types.rs::fn parse_int_type(&mut self)][parse_int_type()]]
@@ -704,7 +789,7 @@ Parser: [[file:noir/compiler/noirc_frontend/src/lexer/token.rs::fn lookup_int_ty
 :end:
 
 #+begin_src js :treesit t
-bool_type: _ => 'bool'
+_bool_type: _ => 'bool'
 #+end_src
 
 Parser: [[file:noir/compiler/noirc_frontend/src/parser/parser/types.rs::fn parse_bool_type(&mut self)][parse_bool_type()]]
@@ -727,7 +812,7 @@ Parses the literal /keyword/ =bool= *and not* literal words =true= or =false=.
 :end:
 
 #+begin_src js :treesit t
-string_type: ($) => seq(
+_string_type: ($) => seq(
     'str',
     '<',
     // TODO: TypeExpression goes here.
@@ -756,7 +841,7 @@ It looks like it _is_ a parser error so..?
 :end:
 
 #+begin_src js :treesit t
-format_string_type: _ => 'fmtstr'
+_format_string_type: _ => 'fmtstr'
 #+end_src
 
 Parser: [[file:noir/compiler/noirc_frontend/src/parser/parser/types.rs::fn parse_fmtstr_type(&mut self)][parse_fmtstr_type()]]
@@ -767,11 +852,13 @@ Return ~AST::UnresolvedTypeData::FormatString~.
 Missing docs, on paper I note that FmtStrType can be a TypeExpression or a Type (both recursively) but I don't have those notes right here in the org file. Looking at the linked parser I see the logic, so note that here under this heading since that informs the grammar construction and we want this info in the actual org file.
 *************** END
 
-******* ComptimeType
+******* TODO ComptimeType
 :PROPERTIES:
 :CUSTOM_ID: h:98FC5657-8034-42F7-A263-3172EFEEEB23
 :END:
 :LOGBOOK:
+- State "TODO"       from              [2025-06-08 Sun 23:36] \\
+  Found snippets of these, they can exist literally in source.
 - State "TOIMPL"     from "TODO"       [2024-11-15 Fri 19:29]
 :END:
 :pgd:
@@ -849,7 +936,7 @@ i.e. no literal string keyword that lookup_keyword matches.
 :end:
 
 #+begin_src js :treesit t
-parentheses_type: ($) => choice(
+_parentheses_type: ($) => choice(
     $.unit_type,
     $.tuple_type,
 )
@@ -2087,7 +2174,9 @@ Types: [[file:noir/compiler/noirc_frontend/src/ast/expression.rs::pub enum Expre
 :END:
  * (opt grp) =<= by (opt) GenericsList by =>=.
 
-[[file:noir/compiler/noirc_frontend/src/parser/parser/generics.rs::16][Parser::parse_generics()]]:
+**Note** Generics itself is optional, so anywhere it's referenced it implies optionality.
+
+Parser: [[file:noir/compiler/noirc_frontend/src/parser/parser/generics.rs::pub(super) fn parse_generics(&mut self)][parse_generics()]]
 
 #+transclude: [[file:noir/compiler/noirc_frontend/src/parser/parser/generics.rs::13][parse_generics()]] :lines 13-15 :src rust
 
@@ -3023,6 +3112,8 @@ Parses list of items separated by sep, can optionally end when another (differen
 
 TODO: Don't think I need to document parse_many_return blah blah, that's a compiler implementation detail (unless in future we have problems relating to it).
 
+Accepts a single trailing separator (up to callsite if it allows trailing or not).
+
 *** [[file:noir/compiler/noirc_frontend/src/parser/parser.rs::fn eat_kind(&mut self, kind: TokenKind)][Parser.eat_kind(kind)]]
 :PROPERTIES:
 :CUSTOM_ID: h:AC5A6E2C-59EC-44C6-9D1E-52553E56C3F9
@@ -3112,6 +3203,7 @@ module.exports = grammar({
             $.attribute_item,
             $.use_declaration,
             $.module_or_contract_item,
+            $.struct_item,
         ),
 
         item_list: ($) => seq(
@@ -3192,13 +3284,33 @@ function sepBy(rule, sep) {
 
 #+transclude: [[#h:22DB13A6-D91E-4240-8711-10ED6DEE1C6E][attribute]] :treesit
 
+**** Use
+
+#+transclude: [[#h:ADB184CE-E43C-423B-803F-DE1679A91829][Use]] :treesit
+
 **** ModOrContract
 
 #+transclude: [[#h:9204514E-E5FC-488B-8066-66F0D9AF0C85][ModOrContract]] :treesit
 
-**** Use
+**** Struct
 
-#+transclude: [[#h:ADB184CE-E43C-423B-803F-DE1679A91829][Use]] :treesit
+#+transclude: [[#h:A53DF633-322A-464B-9947-E56B64A112C7][Struct]] :treesit
+
+**** Impl
+
+TODO
+
+**** Trait
+
+TODO
+
+**** Global
+
+TODO
+
+**** TypeAlias
+
+TODO
 
 **** FunctionParameters
 

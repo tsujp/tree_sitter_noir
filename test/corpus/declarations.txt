@@ -534,6 +534,116 @@ mod foo::bar { mod foo::bar };
 ---
 
 
+===============
+Struct / Simple
+===============
+
+struct foo;
+struct foo {}
+pub struct foo;
+pub(crate) struct foo{}
+
+---
+
+(source_file
+  (struct_item
+    name: (identifier))
+  (struct_item
+    name: (identifier)
+    body: (struct_field_list))
+  (struct_item
+    (visibility_modifier)
+    name: (identifier))
+  (struct_item
+    (visibility_modifier)
+    name: (identifier)
+    body: (struct_field_list))
+)
+
+
+===============
+Struct / Fields
+===============
+
+struct foo {
+  x: i32,
+  pub y: Field,
+  pub(crate) yolo: (),
+}
+
+---
+
+(source_file
+  (struct_item
+    name: (identifier)
+    body: (struct_field_list
+      (struct_field_item
+        name: (identifier)
+        type: (primitive_type))
+      (struct_field_item
+        (visibility_modifier)
+        name: (identifier)
+        type: (primitive_type))
+      (struct_field_item
+        (visibility_modifier)
+        name: (identifier)
+        type: (unit_type))))
+)
+
+
+================
+Struct / Generic
+:skip
+================
+
+struct foo<A, let B: u32> {}
+
+---
+
+(source_file
+  TODO
+)
+
+
+===================
+Struct / Degenerate
+===================
+
+struct foo {,}
+struct foo {x:i32,}
+struct foo {pub(crate)x:(),}
+
+---
+
+(source_file
+  (struct_item
+    name: (identifier)
+    body: (struct_field_list))
+  (struct_item
+    name: (identifier)
+    body: (struct_field_list
+      (struct_field_item
+        name: (identifier)
+        type: (primitive_type))))
+  (struct_item
+    name: (identifier)
+    body: (struct_field_list
+      (struct_field_item
+        (visibility_modifier)
+        name: (identifier)
+        type: (unit_type))))
+)
+
+
+======================
+Struct / Unclosed (e1)
+:error
+======================
+
+struct foo {
+---
+
+
 =======================
 Functions / Definitions
 :skip

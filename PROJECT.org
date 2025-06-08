@@ -108,6 +108,14 @@ It's a bit hard (currently) to track general-coverage TODOs within =noir_grammar
 
 Not happy with how UseTree CST is, use_list feels different to use_alias and the docs in my org file are a bit out of sync (see pgd also) with how UseTree is parsed, mostly because it's a bunch of nesting etc. The grammar works and is correct (aside from some perhaps edge cases, and more testing for alias) but since I plan to redo how that CST is constructed I won't bother making the further tests for it right now.
 
+**** TODO Integrate effects of validate_secondary_attributes into grammar?
+
+Some items call ~validate_secondary_attributes~ at the top of their parser function, is there a realistic gain to implementing those effects into the ts grammar?
+
+Affected nodes:
+- ModOrContract
+- Struct
+
 **** TODO Literal grammar.js to tangled hithere.js
 
 Finish converting the various forms that are in the literal =grammar.js= to tangled versions (currently in) =hithere.js=.
