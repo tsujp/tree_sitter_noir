@@ -3,6 +3,247 @@ TODO: Logic for :extract
 
 TODO: Default visibility in this file should be outline only (all headings visible but not their content), and all property drawers folded.
 
+* Declarations
+:PROPERTIES:
+:export_file_name: declarations.txt
+:END:
+
+** Use
+
+*** Simple
+
+#+begin_test
+use foo;
+use foo::bar;
+use foo::bar::lorem;
+use foo::bar::lorem::ipsum;
+
+---
+
+(use_statement
+  tree: (identifier))
+(use_statement
+  tree: (path
+    scope: (identifier)
+    name: (identifier)))
+(use_statement
+  tree: (path
+    scope: (path
+      scope: (identifier)
+      name: (identifier))
+    name: (identifier)))
+(use_statement
+  tree: (path
+    scope: (path
+      scope: (path
+        scope: (identifier)
+        name: (identifier))
+      name: (identifier))
+    name: (identifier)))
+#+end_test
+
+**** Trailing Colons
+
+No trailing colons allowed.
+
+#+begin_test :error
+use foo::;
+#+end_test
+
+#+begin_test :error
+use foo::bar::;
+#+end_test
+
+*** Visibility
+
+#+begin_test
+pub use foo;
+pub(crate) use foo;
+pub use foo::bar::baz;
+
+---
+
+(use_statement
+  (visibility_modifier)
+  tree: (identifier))
+(use_statement
+  (visibility_modifier)
+  tree: (identifier))
+(use_statement
+  (visibility_modifier)
+  tree: (path
+    scope: (path
+      scope: (identifier)
+      name: (identifier))
+    name: (identifier)))
+#+end_test
+
+*** Kind
+
+#+begin_test
+use crate::foo;
+use dep::foo;
+use super::foo;
+use super::foo::bar::baz;
+
+use foo::crate::bar;
+
+---
+
+(use_statement
+  tree: (path
+    scope: (crate)
+    name: (identifier)))
+(use_statement
+  tree: (path
+    scope: (dep)
+    name: (identifier)))
+(use_statement
+  tree: (path
+    scope: (super)
+    name: (identifier)))
+(use_statement
+  tree: (path
+    scope: (path
+      scope: (path
+        scope: (super)
+        name: (identifier))
+      name: (identifier))
+    name: (identifier)))
+
+(use_statement
+  tree: (path
+    scope: (path
+      scope: (identifier)
+      name: (identifier))
+    name: (identifier)))
+#+end_test
+
+*** List
+
+**** Simple
+
+#+begin_test
+use foo::{};
+use foo::{bar};
+
+//use foo::{bar, baz};
+//use foo::{bar, baz, };
+
+//use crate::{foo, bar};
+
+---
+
+(use_statement
+  tree: (path
+    scope: (identifier)
+    list: (use_list)))
+(use_statement
+  tree: (path
+    scope: (identifier)
+    list: (use_list
+      (identifier))))
+(line_comment)
+(line_comment)
+(line_comment)
+#+end_test
+
+**** Nesting
+
+#+begin_test
+use {foo::{a, b}, c, d};
+
+use foo::{give::nested::{a, b}, and::more::{d, e::blah}, };
+#+end_test
+
+**** Degenerate
+
+#+begin_test
+use {};
+use ::{};
+use {,};
+use {{},{},{}};
+
+---
+
+(use_statement
+  tree: (use_list))
+(use_statement
+  tree: (use_list))
+
+(use_statement
+  tree: (path
+    scope: (identifier)
+    list: (use_list)))
+
+    
+(use_statement
+  path: (path
+    scope: (identifier)
+    list: (use_list
+      (identifier))))
+
+(use_statement
+  (use_as
+    path: (identifier)
+    alias: (identifier)))
+(use_statement
+  (use_as
+    path: (path
+      prefix:
+    )))
+#+end_test
+
+**** Error
+
+***** Trailing Colons
+
+#+begin_test :error
+use foo::{}::;
+#+end_test
+
+#+begin_test :error
+use foo::bar::{}::;
+#+end_test
+
+***** Multiple Lists
+
+#+begin_test :error
+use foo::{}::{};
+#+end_test
+
+#+begin_test :error
+use foo::bar::{}::{};
+#+end_test
+
+***** Non-Plain Subtree
+
+Cannot have any PathKind in use subtree.
+
+#+begin_test :error
+use foo::{crate::bar};
+#+end_test
+
+#+begin_test :error
+use foo::{dep::bar};
+#+end_test
+
+#+begin_test :error
+use foo::{super::bar};
+#+end_test
+
+*** Alias
+
+TODO: is =use foo::bar::{lorem as ipsum, dolor as swag};= allowed in Noir?
+
+#+begin_test
+use foo as bar;
+use foo::bar as lorem;
+use foo::bar::lorem as ipsum;
+
+---
+#+end_test
+
 * Comments
 :PROPERTIES:
 :export_file_name: comments.txt

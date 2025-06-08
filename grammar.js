@@ -79,6 +79,7 @@ module.exports = grammar({
         
         _declaration_statement: ($) => choice(
             $.attribute,
+            $.use_statement, // TODO: Relocate?
             $.function_definition,
         ),
 
@@ -112,6 +113,50 @@ module.exports = grammar({
         // Noirc: BlockStatement.
         block_statement: ($) => choice(
             // TODO
+        ),
+        
+        // Noirc: Use.
+        use_statement: ($) => seq(
+            optional($.visibility_modifier),
+            'use',
+            // optional(field('path_kind', choice($.crate, $.dep, $.super))),
+            field('tree', $.__use_tree_variants),
+        
+            // field('path', $.__path_no_kind_no_turbofish),
+            ';',
+        ),
+        
+        // Noirc: UseTree.
+        __use_tree_variants: ($) => choice(
+            $.__path_no_kind_no_turbofish,
+            $.use_list,
+            alias($.__use_list_path_prefix, $.path),
+            // field('path', $.__path_no_kind_no_turbofish),
+            // // field('path', $.__path_no_turbofish),
+        ),
+        
+        __use_list_path_prefix: ($) => seq(
+            // alias(optional($.__path_no_kind_no_turbofish), $.path),
+            field('scope', optional($.__path_no_kind_no_turbofish)),
+            '::',
+            field('list', $.use_list),
+        ),
+        
+        use_list: ($) => seq(
+            '{',
+            sepBy($.__use_tree_variants, ','),
+            optional(','),
+            '}',
+            // $.__use_tree,
+            // sepBy($.__use_tree, ','),
+            // optional(','),
+        ),
+        
+        // Ours: UseTreeAs.
+        use_tree_as: ($) => seq(
+            field('path', $.__path_no_kind_no_turbofish),
+            'as',
+            field('alias', $.identifier),
         ),
 
         // * * * * * * * * * * * * * * * * * * * * * * * * * DECLARATIONS
@@ -380,6 +425,55 @@ module.exports = grammar({
                 ),
             ),
             '*/',
+        ),
+        
+        __path_no_turbofish: ($) => seq(
+            optional($.path_kind),
+            $.__path_no_kind_no_turbofish,
+        ),
+        
+        // __identifiers_in_path_no_turbofish: ($) => prec.left(seq(
+        //     sepBy1($.identifier, '::'),
+        //     optional('::'),
+        // ))
+        
+        // __nested_scopes_in_path_no_turbofish: ($) => seq(
+        //     field('scope', $.__path_no_kind_no_turbofish),
+        //     '::',
+        //     choice(
+        //         field('name', $.identifier),
+        //         field('list', seq(
+        //             '{',
+        //             sepBy($.__path_no_kind_no_turbofish, ','),
+        //             '}',
+        //         )),
+        //     ),
+        // ),
+        __nested_scopes_in_path_no_turbofish: ($) => seq(
+            field('scope', $.__path_no_kind_no_turbofish),
+            '::',
+            field('name', $.identifier),
+        ),
+        
+        // Ours: IdentifiersInPathNoTurbofish.
+        __path_no_kind_no_turbofish: ($) => seq(
+            choice(
+                choice($.crate, $.dep, $.super, $.identifier),
+                // $.identifier,
+                alias($.__nested_scopes_in_path_no_turbofish, $.path),
+            ),
+        ),
+        
+        // TODO: Optional wrapping this or not?
+        
+        crate: _ => 'crate',
+        dep: _ => 'dep',
+        super: _ => 'super',
+        
+        // Noirc: PathKind.
+        path_kind: ($) => seq(
+            choice($.crate, $.dep, $.super),
+            '::',
         ),
         
         // Noir does not support Unicode Identifiers (UAX#31) so XID_Start/XID_Continue. Only ASCII.
