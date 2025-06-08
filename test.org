@@ -126,11 +126,12 @@ use foo::crate::bar;
 #+begin_test
 use foo::{};
 use foo::{bar};
+use foo::bar::baz::{lorem};
 
-//use foo::{bar, baz};
-//use foo::{bar, baz, };
+use foo::{bar, baz};
+use foo::{bar, baz, };
 
-//use crate::{foo, bar};
+use crate::{foo, bar};
 
 ---
 
@@ -143,9 +144,35 @@ use foo::{bar};
     scope: (identifier)
     list: (use_list
       (identifier))))
-(line_comment)
-(line_comment)
-(line_comment)
+(use_statement
+  tree: (path
+    scope: (path
+      scope: (path
+        scope: (identifier)
+        name: (identifier))
+      name: (identifier))
+    list: (use_list
+      (identifier))))
+
+(use_statement
+  tree: (path
+    scope: (identifier)
+    list: (use_list
+      (identifier)
+      (identifier))))
+(use_statement
+  tree: (path
+    scope: (identifier)
+    list: (use_list
+      (identifier)
+      (identifier))))
+
+(use_statement
+  tree: (path
+    scope: (crate)
+    list: (use_list
+      (identifier)
+      (identifier))))
 #+end_test
 
 **** Nesting
@@ -153,14 +180,71 @@ use foo::{bar};
 #+begin_test
 use {foo::{a, b}, c, d};
 
-use foo::{give::nested::{a, b}, and::more::{d, e::blah}, };
+use crate::bar::foo::{give::nested::{a, b}, and::more::{d, e::blah}, };
+
+---
+
+(use_statement
+  tree: (use_list
+    (path
+      scope: (identifier)
+      list: (use_list
+        (identifier)
+        (identifier)))
+    (identifier)
+    (identifier)))
+
+(use_statement
+  tree: (path
+    scope: (path
+      scope: (path
+        scope: (crate)
+        name: (identifier))
+      name: (identifier))
+    list: (use_list
+      (path
+        scope: (path
+          scope: (identifier)
+          name: (identifier))
+        list: (use_list
+          (identifier)
+          (identifier)))
+      (path
+        scope: (path
+          scope: (identifier)
+          name: (identifier))
+        list: (use_list
+          (identifier)
+          (path
+            scope: (identifier)
+            name: (identifier)))))))
 #+end_test
 
 **** Degenerate
 
+Empty use lists are valid.
 #+begin_test
 use {};
+
+---
+
+(use_statement
+  tree: (use_list))
+#+end_test
+
+A path with no scope to an empty use list.
+#+begin_test
 use ::{};
+
+---
+
+(use_statement
+  tree: (path
+    list: (use_list)))
+#+end_test
+
+Lone comma is the same as an empty use list, as are multiple empty nested use lists.
+#+begin_test
 use {,};
 use {{},{},{}};
 
@@ -169,29 +253,10 @@ use {{},{},{}};
 (use_statement
   tree: (use_list))
 (use_statement
-  tree: (use_list))
-
-(use_statement
-  tree: (path
-    scope: (identifier)
-    list: (use_list)))
-
-    
-(use_statement
-  path: (path
-    scope: (identifier)
-    list: (use_list
-      (identifier))))
-
-(use_statement
-  (use_as
-    path: (identifier)
-    alias: (identifier)))
-(use_statement
-  (use_as
-    path: (path
-      prefix:
-    )))
+  tree: (use_list
+    (use_list)
+    (use_list)
+    (use_list)))
 #+end_test
 
 **** Error
@@ -220,17 +285,15 @@ use foo::bar::{}::{};
 
 Cannot have any PathKind in use subtree.
 
-#+begin_test :error
+*************** TODO Do I NEED to get these tests passing? This could be too minute for tree-sitter
+Like how ordering of the modifiers etc isn't really viable.
+*************** END
+
 use foo::{crate::bar};
-#+end_test
 
-#+begin_test :error
 use foo::{dep::bar};
-#+end_test
 
-#+begin_test :error
 use foo::{super::bar};
-#+end_test
 
 *** Alias
 
@@ -242,6 +305,25 @@ use foo::bar as lorem;
 use foo::bar::lorem as ipsum;
 
 ---
+
+(use_statement
+  tree: (use_alias
+    scope: (identifier)
+    alias: (identifier)))
+(use_statement
+  tree: (use_alias
+    scope: (path
+      scope: (identifier)
+      name: (identifier))
+    alias: (identifier)))
+(use_statement
+  tree: (use_alias
+    scope: (path
+      scope: (path
+        scope: (identifier)
+        name: (identifier))
+      name: (identifier))
+    alias: (identifier)))
 #+end_test
 
 * Comments

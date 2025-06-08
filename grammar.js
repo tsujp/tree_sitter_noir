@@ -119,10 +119,7 @@ module.exports = grammar({
         use_statement: ($) => seq(
             optional($.visibility_modifier),
             'use',
-            // optional(field('path_kind', choice($.crate, $.dep, $.super))),
             field('tree', $.__use_tree_variants),
-        
-            // field('path', $.__path_no_kind_no_turbofish),
             ';',
         ),
         
@@ -130,31 +127,30 @@ module.exports = grammar({
         __use_tree_variants: ($) => choice(
             $.__path_no_kind_no_turbofish,
             $.use_list,
+            // XXX: Alias name here needs to match that in __path_no_kind_no_turbofish.
             alias($.__use_list_path_prefix, $.path),
-            // field('path', $.__path_no_kind_no_turbofish),
-            // // field('path', $.__path_no_turbofish),
+            // TODO: The structure of how use alias appears in the CST isn't really cognate to use_list.. but can refine this later once the entire grammar is done.
+            $.use_alias,
         ),
         
+        // Noirc: UseTreeList -- if path beforehand.
         __use_list_path_prefix: ($) => seq(
-            // alias(optional($.__path_no_kind_no_turbofish), $.path),
-            field('scope', optional($.__path_no_kind_no_turbofish)),
+            optional(field('scope', optional($.__path_no_kind_no_turbofish))),
             '::',
             field('list', $.use_list),
         ),
         
+        // Noirc: UseTreeList -- if no path beforehand.
         use_list: ($) => seq(
             '{',
             sepBy($.__use_tree_variants, ','),
             optional(','),
             '}',
-            // $.__use_tree,
-            // sepBy($.__use_tree, ','),
-            // optional(','),
         ),
         
         // Ours: UseTreeAs.
-        use_tree_as: ($) => seq(
-            field('path', $.__path_no_kind_no_turbofish),
+        use_alias: ($) => seq(
+            field('scope', $.__path_no_kind_no_turbofish),
             'as',
             field('alias', $.identifier),
         ),
@@ -437,24 +433,13 @@ module.exports = grammar({
         //     optional('::'),
         // ))
         
-        // __nested_scopes_in_path_no_turbofish: ($) => seq(
-        //     field('scope', $.__path_no_kind_no_turbofish),
-        //     '::',
-        //     choice(
-        //         field('name', $.identifier),
-        //         field('list', seq(
-        //             '{',
-        //             sepBy($.__path_no_kind_no_turbofish, ','),
-        //             '}',
-        //         )),
-        //     ),
-        // ),
         __nested_scopes_in_path_no_turbofish: ($) => seq(
             field('scope', $.__path_no_kind_no_turbofish),
             '::',
             field('name', $.identifier),
         ),
         
+        // TODO: Obviously this rule's name is wrong, but needs to be this way for now.
         // Ours: IdentifiersInPathNoTurbofish.
         __path_no_kind_no_turbofish: ($) => seq(
             choice(

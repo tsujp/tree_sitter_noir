@@ -75,6 +75,7 @@ Blockers:
 - InternedPattern
 
 Re-reviewed (done)
+- Attributes
 - Pattern
 - TupplePattern
 - PatternList
@@ -102,6 +103,10 @@ Program contains Module which contains InnerDocComments and Item. Comments can a
 *** Coverage TODOs
 
 It's a bit hard (currently) to track general-coverage TODOs within =noir_grammar.org= itself, and I have yet to dive-deep into org-agenda which might be able to construct such a view. However there are a lot of other TODOs specific to each headline they are under. Here is a general "overview" of areas of the grammar that need to be done as a way to "save progress" for when future Jordan comes back to work on =noir_grammar.org=.
+
+**** TODO UseTree grammar refinement
+
+Not happy with how UseTree CST is, use_list feels different to use_alias and the docs in my org file are a bit out of sync (see pgd also) with how UseTree is parsed, mostly because it's a bunch of nesting etc. The grammar works and is correct (aside from some perhaps edge cases, and more testing for alias) but since I plan to redo how that CST is constructed I won't bother making the further tests for it right now.
 
 **** TODO Literal grammar.js to tangled hithere.js
 

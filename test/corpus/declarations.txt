@@ -1,0 +1,326 @@
+============
+Use / Simple
+============
+
+use foo;
+use foo::bar;
+use foo::bar::lorem;
+use foo::bar::lorem::ipsum;
+
+---
+
+(source_file
+  (use_statement
+    tree: (identifier))
+  (use_statement
+    tree: (path
+      scope: (identifier)
+      name: (identifier)))
+  (use_statement
+    tree: (path
+      scope: (path
+        scope: (identifier)
+        name: (identifier))
+      name: (identifier)))
+  (use_statement
+    tree: (path
+      scope: (path
+        scope: (path
+          scope: (identifier)
+          name: (identifier))
+        name: (identifier))
+      name: (identifier)))
+)
+
+
+===============================
+Use / Simple / Trailing Colons1
+:error
+===============================
+
+use foo::;
+---
+
+
+===============================
+Use / Simple / Trailing Colons2
+:error
+===============================
+
+use foo::bar::;
+---
+
+
+================
+Use / Visibility
+================
+
+pub use foo;
+pub(crate) use foo;
+pub use foo::bar::baz;
+
+---
+
+(source_file
+  (use_statement
+    (visibility_modifier)
+    tree: (identifier))
+  (use_statement
+    (visibility_modifier)
+    tree: (identifier))
+  (use_statement
+    (visibility_modifier)
+    tree: (path
+      scope: (path
+        scope: (identifier)
+        name: (identifier))
+      name: (identifier)))
+)
+
+
+==========
+Use / Kind
+==========
+
+use crate::foo;
+use dep::foo;
+use super::foo;
+use super::foo::bar::baz;
+
+use foo::crate::bar;
+
+---
+
+(source_file
+  (use_statement
+    tree: (path
+      scope: (crate)
+      name: (identifier)))
+  (use_statement
+    tree: (path
+      scope: (dep)
+      name: (identifier)))
+  (use_statement
+    tree: (path
+      scope: (super)
+      name: (identifier)))
+  (use_statement
+    tree: (path
+      scope: (path
+        scope: (path
+          scope: (super)
+          name: (identifier))
+        name: (identifier))
+      name: (identifier)))
+
+  (use_statement
+    tree: (path
+      scope: (path
+        scope: (identifier)
+        name: (identifier))
+      name: (identifier)))
+)
+
+
+===================
+Use / List / Simple
+===================
+
+use foo::{};
+use foo::{bar};
+use foo::bar::baz::{lorem};
+
+use foo::{bar, baz};
+use foo::{bar, baz, };
+
+use crate::{foo, bar};
+
+---
+
+(source_file
+  (use_statement
+    tree: (path
+      scope: (identifier)
+      list: (use_list)))
+  (use_statement
+    tree: (path
+      scope: (identifier)
+      list: (use_list
+        (identifier))))
+  (use_statement
+    tree: (path
+      scope: (path
+        scope: (path
+          scope: (identifier)
+          name: (identifier))
+        name: (identifier))
+      list: (use_list
+        (identifier))))
+
+  (use_statement
+    tree: (path
+      scope: (identifier)
+      list: (use_list
+        (identifier)
+        (identifier))))
+  (use_statement
+    tree: (path
+      scope: (identifier)
+      list: (use_list
+        (identifier)
+        (identifier))))
+
+  (use_statement
+    tree: (path
+      scope: (crate)
+      list: (use_list
+        (identifier)
+        (identifier))))
+)
+
+
+====================
+Use / List / Nesting
+====================
+
+use {foo::{a, b}, c, d};
+
+use crate::bar::foo::{give::nested::{a, b}, and::more::{d, e::blah}, };
+
+---
+
+(source_file
+  (use_statement
+    tree: (use_list
+      (path
+        scope: (identifier)
+        list: (use_list
+          (identifier)
+          (identifier)))
+      (identifier)
+      (identifier)))
+
+  (use_statement
+    tree: (path
+      scope: (path
+        scope: (path
+          scope: (crate)
+          name: (identifier))
+        name: (identifier))
+      list: (use_list
+        (path
+          scope: (path
+            scope: (identifier)
+            name: (identifier))
+          list: (use_list
+            (identifier)
+            (identifier)))
+        (path
+          scope: (path
+            scope: (identifier)
+            name: (identifier))
+          list: (use_list
+            (identifier)
+            (path
+              scope: (identifier)
+              name: (identifier)))))))
+)
+
+
+=======================
+Use / List / Degenerate
+=======================
+
+use {};
+
+use ::{};
+
+use {,};
+use {{},{},{}};
+
+---
+
+(source_file
+  (use_statement
+    tree: (use_list))
+
+  (use_statement
+    tree: (path
+      list: (use_list)))
+
+  (use_statement
+    tree: (use_list))
+  (use_statement
+    tree: (use_list
+      (use_list)
+      (use_list)
+      (use_list)))
+)
+
+
+=====================================
+Use / List / Error / Trailing Colons1
+:error
+=====================================
+
+use foo::{}::;
+---
+
+
+=====================================
+Use / List / Error / Trailing Colons2
+:error
+=====================================
+
+use foo::bar::{}::;
+---
+
+
+====================================
+Use / List / Error / Multiple Lists1
+:error
+====================================
+
+use foo::{}::{};
+---
+
+
+====================================
+Use / List / Error / Multiple Lists2
+:error
+====================================
+
+use foo::bar::{}::{};
+---
+
+
+===========
+Use / Alias
+===========
+
+use foo as bar;
+use foo::bar as lorem;
+use foo::bar::lorem as ipsum;
+
+---
+
+(source_file
+  (use_statement
+    tree: (use_alias
+      scope: (identifier)
+      alias: (identifier)))
+  (use_statement
+    tree: (use_alias
+      scope: (path
+        scope: (identifier)
+        name: (identifier))
+      alias: (identifier)))
+  (use_statement
+    tree: (use_alias
+      scope: (path
+        scope: (path
+          scope: (identifier)
+          name: (identifier))
+        name: (identifier))
+      alias: (identifier)))
+)
