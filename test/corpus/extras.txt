@@ -1,6 +1,6 @@
-=============================
-Comments / Line / No docStyle
-=============================
+==============================
+Comments / Line / No doc-style
+==============================
 
 // Foobar
 // Lorem
@@ -32,9 +32,9 @@ Comments / Line / No docStyle
 )
 
 
-================================
-Comments / Line / Inner docStyle
-================================
+=================================
+Comments / Line / Inner doc-style
+=================================
 
 //! Foobar inner line doc comment
 //!No whitespace at glue-token
@@ -73,9 +73,9 @@ Comments / Line / Inner docStyle
 )
 
 
-================================
-Comments / Line / Outer docStyle
-================================
+=================================
+Comments / Line / Outer doc-style
+=================================
 
 /// Foobar outer line doc comment
 ///No whitespace at glue-token
@@ -114,9 +114,9 @@ Comments / Line / Outer docStyle
 )
 
 
-==============================
-Comments / Block / No docStyle
-==============================
+===============================
+Comments / Block / No doc-style
+===============================
 
 /* single line block comment */
 
@@ -143,9 +143,9 @@ block comment */
 )
 
 
-===========================================
-Comments / Block / No docStyle / Degenerate
-===========================================
+============================================
+Comments / Block / No doc-style / Degenerate
+============================================
 
 /***/
 
@@ -172,9 +172,9 @@ Comments / Block / No docStyle / Degenerate
 )
 
 
-=======================================
-Comments / Block / No docStyle / Nested
-=======================================
+========================================
+Comments / Block / No doc-style / Nested
+========================================
 
 /* single line /* nested /* block */ comment */ */
 
@@ -188,28 +188,28 @@ Comments / Block / No docStyle / Nested
 )
 
 
-===============================================
-Comments / Block / No docStyle / Unmatched (e1)
+================================================
+Comments / Block / No doc-style / Unmatched (e1)
 :error
-===============================================
+================================================
 
 /* unmatched single line
 ---
 
 
-===============================================
-Comments / Block / No docStyle / Unmatched (e2)
+================================================
+Comments / Block / No doc-style / Unmatched (e2)
 :error
-===============================================
+================================================
 
 /* unmatched /* nested comment */
 ---
 
 
-===============================================
-Comments / Block / No docStyle / Unmatched (e3)
+================================================
+Comments / Block / No doc-style / Unmatched (e3)
 :error
-===============================================
+================================================
 
 /* unmatched /*
 multiline /* nested
@@ -217,9 +217,9 @@ comment */ */
 ---
 
 
-=================================
-Comments / Block / Inner docStyle
-=================================
+==================================
+Comments / Block / Inner doc-style
+==================================
 
 /*! single */
 
@@ -277,9 +277,9 @@ block comment */
 )
 
 
-=========================================
-Comments / Block / Inner docStyle / Empty
-=========================================
+==========================================
+Comments / Block / Inner doc-style / Empty
+==========================================
 
 /*!*/
 
@@ -291,9 +291,9 @@ Comments / Block / Inner docStyle / Empty
 )
 
 
-=================================
-Comments / Block / Outer docStyle
-=================================
+==================================
+Comments / Block / Outer doc-style
+==================================
 
 /** single */
 
@@ -346,9 +346,9 @@ block comment */
 )
 
 
-===========================================
-Comments / Block / Outer docStyle / Minimal
-===========================================
+============================================
+Comments / Block / Outer doc-style / Minimal
+============================================
 
 /** */
 /**x*/

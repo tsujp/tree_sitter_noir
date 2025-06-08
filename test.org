@@ -345,7 +345,7 @@ use foo::{}::{};
 use foo::bar::{}::{};
 #+end_test
 
-**** Non-Plain subtree
+**** Non-plain subtree
 
 Cannot have any PathKind in use subtree.
 
@@ -597,7 +597,7 @@ fn main() {
 
 *** Line
 
-**** No docStyle
+**** No doc-style
 
 #+begin_test :comments link
 // Foobar
@@ -628,7 +628,7 @@ fn main() {
 (line_comment)
 #+end_test
 
-**** Inner docStyle
+**** Inner doc-style
 
 #+begin_test
 //! Foobar inner line doc comment
@@ -666,7 +666,7 @@ fn main() {
   content: (doc_comment))
 #+end_test
 
-**** Outer docStyle
+**** Outer doc-style
 
 #+begin_test
 /// Foobar outer line doc comment
@@ -706,7 +706,7 @@ fn main() {
 
 *** Block
 
-**** No docStyle
+**** No doc-style
 
 #+begin_test
 /* single line block comment */
@@ -804,7 +804,7 @@ multiline /* nested
 comment */ */
 #+end_test
 
-**** Inner docStyle
+**** Inner doc-style
 
 #+begin_test
 /*! single */
@@ -873,7 +873,7 @@ Empty inner-style block comments are possible.
   style: (inner_doc_style))
 #+end_test
 
-**** Outer docStyle
+**** Outer doc-style
 
 #+begin_test
 /** single */
