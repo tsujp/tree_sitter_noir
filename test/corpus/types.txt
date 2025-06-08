@@ -1,0 +1,29 @@
+====
+Unit
+:skip
+====
+
+type Foo = ();
+
+---
+
+(source_file
+  (source_file
+    (unit_type))
+)
+
+
+=========================
+TypeExpressions / Literal
+:skip
+=========================
+
+fn main() {
+  let foo: [Field; 69] = [0; 69];
+}
+
+---
+
+(source_file
+  (source_file)
+)

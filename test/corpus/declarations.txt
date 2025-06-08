@@ -1,3 +1,74 @@
+===================
+Attributes / Normal
+===================
+
+#[foo(bar)]
+
+#[foo]
+
+#[test(should_fail_with = "howdy there")]
+
+#[multiple] #[on a single line]
+
+#['tag]
+#[and stacked]
+
+---
+
+(source_file
+  (attribute_item
+    (content))
+  (attribute_item
+    (content))
+  (attribute_item
+    (content))
+  (attribute_item
+    (content))
+  (attribute_item
+    (content))
+  (attribute_item
+    (content))
+  (attribute_item
+    (content))
+)
+
+
+==================================================
+Attributes / Normal / Invalid inner character (e1)
+:error
+==================================================
+
+#@[bad]
+fn normal() {}
+---
+
+
+=======================
+Attributes / Degenerate
+=======================
+
+#[   ]
+
+#[oracle( )]
+
+#[oracle(...)]
+
+#[ leading, and space,      seperated  /with/  punctuation!!!,{}|!#_ () () ( ( ) () ( ]
+
+---
+
+(source_file
+  (attribute_item
+    (content))
+  (attribute_item
+    (content))
+  (attribute_item
+    (content))
+  (attribute_item
+    (content))
+)
+
+
 ============
 Use / Simple
 ============
@@ -10,19 +81,19 @@ use foo::bar::lorem::ipsum;
 ---
 
 (source_file
-  (use_statement
+  (use_declaration
     tree: (identifier))
-  (use_statement
+  (use_declaration
     tree: (path
       scope: (identifier)
       name: (identifier)))
-  (use_statement
+  (use_declaration
     tree: (path
       scope: (path
         scope: (identifier)
         name: (identifier))
       name: (identifier)))
-  (use_statement
+  (use_declaration
     tree: (path
       scope: (path
         scope: (path
@@ -33,19 +104,19 @@ use foo::bar::lorem::ipsum;
 )
 
 
-===============================
-Use / Simple / Trailing Colons1
+===================================
+Use / Simple / Trailing colons (e1)
 :error
-===============================
+===================================
 
 use foo::;
 ---
 
 
-===============================
-Use / Simple / Trailing Colons2
+===================================
+Use / Simple / Trailing colons (e2)
 :error
-===============================
+===================================
 
 use foo::bar::;
 ---
@@ -62,13 +133,13 @@ pub use foo::bar::baz;
 ---
 
 (source_file
-  (use_statement
+  (use_declaration
     (visibility_modifier)
     tree: (identifier))
-  (use_statement
+  (use_declaration
     (visibility_modifier)
     tree: (identifier))
-  (use_statement
+  (use_declaration
     (visibility_modifier)
     tree: (path
       scope: (path
@@ -92,19 +163,19 @@ use foo::crate::bar;
 ---
 
 (source_file
-  (use_statement
+  (use_declaration
     tree: (path
       scope: (crate)
       name: (identifier)))
-  (use_statement
+  (use_declaration
     tree: (path
       scope: (dep)
       name: (identifier)))
-  (use_statement
+  (use_declaration
     tree: (path
       scope: (super)
       name: (identifier)))
-  (use_statement
+  (use_declaration
     tree: (path
       scope: (path
         scope: (path
@@ -113,7 +184,7 @@ use foo::crate::bar;
         name: (identifier))
       name: (identifier)))
 
-  (use_statement
+  (use_declaration
     tree: (path
       scope: (path
         scope: (identifier)
@@ -138,16 +209,16 @@ use crate::{foo, bar};
 ---
 
 (source_file
-  (use_statement
+  (use_declaration
     tree: (path
       scope: (identifier)
       list: (use_list)))
-  (use_statement
+  (use_declaration
     tree: (path
       scope: (identifier)
       list: (use_list
         (identifier))))
-  (use_statement
+  (use_declaration
     tree: (path
       scope: (path
         scope: (path
@@ -157,20 +228,20 @@ use crate::{foo, bar};
       list: (use_list
         (identifier))))
 
-  (use_statement
+  (use_declaration
     tree: (path
       scope: (identifier)
       list: (use_list
         (identifier)
         (identifier))))
-  (use_statement
+  (use_declaration
     tree: (path
       scope: (identifier)
       list: (use_list
         (identifier)
         (identifier))))
 
-  (use_statement
+  (use_declaration
     tree: (path
       scope: (crate)
       list: (use_list
@@ -190,7 +261,7 @@ use crate::bar::foo::{give::nested::{a, b}, and::more::{d, e::blah}, };
 ---
 
 (source_file
-  (use_statement
+  (use_declaration
     tree: (use_list
       (path
         scope: (identifier)
@@ -200,7 +271,7 @@ use crate::bar::foo::{give::nested::{a, b}, and::more::{d, e::blah}, };
       (identifier)
       (identifier)))
 
-  (use_statement
+  (use_declaration
     tree: (path
       scope: (path
         scope: (path
@@ -241,16 +312,16 @@ use {{},{},{}};
 ---
 
 (source_file
-  (use_statement
+  (use_declaration
     tree: (use_list))
 
-  (use_statement
+  (use_declaration
     tree: (path
       list: (use_list)))
 
-  (use_statement
+  (use_declaration
     tree: (use_list))
-  (use_statement
+  (use_declaration
     tree: (use_list
       (use_list)
       (use_list)
@@ -258,37 +329,37 @@ use {{},{},{}};
 )
 
 
-=====================================
-Use / List / Error / Trailing Colons1
+=================================
+Use / List / Trailing colons (e1)
 :error
-=====================================
+=================================
 
 use foo::{}::;
 ---
 
 
-=====================================
-Use / List / Error / Trailing Colons2
+=================================
+Use / List / Trailing colons (e2)
 :error
-=====================================
+=================================
 
 use foo::bar::{}::;
 ---
 
 
-====================================
-Use / List / Error / Multiple Lists1
+================================
+Use / List / Multiple lists (e1)
 :error
-====================================
+================================
 
 use foo::{}::{};
 ---
 
 
-====================================
-Use / List / Error / Multiple Lists2
+================================
+Use / List / Multiple lists (e2)
 :error
-====================================
+================================
 
 use foo::bar::{}::{};
 ---
@@ -305,17 +376,17 @@ use foo::bar::lorem as ipsum;
 ---
 
 (source_file
-  (use_statement
+  (use_declaration
     tree: (use_alias
       scope: (identifier)
       alias: (identifier)))
-  (use_statement
+  (use_declaration
     tree: (use_alias
       scope: (path
         scope: (identifier)
         name: (identifier))
       alias: (identifier)))
-  (use_statement
+  (use_declaration
     tree: (use_alias
       scope: (path
         scope: (path
@@ -324,3 +395,210 @@ use foo::bar::lorem as ipsum;
         name: (identifier))
       alias: (identifier)))
 )
+
+
+=======================
+Functions / Definitions
+:skip
+=======================
+
+fn hello_world() {}
+
+fn foo() {}
+
+fn before123four_five_678() {}
+
+---
+
+(source_file
+  (function_definition
+    name: (identifier)
+    (parameter_list)
+    (block))
+
+  (function_definition
+    name: (identifier)
+    (parameter_list)
+    (block))
+
+  (function_definition
+    name: (identifier)
+    (parameter_list)
+    (block))
+)
+
+
+============================================================
+Functions / Definitions / Starting with integer literal (e1)
+:error
+============================================================
+
+fn 123_not_okay() {}
+---
+
+
+==============================================================
+Functions / Definitions / Starting with negation operator (e1)
+:error
+==============================================================
+
+fn !nope() {}
+---
+
+
+=====================================================
+Functions / Definitions / Missing parameter list (e1)
+:error
+=====================================================
+
+fn nah {}
+---
+
+
+=======================================================
+Functions / Definitions / Missing block expression (e1)
+:error
+=======================================================
+
+fn silly()
+---
+
+
+=====================
+Functions / Modifiers
+:skip
+=====================
+
+pub fn one() {}
+pub(crate) fn two() {}
+
+unconstrained fn three() {}
+pub unconstrained fn four() {}
+pub(crate) unconstrained fn five() {}
+
+comptime fn six() {}
+pub(crate) comptime fn seven() {}
+
+pub unconstrained comptime fn eight() {}
+pub(crate) unconstrained comptime fn nine() {}
+
+---
+
+(source_file
+  (function_definition
+    (visibility_modifier)
+    name: (identifier)
+    (parameter_list)
+    (block))
+  (function_definition
+    (visibility_modifier)
+    name: (identifier)
+    (parameter_list)
+    (block))
+
+  (function_definition
+    (function_modifiers)
+    name: (identifier)
+    (parameter_list)
+    (block))
+  (function_definition
+    (visibility_modifier)
+    (function_modifiers)
+    name: (identifier)
+    (parameter_list)
+    (block))
+  (function_definition
+    (visibility_modifier)
+    (function_modifiers)
+    name: (identifier)
+    (parameter_list)
+    (block))
+
+  (function_definition
+    (function_modifiers)
+    name: (identifier)
+    (parameter_list)
+    (block))
+  (function_definition
+    (visibility_modifier)
+    (function_modifiers)
+    name: (identifier)
+    (parameter_list)
+    (block))
+
+  (function_definition
+    (visibility_modifier)
+    (function_modifiers)
+    name: (identifier)
+    (parameter_list)
+    (block))
+  (function_definition
+    (visibility_modifier)
+    (function_modifiers)
+    name: (identifier)
+    (parameter_list)
+    (block))
+)
+
+
+================================================
+Functions / Modifiers / Visibility position (e1)
+:error
+================================================
+
+fn pub one() {}
+---
+
+
+================================================
+Functions / Modifiers / Visibility position (e2)
+:error
+================================================
+
+fn pub(crate) one() {}
+---
+
+
+================================================
+Functions / Modifiers / Visibility repeated (e1)
+:error
+================================================
+
+fn pub pub one() {}
+---
+
+
+================================================
+Functions / Modifiers / Visibility repeated (e2)
+:error
+================================================
+
+fn pub(crate) pub one() {}
+---
+
+
+===================================================
+Functions / Modifiers / Unconstrained position (e1)
+:error
+===================================================
+
+fn unconstrained pub one() {}
+---
+
+
+===================================================
+Functions / Modifiers / Unconstrained position (e2)
+:error
+===================================================
+
+unconstrained pub fn one() {}
+---
+
+
+===================================================
+Functions / Modifiers / Unconstrained repeated (e1)
+:error
+===================================================
+
+fn unconstrained unconstrained one() {}
+---

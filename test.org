@@ -1,12 +1,78 @@
-TODO: Managing different files is getting annoying, plus I want to check against what Nargo thinks for correct behaviour which involves a lot of duplicating stuff. Would rather have _something_ manage that; instead of re-inventing the wheel I'll have org render out specific things to nargo files as well as tree-sitter tests.
-TODO: Logic for :extract
-
-TODO: Default visibility in this file should be outline only (all headings visible but not their content), and all property drawers folded.
-
 * Declarations
 :PROPERTIES:
 :export_file_name: declarations.txt
 :END:
+
+Including definitions, and items.
+
+** Attributes
+
+*** Normal
+#+begin_test
+#[foo(bar)]
+
+#[foo]
+
+#[test(should_fail_with = "howdy there")]
+
+#[multiple] #[on a single line]
+
+#['tag]
+#[and stacked]
+
+---
+
+(attribute_item
+  (content))
+(attribute_item
+  (content))
+(attribute_item
+  (content))
+(attribute_item
+  (content))
+(attribute_item
+  (content))
+(attribute_item
+  (content))
+(attribute_item
+  (content))
+#+end_test
+
+**** Invalid inner character
+#+begin_test :error
+#@[bad]
+fn normal() {}
+#+end_test
+
+*** Degenerate
+#+begin_test
+#[   ]
+
+#[oracle( )]
+
+#[oracle(...)]
+
+#[ leading, and space,      seperated  /with/  punctuation!!!,{}|!#_ () () ( ( ) () ( ]
+
+---
+
+(attribute_item
+  (content))
+(attribute_item
+  (content))
+(attribute_item
+  (content))
+(attribute_item
+  (content))
+#+end_test
+
+** Modifiers
+
+*** Visibility
+
+**** Top-level
+*************** TODO Are top-level naked visibility modifiers valid...?
+*************** END
 
 ** Use
 
@@ -20,19 +86,19 @@ use foo::bar::lorem::ipsum;
 
 ---
 
-(use_statement
+(use_declaration
   tree: (identifier))
-(use_statement
+(use_declaration
   tree: (path
     scope: (identifier)
     name: (identifier)))
-(use_statement
+(use_declaration
   tree: (path
     scope: (path
       scope: (identifier)
       name: (identifier))
     name: (identifier)))
-(use_statement
+(use_declaration
   tree: (path
     scope: (path
       scope: (path
@@ -42,7 +108,7 @@ use foo::bar::lorem::ipsum;
     name: (identifier)))
 #+end_test
 
-**** Trailing Colons
+**** Trailing colons
 
 No trailing colons allowed.
 
@@ -63,13 +129,13 @@ pub use foo::bar::baz;
 
 ---
 
-(use_statement
+(use_declaration
   (visibility_modifier)
   tree: (identifier))
-(use_statement
+(use_declaration
   (visibility_modifier)
   tree: (identifier))
-(use_statement
+(use_declaration
   (visibility_modifier)
   tree: (path
     scope: (path
@@ -90,19 +156,19 @@ use foo::crate::bar;
 
 ---
 
-(use_statement
+(use_declaration
   tree: (path
     scope: (crate)
     name: (identifier)))
-(use_statement
+(use_declaration
   tree: (path
     scope: (dep)
     name: (identifier)))
-(use_statement
+(use_declaration
   tree: (path
     scope: (super)
     name: (identifier)))
-(use_statement
+(use_declaration
   tree: (path
     scope: (path
       scope: (path
@@ -111,7 +177,7 @@ use foo::crate::bar;
       name: (identifier))
     name: (identifier)))
 
-(use_statement
+(use_declaration
   tree: (path
     scope: (path
       scope: (identifier)
@@ -135,16 +201,16 @@ use crate::{foo, bar};
 
 ---
 
-(use_statement
+(use_declaration
   tree: (path
     scope: (identifier)
     list: (use_list)))
-(use_statement
+(use_declaration
   tree: (path
     scope: (identifier)
     list: (use_list
       (identifier))))
-(use_statement
+(use_declaration
   tree: (path
     scope: (path
       scope: (path
@@ -154,20 +220,20 @@ use crate::{foo, bar};
     list: (use_list
       (identifier))))
 
-(use_statement
+(use_declaration
   tree: (path
     scope: (identifier)
     list: (use_list
       (identifier)
       (identifier))))
-(use_statement
+(use_declaration
   tree: (path
     scope: (identifier)
     list: (use_list
       (identifier)
       (identifier))))
 
-(use_statement
+(use_declaration
   tree: (path
     scope: (crate)
     list: (use_list
@@ -184,7 +250,7 @@ use crate::bar::foo::{give::nested::{a, b}, and::more::{d, e::blah}, };
 
 ---
 
-(use_statement
+(use_declaration
   tree: (use_list
     (path
       scope: (identifier)
@@ -194,7 +260,7 @@ use crate::bar::foo::{give::nested::{a, b}, and::more::{d, e::blah}, };
     (identifier)
     (identifier)))
 
-(use_statement
+(use_declaration
   tree: (path
     scope: (path
       scope: (path
@@ -228,7 +294,7 @@ use {};
 
 ---
 
-(use_statement
+(use_declaration
   tree: (use_list))
 #+end_test
 
@@ -238,7 +304,7 @@ use ::{};
 
 ---
 
-(use_statement
+(use_declaration
   tree: (path
     list: (use_list)))
 #+end_test
@@ -250,18 +316,16 @@ use {{},{},{}};
 
 ---
 
-(use_statement
+(use_declaration
   tree: (use_list))
-(use_statement
+(use_declaration
   tree: (use_list
     (use_list)
     (use_list)
     (use_list)))
 #+end_test
 
-**** Error
-
-***** Trailing Colons
+**** Trailing colons
 
 #+begin_test :error
 use foo::{}::;
@@ -271,7 +335,7 @@ use foo::{}::;
 use foo::bar::{}::;
 #+end_test
 
-***** Multiple Lists
+**** Multiple lists
 
 #+begin_test :error
 use foo::{}::{};
@@ -281,7 +345,7 @@ use foo::{}::{};
 use foo::bar::{}::{};
 #+end_test
 
-***** Non-Plain Subtree
+**** Non-Plain subtree
 
 Cannot have any PathKind in use subtree.
 
@@ -306,17 +370,17 @@ use foo::bar::lorem as ipsum;
 
 ---
 
-(use_statement
+(use_declaration
   tree: (use_alias
     scope: (identifier)
     alias: (identifier)))
-(use_statement
+(use_declaration
   tree: (use_alias
     scope: (path
       scope: (identifier)
       name: (identifier))
     alias: (identifier)))
-(use_statement
+(use_declaration
   tree: (use_alias
     scope: (path
       scope: (path
@@ -326,400 +390,13 @@ use foo::bar::lorem as ipsum;
     alias: (identifier)))
 #+end_test
 
-* Comments
-:PROPERTIES:
-:export_file_name: comments.txt
-:END:
+** Functions
 
-** Line
+*************** TODO The Functions subtree can be flattened out so modifiers test all things modifiers are applicable to instead of ONLY in the context of functions
+*************** END
 
-*** No DocStyle
-
-#+begin_test
-// Foobar
-// Lorem
-//Whitespace at comment glue-tokens doesn't matter
-// Comments cannot be nested // So this line // Is a single comment // Not four
-//// Four slashes is also a normal line comment!
-//
-//             Big leading whitespace
-
-// !Not a doc comment because there's a space between the // and !
-
-// Lone
-
-// Wolf
-
----
-
-(line_comment)
-(line_comment)
-(line_comment)
-(line_comment)
-(line_comment)
-(line_comment)
-(line_comment)
-(line_comment)
-(line_comment)
-(line_comment)
-#+end_test
-
-*** Inner DocStyle
-
-#+begin_test
-//! Foobar inner line doc comment
-//!No whitespace at glue-token
-//! No nested //! Line doc /// Comments // Or normal
-//!         Big leading
-//!
-
-//! Lone
-
-//!         ~~~~~~Wolf~~~~~~!**!#$%#!^&@%$!#(!#^!@&(!@*&@!)) (lots of ascii spam)
-
----
-
-(line_comment
-  style: (inner_doc_style)
-  content: (doc_comment))
-(line_comment
-  style: (inner_doc_style)
-  content: (doc_comment))
-(line_comment
-  style: (inner_doc_style)
-  content: (doc_comment))
-(line_comment
-  style: (inner_doc_style)
-  content: (doc_comment))
-(line_comment
-  style: (inner_doc_style)
-  content: (doc_comment))
-(line_comment
-  style: (inner_doc_style)
-  content: (doc_comment))
-(line_comment
-  style: (inner_doc_style)
-  content: (doc_comment))
-#+end_test
-
-*** Outer DocStyle
-
-#+begin_test
-/// Foobar outer line doc comment
-///No whitespace at glue-token
-/// No nested /// Line doc //! Comments // Or normal
-///         Big leading
-///
-
-/// Lone
-
-///         ~~~~~~Wolf~~~~~~!**!#$%#!^&@%$!#(!#^!@&(!@*&@!)) (lots of ascii spam)
-
----
-
-(line_comment
-  style: (outer_doc_style)
-  content: (doc_comment))
-(line_comment
-  style: (outer_doc_style)
-  content: (doc_comment))
-(line_comment
-  style: (outer_doc_style)
-  content: (doc_comment))
-(line_comment
-  style: (outer_doc_style)
-  content: (doc_comment))
-(line_comment
-  style: (outer_doc_style)
-  content: (doc_comment))
-(line_comment
-  style: (outer_doc_style)
-  content: (doc_comment))
-(line_comment
-  style: (outer_doc_style)
-  content: (doc_comment))
-#+end_test
-
-** Block
-
-*** No DocStyle
-
-#+begin_test
-/* single line block comment */
-
-/*whitespace doesn't matter*/
-
-/*                big        padding           */
-
-/* multi line
-block comment */
-
-/* lots of ** asterisks * */
-
-/**/
-
----
-
-(block_comment)
-(block_comment)
-(block_comment)
-(block_comment)
-(block_comment)
-(block_comment)
-#+end_test
-
-**** Degenerate
-
-An empty outer-style block comment is just a normal block comment.
-
-#+begin_test
-/***/
-
----
-
-(block_comment)
-#+end_test
-
-Outer-style block comments must have exactly this starting delimiter =/**=, so =/****/= is not an outer-style block comment with content =*= but rather a normal block comment.
-
-#+begin_test
-/****/
-
----
-
-(block_comment)
-#+end_test
-
-Remaining degenerate.
-
-#+begin_test
-/* n *//***/
-
-/*         ~~~~~~Wolf~~~~~~!**!#$%#!^&@%$!#(!#^!@&(!@*&@!)) (lots of ascii spam)
-//! lorem
-// foo
-/// bar
-*/
-
----
-
-(block_comment)
-(block_comment)
-(block_comment)
-#+end_test
-
-**** Nested
-
-#+begin_test
-/* single line /* nested /* block */ comment */ */
-
-/* no nesting kids /** */ /**/ /***/ /*!*/ /*! */ */
-
----
-
-(block_comment)
-(block_comment)
-#+end_test
-
-**** Unmatched
-
-Simple.
-#+begin_test :error
-/* unmatched single line
-#+end_test
-
-Nested.
-#+begin_test :error
-/* unmatched /* nested comment */
-#+end_test
-
-Multiline nested.
-#+begin_test :error
-/* unmatched /*
-multiline /* nested
-comment */ */
-#+end_test
-
-*** Inner DocStyle
-
-#+begin_test
-/*! single */
-
-/*!whitespace doesn't matter*/
-
-/*!    big   padding    */
-
-/*! single /*! nested /* block */ comment */ */
-
-/*! multi line
-block comment */
-
-/*! lots of ** asterisks * */
-
-/*! no nesting kids /** */ /**/ /***/ /*!*/ /*! */ */
-
-/*!!*/
-
-/*!         ~~~~~~Wolf~~~~~~!**!#$%#!^&@%$!#(!#^!@&(!@*&@!)) (lots of ascii spam)
-//! nope
-// foo
-/// bar
-*/
-
----
-
-(block_comment
-  style: (inner_doc_style)
-  content: (doc_comment))
-(block_comment
-  style: (inner_doc_style)
-  content: (doc_comment))
-(block_comment
-  style: (inner_doc_style)
-  content: (doc_comment))
-(block_comment
-  style: (inner_doc_style)
-  content: (doc_comment))
-(block_comment
-  style: (inner_doc_style)
-  content: (doc_comment))
-(block_comment
-  style: (inner_doc_style)
-  content: (doc_comment))
-(block_comment
-  style: (inner_doc_style)
-  content: (doc_comment))
-(block_comment
-  style: (inner_doc_style)
-  content: (doc_comment))
-(block_comment
-  style: (inner_doc_style)
-  content: (doc_comment))
-#+end_test
-
-**** Empty
-
-Empty inner-style block comments are possible.
-#+begin_test
-/*!*/
-
----
-
-(block_comment
-  style: (inner_doc_style))
-#+end_test
-
-*** Outer DocStyle
-
-#+begin_test
-/** single */
-
-/**whitespace doesn't matter*/
-
-/**    big   padding    */
-
-/** single /** nested /* block */ comment */ */
-
-/** multi line
-block comment */
-
-/** lots of ** asterisks * */
-
-/** no nesting kids /** */ /**/ /***/ /*!*/ /*! */ */
-
-/**         ~~~~~~Wolf~~~~~~!**!#$%#!^&@%$!#(!#^!@&(!@*&@!)) (lots of ascii spam)
-//! nope
-// foo
-/// bar
-*/
-
----
-
-(block_comment
-  style: (outer_doc_style)
-  content: (doc_comment))
-(block_comment
-  style: (outer_doc_style)
-  content: (doc_comment))
-(block_comment
-  style: (outer_doc_style)
-  content: (doc_comment))
-(block_comment
-  style: (outer_doc_style)
-  content: (doc_comment))
-(block_comment
-  style: (outer_doc_style)
-  content: (doc_comment))
-(block_comment
-  style: (outer_doc_style)
-  content: (doc_comment))
-(block_comment
-  style: (outer_doc_style)
-  content: (doc_comment))
-(block_comment
-  style: (outer_doc_style)
-  content: (doc_comment))
-#+end_test
-
-**** Minimal
-
-Empty outer-style block comments are not possible, must be exactly the prefix =/**= followed by any non =*= character and then the closing delimiter =*/=.
-
-#+begin_test
-/** */
-/**x*/
-/**!*/
-
----
-
-(block_comment
-  style: (outer_doc_style)
-  content: (doc_comment))
-(block_comment
-  style: (outer_doc_style)
-  content: (doc_comment))
-(block_comment
-  style: (outer_doc_style)
-  content: (doc_comment))
-#+end_test
-
-* Types
-:PROPERTIES:
-:export_file_name: types.txt
-:END:
-
-** Unit
-#+begin_test
-type Foo = ();
-
----
-
-(source_file
-  (unit_type))
-#+end_test
-
-** TypeExpressions
-
-*** Literal
-#+begin_test
-fn main() {
-  let foo: [Field; 69] = [0; 69];
-}
-
----
-
-(source_file)
-#+end_test
-
-* Functions
-:PROPERTIES:
-:export_file_name: functions.txt
-:END:
-
-Tree-sitter and Nargo tests for functions.
-
-** Definitions
-#+begin_test :extract
+*** Definitions
+#+begin_test :extract :skip
 fn hello_world() {}
 
 fn foo() {}
@@ -744,28 +421,28 @@ fn before123four_five_678() {}
   (block))
 #+end_test
 
-*** Starting with integer literal
+**** Starting with integer literal
 #+begin_test :error :extract
 fn 123_not_okay() {}
 #+end_test
 
-*** Starting with negation operator
+**** Starting with negation operator
 #+begin_test :error :extract
 fn !nope() {}
 #+end_test
 
-*** Missing parameter list
+**** Missing parameter list
 #+begin_test :error :extract
 fn nah {}
 #+end_test
 
-*** Missing block expression
+**** Missing block expression
 #+begin_test :error :extract
 fn silly()
 #+end_test
 
-** Modifiers
-#+begin_test
+*** Modifiers
+#+begin_test :skip
 pub fn one() {}
 pub(crate) fn two() {}
 
@@ -836,7 +513,7 @@ pub(crate) unconstrained comptime fn nine() {}
   (block))
 #+end_test
 
-*** Visibility position
+**** Visibility position
 #+begin_test :error
 fn pub one() {}
 #+end_test
@@ -845,7 +522,7 @@ fn pub one() {}
 fn pub(crate) one() {}
 #+end_test
 
-*** Visibility repeated
+**** Visibility repeated
 #+begin_test :error
 fn pub pub one() {}
 #+end_test
@@ -854,7 +531,7 @@ fn pub pub one() {}
 fn pub(crate) pub one() {}
 #+end_test
 
-*** Unconstrained position
+**** Unconstrained position
 #+begin_test :error
 fn unconstrained pub one() {}
 #+end_test
@@ -863,142 +540,416 @@ fn unconstrained pub one() {}
 unconstrained pub fn one() {}
 #+end_test
 
-*** Unconstrained repeated
+**** Unconstrained repeated
 #+begin_test :error
 fn unconstrained unconstrained one() {}
 #+end_test
 
-* Attributes
+* Statements
 :PROPERTIES:
-:export_file_name: attributes.txt
+:export_file_name: statements.txt
 :END:
 
-** Normal
-#+begin_test
-#[foo(bar)]
+* Expressions
+:PROPERTIES:
+:export_file_name: expressions.txt
+:END:
 
-#[foo]
+* Types
+:PROPERTIES:
+:export_file_name: types.txt
+:END:
 
-#[test(should_fail_with = "howdy there")]
-
-#[multiple] #[on a single line]
-
-#['tag]
-#[and stacked]
+** Unit
+#+begin_test :skip
+type Foo = ();
 
 ---
 
-(attribute
-  (content))
-(attribute
-  (content))
-(attribute
-  (content))
-(attribute
-  (content))
-(attribute
-  (content))
-(attribute
-  (content))
-(attribute
-  (content))
+(source_file
+  (unit_type))
 #+end_test
 
-*** Invalid Inner Character
+** TypeExpressions
+
+*** Literal
+#+begin_test :skip
+fn main() {
+  let foo: [Field; 69] = [0; 69];
+}
+
+---
+
+(source_file)
+#+end_test
+
+* Literals
+:PROPERTIES:
+:export_file_name: literals.txt
+:END:
+
+* Extras
+:PROPERTIES:
+:export_file_name: extras.txt
+:END:
+
+** Comments
+
+*** Line
+
+**** No docStyle
+
+#+begin_test :comments link
+// Foobar
+// Lorem
+//Whitespace at comment glue-tokens doesn't matter
+// Comments cannot be nested // So this line // Is a single comment // Not four
+//// Four slashes is also a normal line comment!
+//
+//             Big leading whitespace
+
+// !Not a doc comment because there's a space between the // and !
+
+// Lone
+
+// Wolf
+
+---
+
+(line_comment)
+(line_comment)
+(line_comment)
+(line_comment)
+(line_comment)
+(line_comment)
+(line_comment)
+(line_comment)
+(line_comment)
+(line_comment)
+#+end_test
+
+**** Inner docStyle
+
+#+begin_test
+//! Foobar inner line doc comment
+//!No whitespace at glue-token
+//! No nested //! Line doc /// Comments // Or normal
+//!         Big leading
+//!
+
+//! Lone
+
+//!         ~~~~~~Wolf~~~~~~!**!#$%#!^&@%$!#(!#^!@&(!@*&@!)) (lots of ascii spam)
+
+---
+
+(line_comment
+  style: (inner_doc_style)
+  content: (doc_comment))
+(line_comment
+  style: (inner_doc_style)
+  content: (doc_comment))
+(line_comment
+  style: (inner_doc_style)
+  content: (doc_comment))
+(line_comment
+  style: (inner_doc_style)
+  content: (doc_comment))
+(line_comment
+  style: (inner_doc_style)
+  content: (doc_comment))
+(line_comment
+  style: (inner_doc_style)
+  content: (doc_comment))
+(line_comment
+  style: (inner_doc_style)
+  content: (doc_comment))
+#+end_test
+
+**** Outer docStyle
+
+#+begin_test
+/// Foobar outer line doc comment
+///No whitespace at glue-token
+/// No nested /// Line doc //! Comments // Or normal
+///         Big leading
+///
+
+/// Lone
+
+///         ~~~~~~Wolf~~~~~~!**!#$%#!^&@%$!#(!#^!@&(!@*&@!)) (lots of ascii spam)
+
+---
+
+(line_comment
+  style: (outer_doc_style)
+  content: (doc_comment))
+(line_comment
+  style: (outer_doc_style)
+  content: (doc_comment))
+(line_comment
+  style: (outer_doc_style)
+  content: (doc_comment))
+(line_comment
+  style: (outer_doc_style)
+  content: (doc_comment))
+(line_comment
+  style: (outer_doc_style)
+  content: (doc_comment))
+(line_comment
+  style: (outer_doc_style)
+  content: (doc_comment))
+(line_comment
+  style: (outer_doc_style)
+  content: (doc_comment))
+#+end_test
+
+*** Block
+
+**** No docStyle
+
+#+begin_test
+/* single line block comment */
+
+/*whitespace doesn't matter*/
+
+/*                big        padding           */
+
+/* multi line
+block comment */
+
+/* lots of ** asterisks * */
+
+/**/
+
+---
+
+(block_comment)
+(block_comment)
+(block_comment)
+(block_comment)
+(block_comment)
+(block_comment)
+#+end_test
+
+***** Degenerate
+
+An empty outer-style block comment is just a normal block comment.
+
+#+begin_test
+/***/
+
+---
+
+(block_comment)
+#+end_test
+
+Outer-style block comments must have exactly this starting delimiter =/**=, so =/****/= is not an outer-style block comment with content =*= but rather a normal block comment.
+
+#+begin_test
+/****/
+
+---
+
+(block_comment)
+#+end_test
+
+Remaining degenerate.
+
+#+begin_test
+/* n *//***/
+
+/*         ~~~~~~Wolf~~~~~~!**!#$%#!^&@%$!#(!#^!@&(!@*&@!)) (lots of ascii spam)
+//! lorem
+// foo
+/// bar
+*/
+
+---
+
+(block_comment)
+(block_comment)
+(block_comment)
+#+end_test
+
+***** Nested
+
+#+begin_test
+/* single line /* nested /* block */ comment */ */
+
+/* no nesting kids /** */ /**/ /***/ /*!*/ /*! */ */
+
+---
+
+(block_comment)
+(block_comment)
+#+end_test
+
+***** Unmatched
+
+Simple.
 #+begin_test :error
-#@[bad]
-fn normal() {}
+/* unmatched single line
 #+end_test
 
-** Degenerate
+Nested.
+#+begin_test :error
+/* unmatched /* nested comment */
+#+end_test
+
+Multiline nested.
+#+begin_test :error
+/* unmatched /*
+multiline /* nested
+comment */ */
+#+end_test
+
+**** Inner docStyle
+
 #+begin_test
-#[   ]
+/*! single */
 
-#[oracle( )]
+/*!whitespace doesn't matter*/
 
-#[oracle(...)]
+/*!    big   padding    */
 
-#[ leading, and space,      seperated  /with/  punctuation!!!,{}|!#_ () () ( ( ) () ( ]
+/*! single /*! nested /* block */ comment */ */
+
+/*! multi line
+block comment */
+
+/*! lots of ** asterisks * */
+
+/*! no nesting kids /** */ /**/ /***/ /*!*/ /*! */ */
+
+/*!!*/
+
+/*!         ~~~~~~Wolf~~~~~~!**!#$%#!^&@%$!#(!#^!@&(!@*&@!)) (lots of ascii spam)
+//! nope
+// foo
+/// bar
+*/
 
 ---
 
-(attribute
-  (content))
-(attribute
-  (content))
-(attribute
-  (content))
-(attribute
-  (content))
+(block_comment
+  style: (inner_doc_style)
+  content: (doc_comment))
+(block_comment
+  style: (inner_doc_style)
+  content: (doc_comment))
+(block_comment
+  style: (inner_doc_style)
+  content: (doc_comment))
+(block_comment
+  style: (inner_doc_style)
+  content: (doc_comment))
+(block_comment
+  style: (inner_doc_style)
+  content: (doc_comment))
+(block_comment
+  style: (inner_doc_style)
+  content: (doc_comment))
+(block_comment
+  style: (inner_doc_style)
+  content: (doc_comment))
+(block_comment
+  style: (inner_doc_style)
+  content: (doc_comment))
+(block_comment
+  style: (inner_doc_style)
+  content: (doc_comment))
 #+end_test
 
-Foo
+***** Empty
 
-* Modifiers
-:PROPERTIES:
-:export_file_name: modifiers.txt
-:END:
+Empty inner-style block comments are possible.
+#+begin_test
+/*!*/
 
-** Visibility
+---
 
-*** Top-level
-*************** TODO Are top-level naked visibility modifiers valid...?
+(block_comment
+  style: (inner_doc_style))
+#+end_test
+
+**** Outer docStyle
+
+#+begin_test
+/** single */
+
+/**whitespace doesn't matter*/
+
+/**    big   padding    */
+
+/** single /** nested /* block */ comment */ */
+
+/** multi line
+block comment */
+
+/** lots of ** asterisks * */
+
+/** no nesting kids /** */ /**/ /***/ /*!*/ /*! */ */
+
+/**         ~~~~~~Wolf~~~~~~!**!#$%#!^&@%$!#(!#^!@&(!@*&@!)) (lots of ascii spam)
+//! nope
+// foo
+/// bar
+*/
+
+---
+
+(block_comment
+  style: (outer_doc_style)
+  content: (doc_comment))
+(block_comment
+  style: (outer_doc_style)
+  content: (doc_comment))
+(block_comment
+  style: (outer_doc_style)
+  content: (doc_comment))
+(block_comment
+  style: (outer_doc_style)
+  content: (doc_comment))
+(block_comment
+  style: (outer_doc_style)
+  content: (doc_comment))
+(block_comment
+  style: (outer_doc_style)
+  content: (doc_comment))
+(block_comment
+  style: (outer_doc_style)
+  content: (doc_comment))
+(block_comment
+  style: (outer_doc_style)
+  content: (doc_comment))
+#+end_test
+
+***** Minimal
+
+Empty outer-style block comments are not possible, must be exactly the prefix =/**= followed by any non =*= character and then the closing delimiter =*/=.
+
+#+begin_test
+/** */
+/**x*/
+/**!*/
+
+---
+
+(block_comment
+  style: (outer_doc_style)
+  content: (doc_comment))
+(block_comment
+  style: (outer_doc_style)
+  content: (doc_comment))
+(block_comment
+  style: (outer_doc_style)
+  content: (doc_comment))
+#+end_test
+
+*************** TODO Logic for :extract
+This would call the noir frontend parser, e.g. say parse_program and vaidate correct syntax too. Might be overengineering so only do this after grammar is completed and refined a bit (i.e. usable in editors, helix, neovim, emacs).
 *************** END
 
-* Use Tree
-:PROPERTIES:
-:export_file_name: use_tree.txt
-:END:
+TODO: Default visibility in this file should be outline only (all headings visible but not their content), and all property drawers folded.
 
-** Simple
-
-Private, public, and public crate scoped.
-#+begin_test
-use foo;
-
-pub use foo;
-
-pub(crate) use foo;
-
----
-
-(source_file
-  (use_tree))
-
-(source_file
-  (use_tree))
-
-(source_file
-  (use_tree))
-#+end_test
-
-*** Alias
-#+begin_test
-use foo as bar;
-#+end_test
-
-** Complex
-
-*** Kind prefixes
-#+begin_test
-use crate::foo;
-
-use dep::foo;
-
-use super::foo;
-#+end_test
-
-*** List
-#+begin_test
-use foo::{bar, baz};
-#+end_test
-
-With trailing commas.
-#+begin_test
-use foo::{bar, baz, };
-#+end_test
-
-With kind prefixes.
-#+begin_test
-use crate::foo{foo, bar};
-#+end_test

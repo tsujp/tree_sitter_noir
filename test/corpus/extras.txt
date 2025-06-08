@@ -1,6 +1,6 @@
-==================
-Line / No DocStyle
-==================
+=============================
+Comments / Line / No docStyle
+=============================
 
 // Foobar
 // Lorem
@@ -32,9 +32,9 @@ Line / No DocStyle
 )
 
 
-=====================
-Line / Inner DocStyle
-=====================
+================================
+Comments / Line / Inner docStyle
+================================
 
 //! Foobar inner line doc comment
 //!No whitespace at glue-token
@@ -73,9 +73,9 @@ Line / Inner DocStyle
 )
 
 
-=====================
-Line / Outer DocStyle
-=====================
+================================
+Comments / Line / Outer docStyle
+================================
 
 /// Foobar outer line doc comment
 ///No whitespace at glue-token
@@ -114,9 +114,9 @@ Line / Outer DocStyle
 )
 
 
-===================
-Block / No DocStyle
-===================
+==============================
+Comments / Block / No docStyle
+==============================
 
 /* single line block comment */
 
@@ -143,9 +143,9 @@ block comment */
 )
 
 
-================================
-Block / No DocStyle / Degenerate
-================================
+===========================================
+Comments / Block / No docStyle / Degenerate
+===========================================
 
 /***/
 
@@ -172,9 +172,9 @@ Block / No DocStyle / Degenerate
 )
 
 
-============================
-Block / No DocStyle / Nested
-============================
+=======================================
+Comments / Block / No docStyle / Nested
+=======================================
 
 /* single line /* nested /* block */ comment */ */
 
@@ -188,28 +188,28 @@ Block / No DocStyle / Nested
 )
 
 
-================================
-Block / No DocStyle / Unmatched1
+===============================================
+Comments / Block / No docStyle / Unmatched (e1)
 :error
-================================
+===============================================
 
 /* unmatched single line
 ---
 
 
-================================
-Block / No DocStyle / Unmatched2
+===============================================
+Comments / Block / No docStyle / Unmatched (e2)
 :error
-================================
+===============================================
 
 /* unmatched /* nested comment */
 ---
 
 
-================================
-Block / No DocStyle / Unmatched3
+===============================================
+Comments / Block / No docStyle / Unmatched (e3)
 :error
-================================
+===============================================
 
 /* unmatched /*
 multiline /* nested
@@ -217,9 +217,9 @@ comment */ */
 ---
 
 
-======================
-Block / Inner DocStyle
-======================
+=================================
+Comments / Block / Inner docStyle
+=================================
 
 /*! single */
 
@@ -277,9 +277,9 @@ block comment */
 )
 
 
-==============================
-Block / Inner DocStyle / Empty
-==============================
+=========================================
+Comments / Block / Inner docStyle / Empty
+=========================================
 
 /*!*/
 
@@ -291,9 +291,9 @@ Block / Inner DocStyle / Empty
 )
 
 
-======================
-Block / Outer DocStyle
-======================
+=================================
+Comments / Block / Outer docStyle
+=================================
 
 /** single */
 
@@ -346,9 +346,9 @@ block comment */
 )
 
 
-================================
-Block / Outer DocStyle / Minimal
-================================
+===========================================
+Comments / Block / Outer docStyle / Minimal
+===========================================
 
 /** */
 /**x*/
