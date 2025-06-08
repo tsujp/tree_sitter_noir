@@ -10,7 +10,7 @@
 ;;;; Variables
 
 ;; Specifiable keyword symbols defined for test-block (org node: special-block) attributes.
-(defconst presence-properties '(:error :extract))
+(defconst presence-properties '(:error :extract :skip))
 
 
 ;;;; Functions
@@ -58,7 +58,10 @@ base title string under property :test-name and the current
 error test number COUNT under a specific headline."
   (concat
    (plist-get plist :test-name)
-   (number-to-string count)))
+   (concat " (e" (number-to-string count) ")")))
+   ;; (when (> count 1)
+   ;;   (concat " v" (number-to-string count)))))
+   ;; (number-to-string count)))
 ;; (concat " (Bad) " (number-to-string count) (when annotation
 ;;                                              (concat " [" annotation "]")))))
 
@@ -173,6 +176,7 @@ is a global communication plist with contextual information."
               (setq error-test-count (1+ error-test-count)))
 
              ;; Normal (non-error) test
+             ;; ((not (or (plist-get --sb-info :error) (plist-get --sb-info :skip)))
              ((not (plist-get --sb-info :error))
               (if (seq-empty-p merged-blocks) ; First normal test block in this headline?
                   ;; TODO: Only save first blocks properties, not important right now but (maybe) in future more properties = need to do this with more granularity.
@@ -263,10 +267,13 @@ of --- and (if appropriate) a tree-sitter parse-tree for assertion."
             test-name "\n"
             (when (org-element-property :error test-block)
               ":error\n")
+            (when (org-element-property :skip test-block)
+              ":skip\n")
             test-name-wrap "\n\n"
             contents)))
 
 
+;; TODO: Can use that push or whatever syntax to easily convert to/from a plist. I've done this elsewhere but cannot remember where and I think twb mentioned it on irc. I think I updated org transclusion to use this method or ox-ngd.el idk.
 
 ;;; Define backend
 
