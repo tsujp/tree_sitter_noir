@@ -73,50 +73,61 @@ module.exports = grammar({
         // Noirc: Module -- top-level AST node is really Program but it immediately wraps Module.
         source_file: ($) => repeat($._statement),
 
-        _statement: ($) => choice($._expression_statement, $._declaration_statement),
+        // Can statement-ise anything so we'll use this as top-level.
+        // _statement: ($) => choice($._expression_statement, $._declaration_statement),
+        // _expression_statement: ($) => seq($._expression, ';'),
+        _statement: ($) => choice($.__item),
 
-        _expression_statement: ($) => seq($._expression, ';'),
-        
-        _declaration_statement: ($) => choice(
-            $.attribute,
-            $.use_statement, // TODO: Relocate?
-            $.function_definition,
+        // Noirc: Module -- Since doc comments can appear anywhere, Module is Item which is ItemKind.
+        __item: ($) => choice(
+            $.attribute_item,
+            $.use_declaration,
+            $.module_or_contract_item,
         ),
 
-        _expression: ($) => 'foo',
+        item_list: ($) => seq(
+            '{',
+            repeat($.__item),
+            '}',
+        ),
 
-        // TODO: Consider all Noirc 'statements' except we enforce trailing semicolon where required? Or just have a statements section idk yet.
-        statement: ($) => choice(
-            // TODO: Attributes.
+        // * * * * * * * * * * * * * * * * * * * * * * * * * DECLARATIONS / ITEMS
+
+        // Noirc: ItemVisibility.
+        visibility_modifier: ($) => seq('pub', optional('(crate)')),
+        
+        // Noirc: Visibility.
+        visibility: ($) => optional(choice(
+            'pub',
+            'return_data',
+            seq('call_data(', $.int_literal ,')'),
+        )),
+        
+        // TODO: Differentiate between inner/non-inner in grammar, for now not doing so in order to focus on completing grammar entirely (broadly).
+        // Noirc: Attributes, and InnerAttribute.
+        attribute_item: ($) => seq(
+            '#',
+            optional('!'), // Marks InnerAttribute.
+            '[',
+            optional("'"), // Marks attribute as having a tag
+            alias($.attribute_content, $.content),
+            ']',
         ),
         
-        // Noirc: StatementKind.,
+        attribute_content: ($) => seq(repeat1(choice(' ', REG_ALPHABETIC, REG_NUMERIC, REG_ASCII_PUNCTUATION))),
         
-        // Statements ending in blocks, thus not requiring semicolons.
-        _block_ending_statements: ($) => choice(
-            $.for_statement,
-            // $.interned_statement, // TODO: Commented temporarily.
-            //$.block,
-            // $.unsafe_expression, // TODO: Commented temporarily.
-            // $.interned_expression, // TODO: Commented temporarily.
-            // $.if_statement, // TODO: Commented temporarily.
-        ),
-        
-        // Noirc: BreakStatement.
-        break_statement: _ => seq('break'),
-        
-        // Noirc: ContinueStatement.
-        continue_statement: _ => seq('continue'),
-        
-        for_statement: ($) => 'FOR_STATEMENT___TODO',
-        
-        // Noirc: BlockStatement.
-        block_statement: ($) => choice(
-            // TODO
+        module_or_contract_item: ($) => seq(
+            optional($.visibility_modifier),
+            choice('mod', 'contract'),
+            field('name', $.identifier),
+            choice(
+                ';',
+                field('body', $.item_list),
+            ),
         ),
         
         // Noirc: Use.
-        use_statement: ($) => seq(
+        use_declaration: ($) => seq(
             optional($.visibility_modifier),
             'use',
             field('tree', $.__use_tree_variants),
@@ -154,31 +165,6 @@ module.exports = grammar({
             'as',
             field('alias', $.identifier),
         ),
-
-        // * * * * * * * * * * * * * * * * * * * * * * * * * DECLARATIONS
-
-        // Noirc: ItemVisibility.
-        visibility_modifier: ($) => seq('pub', optional('(crate)')),
-        
-        // Noirc: Visibility.
-        visibility: ($) => optional(choice(
-            'pub',
-            'return_data',
-            seq('call_data(', $.int_literal ,')'),
-        )),
-        
-        // TODO: Differentiate between inner/non-inner in grammar, for now not doing so in order to focus on completing grammar entirely (broadly).
-        // Noirc: Attributes, and InnerAttribute.
-        attribute: ($) => seq(
-            '#',
-            optional('!'), // Marks InnerAttribute.
-            '[',
-            optional("'"), // Marks attribute as having a tag
-            alias($.attribute_content, $.content),
-            ']',
-        ),
-        
-        attribute_content: ($) => seq(repeat1(choice(' ', REG_ALPHABETIC, REG_NUMERIC, REG_ASCII_PUNCTUATION))),
         
         function_parameters: ($) => seq(
             '(',
@@ -200,6 +186,46 @@ module.exports = grammar({
         ),
         
         function_modifiers: ($) => repeat1(choice(MODIFIERS.Unconstrained, MODIFIERS.Comptime)),
+
+        // * * * * * * * * * * * * * * * * * * * * * * * * * STATEMENTS
+
+        // TODO: Consider all Noirc 'statements' except we enforce trailing semicolon where required? Or just have a statements section idk yet.
+        statement: ($) => choice(
+            // TODO: Attributes.
+        ),
+        
+        // Noirc: StatementKind.,
+        
+        // Statements ending in blocks, thus not requiring semicolons.
+        _block_ending_statements: ($) => choice(
+            $.for_statement,
+            // $.interned_statement, // TODO: Commented temporarily.
+            //$.block,
+            // $.unsafe_expression, // TODO: Commented temporarily.
+            // $.interned_expression, // TODO: Commented temporarily.
+            // $.if_statement, // TODO: Commented temporarily.
+        ),
+        
+        // Noirc: BreakStatement.
+        break_statement: _ => seq('break'),
+        
+        // Noirc: ContinueStatement.
+        continue_statement: _ => seq('continue'),
+        
+        for_statement: ($) => 'FOR_STATEMENT___TODO',
+        
+        // Noirc: BlockStatement.
+        block_statement: ($) => choice(
+            // TODO
+        ),
+
+        // * * * * * * * * * * * * * * * * * * * * * * * * * EXPRESSIONS
+
+        block_expression: _ => seq(
+            '{',
+            // TODO: Optionally repeated Statement.
+            '}',
+        ),
 
         // * * * * * * * * * * * * * * * * * * * * * * * * * TYPES
 
@@ -357,14 +383,6 @@ module.exports = grammar({
             '(',
             $.type_expr,
             ')',
-        ),
-
-        // * * * * * * * * * * * * * * * * * * * * * * * * * EXPRESSIONS
-
-        block_expression: _ => seq(
-            '{',
-            // TODO: Optionally repeated Statement.
-            '}',
         ),
 
         // * * * * * * * * * * * * * * * * * * * * * * * * * LITERALS

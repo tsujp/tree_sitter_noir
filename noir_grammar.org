@@ -100,7 +100,11 @@ Parser: [[file:noir/compiler/noirc_frontend/src/parser/parser.rs::pub(crate) fn 
 + (rep0) [[#h:8CC1D239-66B1-45A9-BB71-66AF07161479][Item]]
 :end:
 
-This /is/ ~ParsedModule~ (see: [[#h:DB42728E-09AF-4189-B2BE-E48853E5C1D9][Parsing]]). So a Module represents one parsed source-file.
+*************** TODO Have inlined this at the top of rules in the grammar file for now
+Go back to transclusion if/when appropriate.
+*************** END
+
+This /is/ ~ParsedModule~ (see: [[#h:DB42728E-09AF-4189-B2BE-E48853E5C1D9][Parsing]]). So a Module represents one parsed source-file, but they may appear inline (see: [[#h:9204514E-E5FC-488B-8066-66F0D9AF0C85][ModOrContract]]).
 
 Parser: [[file:noir/compiler/noirc_frontend/src/parser/parser.rs::pub(crate) fn parse_module(&mut self, nested: bool)][parse_module()]]
 #+transclude: [[file:noir/compiler/noirc_frontend/src/parser/parser.rs::122][Module doc]] :lines 122-122 :src fundamental
@@ -176,7 +180,7 @@ Parser: [[file:noir/compiler/noirc_frontend/src/parser/parser/item.rs::pub(crate
 - [[#h:AE3747A8-8CA3-4B6D-AF09-3553CE24CD70][InnerAttribute]]
 - [[#h:FF901AEF-D40D-44AB-9BA6-C324F3531088][Attribute]] by [[#h:2A9D09A5-2E52-4B8C-ABA1-0B3B953F093C][Modifiers]] by (grp):
   - [[#h:ADB184CE-E43C-423B-803F-DE1679A91829][Use]]
-  - ModOrContract
+  - [[#h:9204514E-E5FC-488B-8066-66F0D9AF0C85][ModOrContract]]
   - Struct
   - Impl
   - Trait
@@ -184,7 +188,6 @@ Parser: [[file:noir/compiler/noirc_frontend/src/parser/parser/item.rs::pub(crate
   - TypeAlias
   - Function
 :end:
-
 
 Parser: [[file:noir/compiler/noirc_frontend/src/parser/parser/item.rs::fn parse_item_kind(&mut self)][parse_item_kind()]]
 
@@ -343,7 +346,7 @@ CLOSED: [2025-06-08 Sun 17:35]
 
 #+begin_src js :treesit t
 // Noirc: Use.
-use_statement: ($) => seq(
+use_declaration: ($) => seq(
     optional($.visibility_modifier),
     'use',
     field('tree', $.__use_tree_variants),
@@ -362,7 +365,7 @@ Additionally the doc comment for =UseTree= is wrong since it calls directly to [
 Only the [[#h:F5A79701-65C9-4FEA-83D8-2413C585A5FA][ItemVisibility]] modifier is applicable, all other [[#h:2A9D09A5-2E52-4B8C-ABA1-0B3B953F093C][Modifiers]] are parse errors.
 #+transclude: [[file:noir/compiler/noirc_frontend/src/parser/parser.rs::506][comptime_mutable_and_unconstrained_not_applicable()]] :lines 506-510 :src rust
 
-Parsed [[file:noir/compiler/noirc_frontend/src/ast/statement.rs::pub struct UseTree {][UseTree struct]] is returned as ~ItemKind::Import~ which is [[file:noir/compiler/noirc_frontend/src/ast/statement.rs::pub fn desugar(self, root: Option<Path>, visibility: ItemVisibility)][considered a statement]].
+Parsed [[file:noir/compiler/noirc_frontend/src/ast/statement.rs::pub struct UseTree {][UseTree struct]] is returned as ~ItemKind::Import~ which is [[file:noir/compiler/noirc_frontend/src/ast/statement.rs::pub fn desugar(self, root: Option<Path>, visibility: ItemVisibility)][considered a statement]] however we will narrow and use the declaration sub-category of a statement and name this rule as such.
 
 *************** TODO Redo the pgd for these, the treesit grammar is right but pgd is a bit wonky
 Due to how usetree is parsed its a bit hard to represent in pgd right now, but the tree sitter logic is correct (via all tests so far).
@@ -475,14 +478,55 @@ If no path segments it's an error. Otherwise the last path segment constructed b
 
 Functionally this is just checking =as= followed by an ident.
 
+***** TODO ModOrContract                                               :node:
+:PROPERTIES:
+:CUSTOM_ID: h:9204514E-E5FC-488B-8066-66F0D9AF0C85
+:END:
+:pgd:
++ (grp)
+  - =mod= (kw)
+  - =contract= (kw)
++ [[#h:65B0176B-B46F-4679-8535-C504870AC048][ident]] (token)
++ (grp)
+  - ={= by [[#h:649C4EE8-8F15-4F45-8EA6-3AD48A893930][Module]] by =}=
+  - =;=
+:end:
+
+#+begin_src js :treesit t
+module_or_contract_item: ($) => seq(
+    optional($.visibility_modifier),
+    choice('mod', 'contract'),
+    field('name', $.identifier),
+    choice(
+        ';',
+        field('body', $.item_list),
+    ),
+)
+#+end_src
+
+Parser: [[file:noir/compiler/noirc_frontend/src/parser/parser/item.rs::if let Some(is_contract) = self.eat_mod_or_contract() {][parse_mod_or_contract() parent callsite]], [[file:noir/compiler/noirc_frontend/src/parser/parser/module.rs::pub(super) fn parse_mod_or_contract(][parse_mod_or_contract()]]
+
+Only the [[#h:F5A79701-65C9-4FEA-83D8-2413C585A5FA][ItemVisibility]] modifier is applicable, all other [[#h:2A9D09A5-2E52-4B8C-ABA1-0B3B953F093C][Modifiers]] are parse errors. Eat =mod= or =contract= keywords, ~validate_secondary_attributes~. If the brace group is not hit it's a ~ItemKind::ModuleDecl~ (declaration), otherwise a real submodule.
+
+i.e. =mod foo;= is a module declaration and =mod { let x = 123; }= is a real module.
+
+*************** TODO Classify expr/stmt/decl/def
+*************** END
+
 ***** TODO Struct
 Foo
+
+Only the [[#h:F5A79701-65C9-4FEA-83D8-2413C585A5FA][ItemVisibility]] modifier is applicable, all other [[#h:2A9D09A5-2E52-4B8C-ABA1-0B3B953F093C][Modifiers]] are parse errors.
 
 ***** TODO Implementation
 Foo
 
+Only the [[#h:F5A79701-65C9-4FEA-83D8-2413C585A5FA][ItemVisibility]] modifier is applicable, all other [[#h:2A9D09A5-2E52-4B8C-ABA1-0B3B953F093C][Modifiers]] are parse errors.
+
 ***** TODO Trait
 Foo
+
+Only the [[#h:F5A79701-65C9-4FEA-83D8-2413C585A5FA][ItemVisibility]] modifier is applicable, all other [[#h:2A9D09A5-2E52-4B8C-ABA1-0B3B953F093C][Modifiers]] are parse errors.
 
 ***** TODO Global
 Foo
@@ -2868,7 +2912,7 @@ CLOSED: [2025-06-05 Thu 20:02]
 #+begin_src js :treesit t
 // TODO: Differentiate between inner/non-inner in grammar, for now not doing so in order to focus on completing grammar entirely (broadly).
 // Noirc: Attributes, and InnerAttribute.
-attribute: ($) => seq(
+attribute_item: ($) => seq(
     '#',
     optional('!'), // Marks InnerAttribute.
     '[',
@@ -3056,32 +3100,40 @@ module.exports = grammar({
         // Noirc: Module -- top-level AST node is really Program but it immediately wraps Module.
         source_file: ($) => repeat($._statement),
 
-        _statement: ($) => choice($._expression_statement, $._declaration_statement),
+        // Can statement-ise anything so we'll use this as top-level.
+        // _statement: ($) => choice($._expression_statement, $._declaration_statement),
+        // _expression_statement: ($) => seq($._expression, ';'),
+        _statement: ($) => choice($.__item),
 
-        _expression_statement: ($) => seq($._expression, ';'),
-        
-        _declaration_statement: ($) => choice(
-            $.attribute,
-            $.use_statement, // TODO: Relocate?
-            $.function_definition,
+        // Noirc: Module -- Since doc comments can appear anywhere, Module is Item which is ItemKind.
+        __item: ($) => choice(
+            $.attribute_item,
+            $.use_declaration,
+            $.module_or_contract_item,
         ),
 
-        _expression: ($) => 'foo',
+        item_list: ($) => seq(
+            '{',
+            repeat($.__item),
+            '}',
+        ),
+
+        // * * * * * * * * * * * * * * * * * * * * * * * * * DECLARATIONS / ITEMS
+
+        <<Declarations>>,
+
+        // * * * * * * * * * * * * * * * * * * * * * * * * * STATEMENTS
 
         // TODO: Consider all Noirc 'statements' except we enforce trailing semicolon where required? Or just have a statements section idk yet.
         <<Statements>>,
 
-        // * * * * * * * * * * * * * * * * * * * * * * * * * DECLARATIONS
+        // * * * * * * * * * * * * * * * * * * * * * * * * * EXPRESSIONS
 
-        <<Declarations>>,
+        <<Expressions>>,
 
         // * * * * * * * * * * * * * * * * * * * * * * * * * TYPES
 
         <<Types>>,
-
-        // * * * * * * * * * * * * * * * * * * * * * * * * * EXPRESSIONS
-
-        <<Expressions>>,
 
         // * * * * * * * * * * * * * * * * * * * * * * * * * LITERALS
 
@@ -3121,20 +3173,30 @@ function sepBy(rule, sep) {
 
 #+transclude: [[#h:788ECB8C-0A48-4255-B35E-F5850902AA32][Statement]] :treesit
 
-**** Use
-
-#+transclude: [[#h:ADB184CE-E43C-423B-803F-DE1679A91829][Use]] :treesit
-
-*** Declarations
+*** Declarations / Items
 :PROPERTIES:
 :header-args+: :noweb-ref Declarations
 :END:
 
+**** ItemVisibility
+
 #+transclude: [[#h:F5A79701-65C9-4FEA-83D8-2413C585A5FA][ItemVisibility]] :treesit
+
+**** Visibility
 
 #+transclude: [[#h:17BBA21C-65D3-447D-93DE-2F13E16575C5][Visibility]] :treesit
 
+**** Attribute
+
 #+transclude: [[#h:22DB13A6-D91E-4240-8711-10ED6DEE1C6E][attribute]] :treesit
+
+**** ModOrContract
+
+#+transclude: [[#h:9204514E-E5FC-488B-8066-66F0D9AF0C85][ModOrContract]] :treesit
+
+**** Use
+
+#+transclude: [[#h:ADB184CE-E43C-423B-803F-DE1679A91829][Use]] :treesit
 
 **** FunctionParameters
 
