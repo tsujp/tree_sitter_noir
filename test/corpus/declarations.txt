@@ -397,6 +397,143 @@ use foo::bar::lorem as ipsum;
 )
 
 
+======================
+ModOrContract / Simple
+======================
+
+mod foo;
+contract foo;
+
+mod bar {}
+contract bar {}
+
+---
+
+(source_file
+  (module_or_contract_item
+    name: (identifier))
+  (module_or_contract_item
+    name: (identifier))
+
+  (module_or_contract_item
+    name: (identifier)
+    body: (item_list))
+  (module_or_contract_item
+    name: (identifier)
+    body: (item_list))
+)
+
+
+======================
+ModOrContract / Nested
+======================
+
+mod foo { mod bar; }
+contract foo { contract bar; }
+
+contract foo { mod bar {} }
+mod foo {
+  mod bar {}
+  mod lorem {}
+}
+
+---
+
+(source_file
+  (module_or_contract_item
+    name: (identifier)
+    body: (item_list
+      (module_or_contract_item
+        name: (identifier))))
+  (module_or_contract_item
+    name: (identifier)
+    body: (item_list
+      (module_or_contract_item
+        name: (identifier))))
+
+  (module_or_contract_item
+    name: (identifier)
+    body: (item_list
+      (module_or_contract_item
+        name: (identifier)
+        body: (item_list))))
+  (module_or_contract_item
+    name: (identifier)
+    body: (item_list
+      (module_or_contract_item
+        name: (identifier)
+        body: (item_list))
+      (module_or_contract_item
+        name: (identifier)
+        body: (item_list))))
+)
+
+
+==========================
+ModOrContract / Visibility
+==========================
+
+pub mod foo;
+pub(crate) contract foo;
+
+pub contract foo { pub mod bar; }
+pub contract foo { pub(crate) mod bar {} }
+
+---
+
+(source_file
+  (module_or_contract_item
+    (visibility_modifier)
+    name: (identifier))
+  (module_or_contract_item
+    (visibility_modifier)
+    name: (identifier))
+
+  (module_or_contract_item
+    (visibility_modifier)
+    name: (identifier)
+    body: (item_list
+      (module_or_contract_item
+        (visibility_modifier)
+        name: (identifier))))
+  (module_or_contract_item
+    (visibility_modifier)
+    name: (identifier)
+    body: (item_list
+      (module_or_contract_item
+        (visibility_modifier)
+        name: (identifier)
+        body: (item_list))))
+)
+
+
+====================================
+ModOrContract / No path in name (e1)
+:error
+====================================
+
+mod foo::bar;
+---
+
+
+====================================
+ModOrContract / No path in name (e2)
+:error
+====================================
+
+mod foo::bar {};
+---
+
+
+====================================
+ModOrContract / No path in name (e3)
+:error
+====================================
+
+mod foo::bar { mod foo::bar };
+---
+
+
 =======================
 Functions / Definitions
 :skip

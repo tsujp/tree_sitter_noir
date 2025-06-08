@@ -478,9 +478,13 @@ If no path segments it's an error. Otherwise the last path segment constructed b
 
 Functionally this is just checking =as= followed by an ident.
 
-***** TODO ModOrContract                                               :node:
+***** DONE ModOrContract                                               :node:
+CLOSED: [2025-06-08 Sun 21:02]
 :PROPERTIES:
 :CUSTOM_ID: h:9204514E-E5FC-488B-8066-66F0D9AF0C85
+:END:
+:LOGBOOK:
+- State "DONE"       from "TODO"       [2025-06-08 Sun 21:02]
 :END:
 :pgd:
 + (grp)
@@ -493,9 +497,10 @@ Functionally this is just checking =as= followed by an ident.
 :end:
 
 #+begin_src js :treesit t
+// Noirc: ModOrContract.
 module_or_contract_item: ($) => seq(
     optional($.visibility_modifier),
-    choice('mod', 'contract'),
+    choice('mod', 'contract'), // TODO: Discriminate kind into a field?
     field('name', $.identifier),
     choice(
         ';',
@@ -509,9 +514,6 @@ Parser: [[file:noir/compiler/noirc_frontend/src/parser/parser/item.rs::if let So
 Only the [[#h:F5A79701-65C9-4FEA-83D8-2413C585A5FA][ItemVisibility]] modifier is applicable, all other [[#h:2A9D09A5-2E52-4B8C-ABA1-0B3B953F093C][Modifiers]] are parse errors. Eat =mod= or =contract= keywords, ~validate_secondary_attributes~. If the brace group is not hit it's a ~ItemKind::ModuleDecl~ (declaration), otherwise a real submodule.
 
 i.e. =mod foo;= is a module declaration and =mod { let x = 123; }= is a real module.
-
-*************** TODO Classify expr/stmt/decl/def
-*************** END
 
 ***** TODO Struct
 Foo

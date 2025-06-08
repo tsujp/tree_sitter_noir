@@ -390,6 +390,119 @@ use foo::bar::lorem as ipsum;
     alias: (identifier)))
 #+end_test
 
+** ModOrContract
+
+*** Simple
+#+begin_test
+mod foo;
+contract foo;
+
+mod bar {}
+contract bar {}
+
+---
+
+(module_or_contract_item
+  name: (identifier))
+(module_or_contract_item
+  name: (identifier))
+
+(module_or_contract_item
+  name: (identifier)
+  body: (item_list))
+(module_or_contract_item
+  name: (identifier)
+  body: (item_list))
+#+end_test
+
+*** Nested
+#+begin_test
+mod foo { mod bar; }
+contract foo { contract bar; }
+
+contract foo { mod bar {} }
+mod foo {
+  mod bar {}
+  mod lorem {}
+}
+
+---
+
+(module_or_contract_item
+  name: (identifier)
+  body: (item_list
+    (module_or_contract_item
+      name: (identifier))))
+(module_or_contract_item
+  name: (identifier)
+  body: (item_list
+    (module_or_contract_item
+      name: (identifier))))
+
+(module_or_contract_item
+  name: (identifier)
+  body: (item_list
+    (module_or_contract_item
+      name: (identifier)
+      body: (item_list))))
+(module_or_contract_item
+  name: (identifier)
+  body: (item_list
+    (module_or_contract_item
+      name: (identifier)
+      body: (item_list))
+    (module_or_contract_item
+      name: (identifier)
+      body: (item_list))))
+#+end_test
+
+*** Visibility
+#+begin_test
+pub mod foo;
+pub(crate) contract foo;
+
+pub contract foo { pub mod bar; }
+pub contract foo { pub(crate) mod bar {} }
+
+---
+
+(module_or_contract_item
+  (visibility_modifier)
+  name: (identifier))
+(module_or_contract_item
+  (visibility_modifier)
+  name: (identifier))
+
+(module_or_contract_item
+  (visibility_modifier)
+  name: (identifier)
+  body: (item_list
+    (module_or_contract_item
+      (visibility_modifier)
+      name: (identifier))))
+(module_or_contract_item
+  (visibility_modifier)
+  name: (identifier)
+  body: (item_list
+    (module_or_contract_item
+      (visibility_modifier)
+      name: (identifier)
+      body: (item_list))))
+#+end_test
+
+*** No path in name
+#+begin_test :error
+mod foo::bar;
+#+end_test
+
+#+begin_test :error
+mod foo::bar {};
+#+end_test
+
+#+begin_test :error
+mod foo::bar { mod foo::bar };
+#+end_test
+
 ** Functions
 
 *************** TODO The Functions subtree can be flattened out so modifiers test all things modifiers are applicable to instead of ONLY in the context of functions

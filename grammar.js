@@ -116,9 +116,10 @@ module.exports = grammar({
         
         attribute_content: ($) => seq(repeat1(choice(' ', REG_ALPHABETIC, REG_NUMERIC, REG_ASCII_PUNCTUATION))),
         
+        // Noirc: ModOrContract.
         module_or_contract_item: ($) => seq(
             optional($.visibility_modifier),
-            choice('mod', 'contract'),
+            choice('mod', 'contract'), // TODO: Discriminate kind into a field?
             field('name', $.identifier),
             choice(
                 ';',
