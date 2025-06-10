@@ -23,60 +23,72 @@
                                 t)))
     (message "---------------\nROOT HEADLINE: %s" (org-element-property :title structure-root))
 
-    (let ((dd (org-element-map structure-root 'drawer
-                (lambda (drw)
-                  (when-let* ((hl (org-export-get-parent-headline drw))
-                              (hl-tags (org-element-property :tags hl))
-                              ((and
-                                (string= "pgd" (org-element-property :drawer-name drw))
-                                (seq-some (lambda (e)
-                                            (seq-contains-p '("node" "leaf") e))
-                                          hl-tags))))
+    (with-current-buffer org-buf ;; Need to find CUSTOM_ID so ensure we're in noir_grammar.org
+      (let ((dd (org-element-map structure-root 'drawer
+                  (lambda (drw)
+                    (when-let* ((hl (org-export-get-parent-headline drw))
+                                (hl-tags (org-element-property :tags hl))
+                                ((and
+                                  (string= "pgd" (org-element-property :drawer-name drw))
+                                  (seq-some (lambda (e)
+                                              (seq-contains-p '("node" "leaf") e))
+                                            hl-tags))))
 
-                    (let ((tk (make-kode :name (org-element-property :raw-value hl)
-                                         :id (org-element-property :CUSTOM_ID hl)
-                                         :cluster (member "cluster" hl-tags)
-                                         :children (list)
-                                         :todo-state (org-element-property :todo-keyword hl)
-                                         )))
-                      
-                    (org-element-map drw 'link
-                      (lambda (lnk)
-                        ;; TODO: Should really follow the link and get the headline raw-value at the destination instead of using org-element-contents to get the links description (which may be incorrect).
-                        ;; TODO: Get rid of duplicates, i.e. like in TupleElement where the pgd block has Type twice, we only want to capture the one unique occurance (by the links ID, not the descroiption (which may be correct)).
-                        ;; TODO: If a link has been grabbed (from pgd) but the associated target headline doesnt have a node or leaf tag we should set a field on kode so we know its incomplete in the final render (e.g. as of right now that'd be ResolvedType and InternedType under PrimitiveType as neither of those two headlines have said tags).
+                      (let ((tk (make-kode :name (org-element-property :raw-value hl)
+                                           :id (org-element-property :CUSTOM_ID hl)
+                                           :cluster (member "cluster" hl-tags)
+                                           :children (list)
+                                           :todo-state (org-element-property :todo-keyword hl)
+                                           )))
+                        
+                        (org-element-map drw 'link
+                          (lambda (lnk)
+                            ;; TODO: Get rid of duplicates, i.e. like in TupleElement where the pgd block has Type twice, we only want to capture the one unique occurance (by the links ID, not the descroiption (which may be correct)).
+                            ;; TODO: If a link has been grabbed (from pgd) but the associated target headline doesnt have a node or leaf tag we should set a field on kode so we know its incomplete in the final render (e.g. as of right now that'd be ResolvedType and InternedType under PrimitiveType as neither of those two headlines have said tags).
+                            
+                            ;; TODO: org-entry-properties looks like the old org api idk? Ask on IRC perhaps? Going to try with org-element instead
+                            ;; (org-entry-properties (org-find-property "CUSTOM_ID" (org-element-property :path lnk)) "item")
 
-                        ;; Not the most efficient (checking every time) but it'll do for now.
-                        (when (not (member (org-element-interpret-data (org-element-contents lnk)) (kode-children tk)))
-                          (push (org-element-interpret-data (org-element-contents lnk))
+                            ;; Only attempt to resolve links which are to CUSTOM_ID
+                            (when-let* ((dest-hl
+                                         (when (string= (org-element-property :type lnk) "custom-id")
+                                           (org-element-at-point
+                                            (org-find-property "CUSTOM_ID" (org-element-property :path lnk)) "item")))
+                                        (dest-hl-name (org-element-property :raw-value dest-hl))
+                                        ((not (member dest-hl-name (kode-children tk)))))
+                              (when (not (member "lex" (org-element-property :tags dest-hl)))
+                              
+                                (push dest-hl-name (kode-children tk))))
 
-                         ;; (make-kode
-                         ;;       :name (org-element-interpret-data (org-element-contents lnk))
-                         ;;       :id (org-element-property :path lnk)
-                         ;;       :cluster nil
-                         ;;       :children (list))
-                              (kode-children tk)))
-                        )
-                      nil nil 'link)        ; link map
-                    tk)
-                    ))                      ; drawer map
-                )))
-      ;; (message "\nDONE: %s\n" (flatten-list dd))
-      (dolist (d dd)
-        (message "-> %s" d))
-      dd)))
+                            ;; Not the most efficient (checking every time) but it'll do for now.
+                            ;; (when (not (member (org-element-interpret-data (org-element-contents lnk)) (kode-children tk)))
+                            ;;   (push (org-element-interpret-data (org-element-contents lnk))
+                            ;;         (kode-children tk)))
+                            )
+                          nil nil 'link)        ; link map
+                        tk)
+                      ))                      ; drawer map
+                  )))
+        ;; (message "\nDONE: %s\n" (flatten-list dd))
+        (dolist (d dd)
+          (message "-> %s" d))
+        dd))))
       ;; (flatten-list dd))))
       ;; dd)))
-(tjp/make-kodes)
+;; (tjp/make-kodes)
 
 
 (defun tjp/make-graphviz-buffer ()
   (interactive)
-  (let* ((dd (tjp/make-kodes)))
+  (let* ((dd (tjp/make-kodes))
+         (base-path
+          (project-root (project-current
+                         nil
+                         (directory-file-name "/Users/tsujp/prog/tree_sitter_noir/noir_grammar.org")))))
     (with-current-buffer
         ;; (switch-to-buffer-other-window "*graphviz-dump*")
-        (create-file-buffer "gv2.dot")
-      (setq buffer-file-name (dired-make-absolute "gv2.dot"))
+        (get-buffer-create "gv2.dot")
+      (setq buffer-file-name (expand-file-name "gv2.dot" base-path))
       (kill-all-local-variables)
       (erase-buffer)
       (remove-overlays)

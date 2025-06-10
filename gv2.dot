@@ -14,8 +14,6 @@ Type
 
 Program -> {Module}
 Module -> {Item InnerDocComments}
-InnerDocComments -> {comment}
-OuterDocComments -> {comment}
 Item [color=red penwidth=2]
 Item -> {ItemKind OuterDocComments}
 ItemKind [color=red penwidth=2]
@@ -23,8 +21,6 @@ ItemKind [color=red penwidth=2]
 subgraph grp_ItemKind {
 ItemKind -> {Function Implementation Struct ModOrContract Use Modifiers Attribute InnerAttribute}
 }
-InnerAttribute -> {attribute}
-Attribute -> {attribute}
 Modifiers -> {ItemVisibility}
 
 subgraph grp_Use {
@@ -32,10 +28,9 @@ Use -> {UseTree PathKind}
 }
 UseTree -> {UseTreeList IdentifiersInPathNoTurbofish}
 UseTreeList -> {UseTree}
-UseTreeAs -> {ident}
-ModOrContract -> {Module ident}
-Struct -> {StructField Generics ident}
-StructField -> {Type ident ItemVisibility OuterDocComments}
+ModOrContract -> {Module}
+Struct -> {StructField Generics}
+StructField -> {Type ItemVisibility OuterDocComments}
 Implementation [color=deeppink penwidth=3]
 
 subgraph grp_Implementation {
@@ -46,7 +41,7 @@ TypeImpl -> {TypeImplBody WhereClause Type Generics}
 TypeImplBody [color=darkorange]
 TypeImplBody -> {TypeImplItem}
 TypeImplItem [color=red penwidth=2]
-TypeImplItem -> {Function Modifiers Attributes OuterDocComments}
+TypeImplItem -> {Function Modifiers OuterDocComments}
 TraitImpl [color=red penwidth=2]
 TraitImpl -> {TraitImplBody WhereClause Type GenericTypeArgs Path Generics}
 TraitImplBody [color=red penwidth=2]
@@ -54,11 +49,11 @@ TraitImplBody -> {TraitImplItem}
 TraitImplItem [color=darkorange]
 TraitImplItem -> {TraitImplFunction TraitImplConstant TraitImplType}
 TraitImplType [color=red penwidth=2]
-TraitImplType -> {Type ident}
+TraitImplType -> {Type}
 TraitImplConstant [color=red penwidth=2]
-TraitImplConstant -> {OptionalTypeAnnotation ident}
+TraitImplConstant -> {OptionalTypeAnnotation}
 TraitImplFunction [color=red penwidth=2]
-TraitImplFunction -> {Function Modifiers Attributes}
+TraitImplFunction -> {Function Modifiers}
 Type [color=darkorange]
 
 subgraph grp_Type {
@@ -108,9 +103,7 @@ Path -> {Turbofish PathKind}
 }
 PathNoTurbofish -> {IdentifiersInPathNoTurbofish PathKind}
 IdentifiersInPathNoTurbofish [color=red penwidth=2]
-IdentifiersInPathNoTurbofish -> {ident}
 Visibility [color=darkorange]
-Visibility -> {int}
 Block [color=red penwidth=2]
 Block -> {Statement}
 Statement [color=red penwidth=2]

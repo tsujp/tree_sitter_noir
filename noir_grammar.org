@@ -2971,7 +2971,7 @@ Guaranteed to NOT have a colon =:= following it.
 #+transclude: [[file:noir/compiler/noirc_frontend/src/lexer/token.rs::1093][`self` is not a keyword]] :lines 1093-1094 :src rust
 :end:
 
-*** TODO Literals                                                       :lex:
+*** TODO Literals
 :PROPERTIES:
 :CUSTOM_ID: h:3446FD3E-4526-4DBF-80AB-64BD9078C4F5
 :END:
@@ -3029,7 +3029,7 @@ Since ~next_token~ (TODO: link) has already incremented the cursor when the [[fi
 I've taken notes on this before, put glue stuff here as appropriate.
 *************** END
 
-**** DONE comment                                                      :leaf:
+**** DONE comment                                                       :lex:
 CLOSED: [2025-06-05 Thu 16:39]
 :PROPERTIES:
 :CUSTOM_ID: h:E866B8E1-2736-4A62-938B-0FD416C4A088
@@ -3172,7 +3172,7 @@ Confirm this later, also feeling a bit tired right now so could just be missing 
 Looks like it but confirm later on
 *************** END
 
-**** ident                                                             :leaf:
+**** ident                                                              :lex:
 :PROPERTIES:
 :CUSTOM_ID: h:65B0176B-B46F-4679-8535-C504870AC048
 :END:
@@ -3223,7 +3223,7 @@ const SECONDARY_ATTRIBUTES = [
 ]
 #+end_src
 
-**** DONE attribute
+**** DONE attribute                                                     :lex:
 CLOSED: [2025-06-05 Thu 20:02]
 :PROPERTIES:
 :CUSTOM_ID: h:22DB13A6-D91E-4240-8711-10ED6DEE1C6E
@@ -3291,7 +3291,7 @@ So ~Token::InnerAttribute~ cannot have the name of any ~FunctionAttribute~ (aka.
 In source its listed as Attribute::Secondary but the comment for secondary attributes begins after it. For now I've taken it as the comment describes (thus considering it a primary attribute).
 *************** END
 
-**** SPEC int                                                          :leaf:
+**** SPEC int                                                           :lex:
 :PROPERTIES:
 :CUSTOM_ID: h:CA7F6441-C376-4A8E-9C59-B128CC1F841A
 :END:
