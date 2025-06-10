@@ -90,6 +90,9 @@ So, look at getting whatever is needed for a function body, and then what goes i
 2025/06/05 5:03 pm
 Comments rules and external scanner done. Upon refreshing my mind, SHOULD to continue on the ATTRIBUTES crusade to get that complete, but will instead continue on StatementKind > LetStatement > Pattern > PatternOrSelf
 
+2025/06/10 4:58pm
+Since Impl's children (at least one of them, TypeImpl) depend on Function I'm going to look at Function and mark Impl blocked until then since it need be so for testing.
+
 *** Grammar Areas
 
 Areas to tackle to construct the tree-sitter grammar.

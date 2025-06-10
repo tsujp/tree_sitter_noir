@@ -597,6 +597,16 @@ struct foo {
 
 ** Impl
 
+*** Simple
+#+begin_test :skip
+impl foo {}
+
+---
+
+(impl_item
+  name: (identifier))
+#+end_test
+
 ** Trait
 
 ** Global

@@ -84,6 +84,7 @@ module.exports = grammar({
             $.use_declaration,
             $.module_or_contract_item,
             $.struct_item,
+            $.impl_item,
         ),
 
         item_list: ($) => seq(
@@ -196,6 +197,20 @@ module.exports = grammar({
             '}',
         ),
         
+        impl_item: ($) => seq(
+            'impl',
+            // TODO: Generics
+            // TODO: Path
+        
+            // TODO: Choice between TypeImpl or TraitImpl
+            $.trait_impl,
+        ),
+        
+        trait_impl: ($) => seq(
+            // TODO: Path
+            $.generic_type_args,
+        ),
+        
         function_parameters: ($) => seq(
             '(',
             // TODO: The rest.
@@ -216,6 +231,28 @@ module.exports = grammar({
         ),
         
         function_modifiers: ($) => repeat1(choice(MODIFIERS.Unconstrained, MODIFIERS.Comptime)),
+        
+        where_clause: ($) => seq(
+                'where',
+                sepBy1($.where_clause_item, ','),
+                optional(',')
+        ),
+        
+        where_clause_item: ($) => seq(
+                $._type,
+                ':',
+                $.trait_bounds,
+        ),
+        
+        trait_bounds: ($) => seq(
+            sepBy1($.trait_bound, '+'),
+            optional('+'),
+        ),
+        
+        trait_bound: ($) => seq(
+            optional($.__path_no_turbofish),
+            $.generic_type_args,
+        ),
 
         // * * * * * * * * * * * * * * * * * * * * * * * * * STATEMENTS
 

@@ -644,6 +644,21 @@ struct foo {
 ---
 
 
+=============
+Impl / Simple
+:skip
+=============
+
+impl foo {}
+
+---
+
+(source_file
+  (impl_item
+    name: (identifier))
+)
+
+
 =======================
 Functions / Definitions
 :skip

@@ -604,9 +604,13 @@ Since [[#h:8E0DC05B-1ED6-47BE-9589-64DC06FAECCA][parse_many]] is used, and our c
 Parses item visibility. Update at remote after grammar is done.
 *************** END
 
-***** TODO Implementation                                      :node:cluster:
+***** BLOCK Implementation                                     :node:cluster:
 :PROPERTIES:
 :CUSTOM_ID: h:954A182F-703F-48FC-85D3-37C11EC959A3
+:END:
+:LOGBOOK:
+- State "BLOCK"      from "TODO"       [2025-06-10 Tue 16:59] \\
+  One child depends on Function and Function is also a top-level ItemKind so BLOCK until Function is done.
 :END:
 :pgd:
 - [[#h:2C79F6AF-9B0D-4246-809D-D5D91C742F09][TypeImpl]]
@@ -617,6 +621,10 @@ Parses item visibility. Update at remote after grammar is done.
 impl_item: ($) => seq(
     'impl',
     // TODO: Generics
+    // TODO: Path
+
+    // TODO: Choice between TypeImpl or TraitImpl
+    $.trait_impl,
 )
 #+end_src
 
@@ -624,51 +632,85 @@ Parser: [[file:noir/compiler/noirc_frontend/src/parser/parser/item.rs::if self.e
 Types: [[file:noir/compiler/noirc_frontend/src/parser/parser/impls.rs::pub(crate) enum Impl {][Impl enum]], [[file:noir/compiler/noirc_frontend/src/ast/traits.rs::pub struct TypeImpl {][TypeImpl struct]], [[file:noir/compiler/noirc_frontend/src/ast/traits.rs::pub struct NoirTraitImpl {][NoirTraitImpl struct]]
 Only the [[#h:F5A79701-65C9-4FEA-83D8-2413C585A5FA][ItemVisibility]] modifier is applicable, all other [[#h:2A9D09A5-2E52-4B8C-ABA1-0B3B953F093C][Modifiers]] are parse errors.
 
-=impl= eaten before parse_impl called, within parse_impl: parse_generics, parse_type_or_error then eat =for= (kw). If eaten try and parse TraitImpl, otherwise TypeImpl.
+=impl= eaten before parse_impl called, within ~parse_impl~: ~parse_generics~, ~parse_type_or_error~ then eat =for= (kw). If eaten try and parse TraitImpl, otherwise TypeImpl. For immediate children {Type,Trait}Impl their Generics are parsed here as is Path and GenericTypeArgs but the latter two indirectly via Type. Return type ~UnresolvedTypeData::Named~ from ~parse_type_or_error~ is unwrapped if =for= is eaten. That enumerant captures Path and GenericTypeArgs ([[file:noir/compiler/noirc_frontend/src/ast/mod.rs::Named(Path, GenericTypeArgs, /*is_synthesized*/ bool),][src]]).
 
-****** TODO TypeImpl                                                   :node:
+****** TOIMPL TypeImpl                                                 :node:
 :PROPERTIES:
 :CUSTOM_ID: h:2C79F6AF-9B0D-4246-809D-D5D91C742F09
 :END:
+:LOGBOOK:
+- State "TOIMPL"     from "TODO"       [2025-06-09 Mon 14:34] \\
+  Simple wrapper function.
+:END:
 :pgd:
-+ =impl= (kw)
-+ [[#h:BA1422E4-AB97-4099-8346-5845CA9223A1][Generics]]
-+ [[#h:B3490B7C-F387-49C7-BF94-DC9CE8AC3581][Type]]
++ =impl= (kw) by [[#h:BA1422E4-AB97-4099-8346-5845CA9223A1][Generics]] by [[#h:B3490B7C-F387-49C7-BF94-DC9CE8AC3581][Type]]
++ (opt) [[#h:ED279BDF-F033-4C47-9105-6AC549CE7C31][WhereClause]]
 + [[#h:4E657C7B-45FD-45D0-84B2-DB55C1D09192][TypeImplBody]]
 :end:
 
-******* TODO TypeImplBody                                              :node:
+Parser: [[file:noir/compiler/noirc_frontend/src/parser/parser/impls.rs::fn parse_type_impl(][parse_type_impl()]]
+
+*************** TODO BNF error, whereclause is missing?
+*************** END
+
+******* TOIMPL TypeImplBody                                            :node:
 :PROPERTIES:
 :CUSTOM_ID: h:4E657C7B-45FD-45D0-84B2-DB55C1D09192
+:END:
+:LOGBOOK:
+- State "TOIMPL"     from "TODO"       [2025-06-09 Mon 14:41]
 :END:
 :pgd:
 + ={= by (rep0) [[#h:268CE151-7A1D-48ED-A6ED-40219D809438][TypeImplItem]] by =}=
 :end:
+
+Parser: [[file:noir/compiler/noirc_frontend/src/parser/parser/impls.rs::fn parse_type_impl_body(&mut self)][parse_type_impl_body()]]
+
+Via [[#h:8E0DC05B-1ED6-47BE-9589-64DC06FAECCA][parse_many]] inline split without separator until =}= calls [[file:noir/compiler/noirc_frontend/src/parser/parser/impls.rs::fn parse_type_impl_method(&mut self)][parse_type_impl_method()]] which is a parser utility function for error recovery, there a lambda defines the parsing for each TypeImplItem.
 
 ******* TODO TypeImplItem                                              :node:
 :PROPERTIES:
 :CUSTOM_ID: h:268CE151-7A1D-48ED-A6ED-40219D809438
 :END:
 :pgd:
-+ [[#h:FB5478BF-5E66-4686-931B-733349F83FD8][OuterDocComments]]
-+ [[id:DA6150E7-E986-4749-A481-A95FF1368B74][Attributes]]
-+ [[#h:2A9D09A5-2E52-4B8C-ABA1-0B3B953F093C][Modifiers]]
-+ [[#h:B3C4609F-307A-42A1-B420-DBBAB6CDE6E5][Function]]
++ [[#h:FB5478BF-5E66-4686-931B-733349F83FD8][OuterDocComments]] by [[id:DA6150E7-E986-4749-A481-A95FF1368B74][Attributes]] by [[#h:2A9D09A5-2E52-4B8C-ABA1-0B3B953F093C][Modifiers]] by [[#h:B3C4609F-307A-42A1-B420-DBBAB6CDE6E5][Function]]
 :end:
+
+Parser: [[file:noir/compiler/noirc_frontend/src/parser/parser/impls.rs::fn parse_type_impl_method(&mut self)][parse_type_impl_method()]]
+
+Parser is a lambda on call to ~parse_item_in_list~. Modifiers parsed here allow all except mutable ([[file:noir/compiler/noirc_frontend/src/parser/parser/impls.rs::let modifiers = parser.parse_modifiers(][src]]).
+
+JORDAN: This looks done, need to do ts grammar for this node up. Calls to function ends this, the parsed attributes are associated with the function though right?
 
 ****** TODO TraitImpl                                                  :node:
 :PROPERTIES:
 :CUSTOM_ID: h:EBF1C149-1814-4314-AAFB-C5CF198DA61D
 :END:
 :pgd:
-+ =impl= (kw)
-+ [[#h:BA1422E4-AB97-4099-8346-5845CA9223A1][Generics]]
-+ [[#h:07167116-EAE4-475B-8C87-DE9075BAF88D][Path]]
-+ [[#h:3267D7A4-7AA4-49FB-91FA-A9601BC6868A][GenericTypeArgs]]
-+ =for= (kw)
-+ [[#h:B3490B7C-F387-49C7-BF94-DC9CE8AC3581][Type]]
++ =impl= (kw) by [[#h:BA1422E4-AB97-4099-8346-5845CA9223A1][Generics]] by [[#h:07167116-EAE4-475B-8C87-DE9075BAF88D][Path]] by [[#h:3267D7A4-7AA4-49FB-91FA-A9601BC6868A][GenericTypeArgs]] by =for= (kw) by [[#h:B3490B7C-F387-49C7-BF94-DC9CE8AC3581][Type]]
++ (opt) [[#h:ED279BDF-F033-4C47-9105-6AC549CE7C31][WhereClause]]
 + [[#h:AE12BD3E-D350-4D0C-88E7-2FC471E9FB9C][TraitImplBody]]
 :end:
+
+#+begin_src js :treesit t
+trait_impl: ($) => seq(
+    // TODO: Path
+    $.generic_type_args,
+    'for',
+    $._type,
+    optional($.where_clause),
+)
+#+end_src
+
+Parser: [[file:noir/compiler/noirc_frontend/src/parser/parser/impls.rs::return Impl::TraitImpl(self.parse_trait_impl(][parse_trait_impl() parent callsite]], [[file:noir/compiler/noirc_frontend/src/parser/parser/impls.rs::fn parse_trait_impl(][parse_trait_impl()]]
+
+Parent parses Generics, Path, and GeenricTypeArgs before we're reached so here we parse from Type.
+
+?? -> indeed in ~parse_trait_impl~ a Type is parsed first followed by TraitImplBody.
+
+*************** TODO BNF mistake in TraitImpl?
+Is the where clause meant to be absent there?
+*************** END
 
 ******* TODO TraitImplBody                                             :node:
 :PROPERTIES:
@@ -678,15 +720,28 @@ Only the [[#h:F5A79701-65C9-4FEA-83D8-2413C585A5FA][ItemVisibility]] modifier is
 + ={= by (rep0) [[#h:E070D1E3-2377-4041-96A0-C4DA104E9A9C][TraitImplItem]] by =}=
 :end:
 
-******* TODO TraitImplItem                                             :node:
+Parser: [[file:noir/compiler/noirc_frontend/src/parser/parser/impls.rs::fn parse_trait_impl_body(&mut self)][parse_trait_impl_body()]]
+
+Via [[#h:8E0DC05B-1ED6-47BE-9589-64DC06FAECCA][parse_many]] inline split without separator until =}= calls [[file:noir/compiler/noirc_frontend/src/parser/parser/impls.rs::fn parse_trait_impl_item(&mut self)][parse_trait_impl_item()]] which is a parser utility function for error recovery, calls to [[file:noir/compiler/noirc_frontend/src/parser/parser/impls.rs::fn parse_trait_impl_item_kind(&mut self)][parse_trait_impl_item_kind()]] which /is/ [[#h:E070D1E3-2377-4041-96A0-C4DA104E9A9C][TraitImplItem]].
+
+******* TOIMPL TraitImplItem                                           :node:
 :PROPERTIES:
 :CUSTOM_ID: h:E070D1E3-2377-4041-96A0-C4DA104E9A9C
+:END:
+:LOGBOOK:
+- State "TOIMPL"     from "SPEC"       [2025-06-09 Mon 01:48]
+- State "SPEC"       from "TODO"       [2025-06-09 Mon 01:48]
 :END:
 :pgd:
 - [[#h:D3AE715D-AC3E-494A-9E32-0BAD666C2302][TraitImplType]]
 - [[#h:400F4495-94E9-4549-9E85-9FECC5F69E7A][TraitImplConstant]]
 - [[#h:668ACDEF-C6C3-46B2-AF64-3907253E7EA6][TraitImplFunction]]
 :end:
+
+Parser: [[file:noir/compiler/noirc_frontend/src/parser/parser/impls.rs::fn parse_trait_impl_item_kind(&mut self)][parse_trait_impl_item_kind()]]
+Returns: [[file:noir/compiler/noirc_frontend/src/ast/traits.rs::pub enum TraitImplItemKind {][TraitImplItemKind enum]]
+
+Simple wrapper which calls parsers for pgd types in order.
 
 ******* TODO TraitImplType                                             :node:
 :PROPERTIES:
@@ -698,6 +753,8 @@ Only the [[#h:F5A79701-65C9-4FEA-83D8-2413C585A5FA][ItemVisibility]] modifier is
 + (opt grp) =:= by [[#h:B3490B7C-F387-49C7-BF94-DC9CE8AC3581][Type]]
 + =;=
 :end:
+
+Parser: [[file:noir/compiler/noirc_frontend/src/parser/parser/impls.rs::fn parse_trait_impl_type(&mut self)][parse_trait_impl_type()]]
 
 ******* TODO TraitImplConstant                                         :node:
 :PROPERTIES:
@@ -1663,6 +1720,8 @@ __path_no_turbofish: ($) => seq(
 )
 #+end_src
 
+Is implicitly optional everywhere it is used unless the callsite checks for ~None~ return.
+
 Parser: [[file:noir/compiler/noirc_frontend/src/parser/parser/path.rs::pub fn parse_path_no_turbofish(&mut self)][parse_path_no_turbofish()]], [[file:noir/compiler/noirc_frontend/src/parser/parser/path.rs::pub(super) fn parse_path_impl(][parse_path_impl()]], (see: [[#h:7BA3BCB8-65F3-4001-8B02-2F904B014F87][parse_path_after_kind]])
 #+transclude: [[file:noir/compiler/noirc_frontend/src/parser/parser/path.rs::55][PathNoTurbofish doc]] :lines 55-55 :src fundamental
 
@@ -2502,74 +2561,133 @@ If attempt to parse TypeOrTypeExpression fails parser error ~ParsingRuleLabel::T
 
 Return ~AST::GenericTypeArg::Ordered()~.
 
-***** TODO WhereClause                                          :declaration:
+*** SPEC WhereClause                                           :node:cluster:
 :PROPERTIES:
 :CUSTOM_ID: h:ED279BDF-F033-4C47-9105-6AC549CE7C31
 :END:
+:LOGBOOK:
+- State "SPEC"       from "TODO"       [2025-06-09 Mon 00:54]
+:END:
+:pgd:
++ =where= (kw)
++ (opt) [[#h:40EAA2CE-8D14-4663-B5A8-83F4D34EABF0][WhereClauseItems]]
+:end:
 
-Treesitter ~seq~ captures rule ordering, and custom ~sepBy1~ enforces /at least/ one occurrence of our ~$.where_clause_item~ rule so the nesting of the rule definitions from the Noir compiler need *not* be replicated for ~$.where_clause_item~.
-
-*************** TODO WhereClause Treesitter                         :grammar:
-#+begin_src js
+#+begin_src js :treesit t
 where_clause: ($) => seq(
         'where',
         sepBy1($.where_clause_item, ','),
         optional(',')
 )
 #+end_src
+
+Is implicit optional ([[file:noir/compiler/noirc_frontend/src/parser/parser/where_clause.rs::if !self.eat_keyword(Keyword::Where) {][src]]) everywhere it appears unless callsite checks for empty vec return.
+
+Parser: [[file:noir/compiler/noirc_frontend/src/parser/parser/where_clause.rs::pub(super) fn parse_where_clause(&mut self)][parse_where_clause()]]
+Returns: vec of [[file:noir/compiler/noirc_frontend/src/ast/traits.rs::pub struct UnresolvedTraitConstraint {][UnresolvedTraitConstraint struct]]
+
+Note that Type returns an [[file:noir/compiler/noirc_frontend/src/ast/mod.rs::pub struct UnresolvedType {][UnresolvedType struct]], and WhereClause an UnresolvedTraitConstraint struct the latter of which has a field ~typ~ which is the former.
+
+*************** TODO parse_where_clause says constraints can be empty
+Does this mean =impl Bar for Foo where {}= is valid in noir then? (there's no constraint after the where, just directly to a block).
 *************** END
 
-+ =where=
-+ (opt) WhereClauseItems
+**** SPEC WhereClauseItems                                             :node:
+:PROPERTIES:
+:CUSTOM_ID: h:40EAA2CE-8D14-4663-B5A8-83F4D34EABF0
+:END:
+:LOGBOOK:
+- State "SPEC"       from "TODO"       [2025-06-09 Mon 01:29]
+:END:
+:pgd:
++ [[#h:E13DAE9C-1546-4BEA-9F5C-F18A6497497E][WhereClauseItem]]
++ (rep0 grp) =,= by [[#h:E13DAE9C-1546-4BEA-9F5C-F18A6497497E][WhereClauseItem]]
++ (opt) =,=
+:end:
 
-Parser: [[file:noir/compiler/noirc_frontend/src/parser/parser/where_clause.rs::fn parse_where_clause(&mut self)][parse_where_clause()]]
-
-#+transclude: [[file:noir/compiler/noirc_frontend/src/parser/parser/where_clause.rs::18][WhereClause doc]] :lines 13-17 :src rust
-
-****** TODO WhereClauseItems
-
-*************** TODO WhereClauseItems Treesitter                    :grammar:
-#+begin_src js
+#+begin_src js :treesit t
 where_clause_item: ($) => seq(
-        $.type,
+        $._type,
         ':',
-        $.trait_bound,
+        $.trait_bounds,
 )
 #+end_src
-*************** END
 
-+ WhereClauseItem
-+ (rep0 grp) =,= by WhereClauseItem
-+ (opt) =,=
+Via [[#h:8E0DC05B-1ED6-47BE-9589-64DC06FAECCA][parse_many]] in parent split on =,=.
 
-****** TODO WhereClauseItem
-
-+ Type
+**** SPEC WhereClauseItem                                              :node:
+:PROPERTIES:
+:CUSTOM_ID: h:E13DAE9C-1546-4BEA-9F5C-F18A6497497E
+:END:
+:LOGBOOK:
+- State "SPEC"       from "TODO"       [2025-06-09 Mon 01:29]
+:END:
+:pgd:
++ [[#h:B3490B7C-F387-49C7-BF94-DC9CE8AC3581][Type]]
 + =:=
-+ TraitBounds
++ [[#h:88538872-073E-4ADA-A615-797A00E0DE5F][TraitBounds]]
+:end:
 
-****** TODO TraitBounds
+Parser: [[file:noir/compiler/noirc_frontend/src/parser/parser/where_clause.rs::fn parse_single_where_clause(&mut self)][parse_single_where_clause()]]
 
-+ TraitBound.
-+ (opt grp) =+= by TraitBound.
-+ (opt) =+=.
+If Type returns ~None~ then parser early returns ~None~ also.
 
+**** SPEC TraitBounds                                                  :node:
+:PROPERTIES:
+:CUSTOM_ID: h:88538872-073E-4ADA-A615-797A00E0DE5F
+:END:
+:LOGBOOK:
+- State "SPEC"       from "TODO"       [2025-06-09 Mon 01:29]
+:END:
+:pgd:
++ [[#h:161848E1-1F70-4DEF-9353-4C6BAF517C82][TraitBound]]
++ (opt grp) =+= by [[#h:161848E1-1F70-4DEF-9353-4C6BAF517C82][TraitBound]]
++ (opt) =+=
+:end:
+
+#+begin_src js :treesit t
+trait_bounds: ($) => seq(
+    sepBy1($.trait_bound, '+'),
+    optional('+'),
+)
+#+end_src
+
+Parser: [[file:noir/compiler/noirc_frontend/src/parser/parser/where_clause.rs::pub(super) fn parse_trait_bounds(&mut self)][parse_trait_bounds()]]
 #+transclude: [[file:noir/compiler/noirc_frontend/src/parser/parser/where_clause.rs::51][TraitBounds doc]] :lines 50-50 :src rust
 
-****** TODO TraitBound
+Via [[#h:8E0DC05B-1ED6-47BE-9589-64DC06FAECCA][parse_many]] inline split on =+= calls [[file:noir/compiler/noirc_frontend/src/parser/parser/where_clause.rs::fn parse_trait_bound_in_list(&mut self)][parse_trait_bound_in_list()]].
 
-*************** TODO TraitBound Treesitter                          :grammar:
-#+begin_src js
-trait_bound: ($) =>
-#+end_src
+~parse_trait_bound_in_list~ checks [[file:noir/compiler/noirc_frontend/src/parser/parser/where_clause.rs::pub(crate) fn parse_trait_bound(&mut self)][parse_trait_bound()]] returns ~Some~ and returns that (which /is/ [[#h:161848E1-1F70-4DEF-9353-4C6BAF517C82][TraitBound]]), otherwise parse error.
+
+*************** TODO stop_if_separator_is_missing consequences
+Really tired right now, double check any undocumented BNF implications of this
 *************** END
 
+**** SPEC TraitBound                                                   :node:
+:PROPERTIES:
+:CUSTOM_ID: h:161848E1-1F70-4DEF-9353-4C6BAF517C82
+:END:
+:LOGBOOK:
+- State "SPEC"       from "TODO"       [2025-06-09 Mon 01:30]
+:END:
+:pgd:
++ (opt) [[#h:A051D0D5-7007-4DF8-83B7-FB4EFF9C383E][PathNoTurbofish]]
++ [[#h:3267D7A4-7AA4-49FB-91FA-A9601BC6868A][GenericTypeArgs]]
+:end:
 
-+ PathNoTurbofish
-+ GenericTypeArgs
+#+begin_src js :treesit t
+trait_bound: ($) => seq(
+    optional($.__path_no_turbofish),
+    $.generic_type_args,
+)
+#+end_src
 
+Parser: [[file:noir/compiler/noirc_frontend/src/parser/parser/where_clause.rs::pub(crate) fn parse_trait_bound(&mut self)][parse_trait_bound()]]
+Returns: [[file:noir/compiler/noirc_frontend/src/ast/traits.rs::pub struct TraitBound {][TraitBound struct]]
 
-***** TODO PatternOrSelf                                               :node:
+A ~TraitBound~ is a single type path used to constrain a trait.
+
+*** TODO PatternOrSelf                                                 :node:
 :PROPERTIES:
 :CUSTOM_ID: h:464E9BE0-4EC7-4D73-A1F2-F9C581DFD8E3
 :END:
@@ -2663,7 +2781,7 @@ TODO: Currently on plane, what /exactly/ is Rust's ~Box~ doing?
 3. Return ~AST::Param~ which contains (1) and (2).
 :end:
 
-****** TODO Pattern                                                    :node:
+**** TODO Pattern                                                      :node:
 :PROPERTIES:
 :CUSTOM_ID: h:D349E307-F033-4D2A-A729-F2EE5B483065
 :END:
@@ -2679,7 +2797,7 @@ Parser: [[file:noir/compiler/noirc_frontend/src/parser/parser/pattern.rs::fn par
 Update Noir in-code docs, mut is actually optional. i.e. literal in-code Noir docs should say ='mut'?= and not ='mut'=.
 *************** END
 
-******* TODO PatternNoMut                                              :node:
+***** TODO PatternNoMut                                                :node:
 :PROPERTIES:
 :CUSTOM_ID: h:4A5BB563-4244-4B1F-8084-1116B58FA40F
 :END:
@@ -2697,7 +2815,7 @@ After potentially parsing InternedPattern or TuplePattern (i.e. both fail) a pat
 
 FUTURE JORDAN: Continue line 130 of pattern.rs.
 
-******* BLOCK InternedPattern                                          :leaf:
+***** BLOCK InternedPattern                                            :leaf:
 :PROPERTIES:
 :CUSTOM_ID: h:BA807BCE-99B0-4D84-BDC5-613C20F4A422
 :END:
@@ -2720,7 +2838,7 @@ TODO: As per the top of node_interner.rs an InternedPattern is one that is encou
 TODO: PGD block for this
 *************** END
 
-******* BLOCK TuplePattern                                             :node:
+***** BLOCK TuplePattern                                               :node:
 :PROPERTIES:
 :CUSTOM_ID: h:5EC2C25E-781B-4AA1-B01B-D37B761237F8
 :END:
@@ -2739,7 +2857,7 @@ Parser: [[file:noir/compiler/noirc_frontend/src/parser/parser/pattern.rs::fn par
 
 Return ~AST::Pattern::Tuple()~.
 
-******** BLOCK PatternList                                             :node:
+****** BLOCK PatternList                                               :node:
 :PROPERTIES:
 :CUSTOM_ID: h:3C5C665F-CB91-4C4E-9B39-ACFEE421F5DB
 :END:
@@ -2762,7 +2880,7 @@ Split by =,= until =)=, each parsed as [[#h:D349E307-F033-4D2A-A729-F2EE5B483065
 *************** TODO This can be marked TOIMPL when all others under Pattern are, since this recurses.
 *************** END
 
-******* BLOCK StructPattern
+***** BLOCK StructPattern
 :PROPERTIES:
 :CUSTOM_ID: h:44A2D194-B244-4E4C-B53E-2FCF3F4165E2
 :END:
@@ -2784,7 +2902,7 @@ Return ~AST::Pattern::Struct()~.
 I'm on the plane so wicked tired, I don't think it will really since if there's no path the first argument to parse_struct_pattern is None. Idk how it wanting a left brace before calling will affect things UNLESS left braces have never _technically_ been part of paths this entire time, i.e. use foo::bar::{lorem} the path is actually `foo::bar` with the _pattern_ being `{lorem}` even though i (and probably others??) would consider that `foo::bar::{lorem}` is the entire path.
 *************** END
 
-******** BLOCK StructPatternFields
+****** BLOCK StructPatternFields
 :PROPERTIES:
 :CUSTOM_ID: h:AD401294-1A53-405B-9717-6818B89FF22E
 :END:
@@ -2803,7 +2921,7 @@ Split by =,= until =}=, each parsed as [[#h:E4A5FB8F-3DEF-4AA2-8457-E7DE648EC0F4
 The question mark in the grouping should be an asterisk no?
 *************** END
 
-******** BLOCK StructPatternField
+****** BLOCK StructPatternField
 :PROPERTIES:
 :CUSTOM_ID: h:E4A5FB8F-3DEF-4AA2-8457-E7DE648EC0F4
 :END:
@@ -2816,7 +2934,7 @@ The question mark in the grouping should be an asterisk no?
 
 Parser: [[file:noir/compiler/noirc_frontend/src/parser/parser/pattern.rs::fn parse_struct_pattern_field(&mut self)][parse_struct_pattern_field()]]
 
-******* TODO IdentifierPattern
+***** TODO IdentifierPattern
 :PROPERTIES:
 :CUSTOM_ID: h:CE58024C-51AD-4A68-A57B-CE4E6D5C0552
 :END:
@@ -2829,7 +2947,7 @@ FOR JORDAN: This needs Path finished before it can be used.
 
 Return ~AST::Pattern::Identifier()~.
 
-****** TODO SelfPattern
+**** TODO SelfPattern
 :PROPERTIES:
 :CUSTOM_ID: h:5B14A337-12EC-477C-8269-961094FAB41B
 :END:
@@ -3443,6 +3561,10 @@ TODO
 **** Function
 
 #+transclude: [[#h:B3C4609F-307A-42A1-B420-DBBAB6CDE6E5][Function]] :treesit
+
+**** WhereClause / TraitBounds
+
+#+transclude: [[#h:ED279BDF-F033-4C47-9105-6AC549CE7C31][WhereClause]] :treesit
 
 *** Types
 :PROPERTIES:
