@@ -1,0 +1,154 @@
+digraph parser_hierarchy {
+fontname="Helvetica,Arial,sans-serif"
+fontsize="11"
+node [fontname="Helvetica,Arial,sans-serif" fontsize="11"]
+edge [fontname="Helvetica,Arial,sans-serif"]
+graph [center=1 overlap=false rankdir=LR concentrate=true splines=true ratio=auto mclimit=3]
+
+subgraph implemented {
+//node [style=bold]
+node [pendwidth=3]
+edge [style=dotted]
+Type
+}
+
+Program -> {Module}
+Module -> {Item InnerDocComments}
+InnerDocComments -> {comment}
+OuterDocComments -> {comment}
+Item [color=red penwidth=2]
+Item -> {ItemKind OuterDocComments}
+ItemKind [color=red penwidth=2]
+
+subgraph grp_ItemKind {
+ItemKind -> {Function Implementation Struct ModOrContract Use Modifiers Attribute InnerAttribute}
+}
+InnerAttribute -> {attribute}
+Attribute -> {attribute}
+Modifiers -> {ItemVisibility}
+
+subgraph grp_Use {
+Use -> {UseTree PathKind}
+}
+UseTree -> {UseTreeList IdentifiersInPathNoTurbofish}
+UseTreeList -> {UseTree}
+UseTreeAs -> {ident}
+ModOrContract -> {Module ident}
+Struct -> {StructField Generics ident}
+StructField -> {Type ident ItemVisibility OuterDocComments}
+Implementation [color=deeppink penwidth=3]
+
+subgraph grp_Implementation {
+Implementation -> {TraitImpl TypeImpl}
+}
+TypeImpl [color=darkorange]
+TypeImpl -> {TypeImplBody WhereClause Type Generics}
+TypeImplBody [color=darkorange]
+TypeImplBody -> {TypeImplItem}
+TypeImplItem [color=red penwidth=2]
+TypeImplItem -> {Function Modifiers Attributes OuterDocComments}
+TraitImpl [color=red penwidth=2]
+TraitImpl -> {TraitImplBody WhereClause Type GenericTypeArgs Path Generics}
+TraitImplBody [color=red penwidth=2]
+TraitImplBody -> {TraitImplItem}
+TraitImplItem [color=darkorange]
+TraitImplItem -> {TraitImplFunction TraitImplConstant TraitImplType}
+TraitImplType [color=red penwidth=2]
+TraitImplType -> {Type ident}
+TraitImplConstant [color=red penwidth=2]
+TraitImplConstant -> {OptionalTypeAnnotation ident}
+TraitImplFunction [color=red penwidth=2]
+TraitImplFunction -> {Function Modifiers Attributes}
+Type [color=darkorange]
+
+subgraph grp_Type {
+Type -> {UnresolvedNamedType AsTraitPathType TraitAsType FunctionType MutableReferenceType ArrayOrSliceType ParenthesesType PrimitiveType}
+}
+PrimitiveType [color=deeppink penwidth=3]
+PrimitiveType -> {InternedType ResolvedType ComptimeType FormatStringType StringType BoolType IntegerType FieldType}
+StringType [color=deeppink penwidth=3]
+StringType -> {TypeExpression}
+ParenthesesType -> {TupleType UnitType}
+TupleType -> {Type}
+ArrayOrSliceType -> {TypeExpression Type}
+MutableReferenceType -> {Type}
+FunctionType -> {Type Parameter CaptureEnvironment}
+CaptureEnvironment -> {Type}
+Parameter -> {Type}
+TraitAsType [color=deeppink penwidth=3]
+TraitAsType -> {GenericTypeArgs PathNoTurbofish}
+AsTraitPathType [color=deeppink penwidth=3]
+AsTraitPathType -> {AsTraitPath}
+UnresolvedNamedType [color=deeppink penwidth=3]
+UnresolvedNamedType -> {GenericTypeArgs PathNoTurbofish}
+TypeOrTypeExpression [color=red penwidth=2]
+TypeOrTypeExpression -> {TypeExpression Type}
+TypeExpression [color=darkorange]
+TypeExpression -> {AddOrSubtractTypeExpression}
+AddOrSubtractTypeExpression [color=darkorange]
+
+subgraph grp_AddOrSubtractTypeExpression {
+AddOrSubtractTypeExpression -> {MultiplyOrDivideOrModuloTypeExpression}
+}
+MultiplyOrDivideOrModuloTypeExpression [color=darkorange]
+MultiplyOrDivideOrModuloTypeExpression -> {TermTypeExpression}
+TermTypeExpression [color=darkorange]
+TermTypeExpression -> {AtomTypeExpression TermTypeExpression}
+AtomTypeExpression [color=darkorange]
+AtomTypeExpression -> {ParenthesizedTypeExpression VariableTypeExpression ConstantTypeExpression}
+ConstantTypeExpression [color=darkorange]
+VariableTypeExpression [color=darkorange]
+VariableTypeExpression -> {Path}
+ParenthesizedTypeExpression [color=darkorange]
+ParenthesizedTypeExpression -> {TypeExpression}
+Path [color=red penwidth=2]
+
+subgraph grp_Path {
+Path -> {Turbofish PathKind}
+}
+PathNoTurbofish -> {IdentifiersInPathNoTurbofish PathKind}
+IdentifiersInPathNoTurbofish [color=red penwidth=2]
+IdentifiersInPathNoTurbofish -> {ident}
+Visibility [color=darkorange]
+Visibility -> {int}
+Block [color=red penwidth=2]
+Block -> {Statement}
+Statement [color=red penwidth=2]
+Statement -> {StatementKind}
+StatementKind [color=red penwidth=2]
+
+subgraph grp_StatementKind {
+StatementKind -> {ExpressionStatement AssignStatement BlockStatement IfStatement ForStatement ComptimeStatement ConstrainStatement LetStatement ReturnStatement ContinueStatement BreakStatement}
+}
+BreakStatement [color=darkorange]
+ContinueStatement [color=darkorange]
+ReturnStatement [color=red penwidth=2]
+LetStatement [color=red penwidth=2]
+BlockStatement [color=red penwidth=2]
+BlockStatement -> {Block}
+
+subgraph grp_GenericTypeArgs {
+GenericTypeArgs -> {GenericTypeArgsList}
+}
+GenericTypeArgsList -> {GenericTypeArg}
+GenericTypeArg -> {OrderedTypeArg NamedTypeArg}
+NamedTypeArg -> {Type}
+OrderedTypeArg -> {TypeOrTypeExpression}
+
+subgraph grp_WhereClause {
+WhereClause -> {WhereClauseItems}
+}
+WhereClauseItems -> {WhereClauseItem}
+WhereClauseItem -> {TraitBounds Type}
+TraitBounds -> {TraitBound}
+TraitBound -> {GenericTypeArgs PathNoTurbofish}
+PatternOrSelf [color=red penwidth=2]
+Pattern [color=red penwidth=2]
+Pattern -> {PatternNoMut}
+PatternNoMut [color=red penwidth=2]
+PatternNoMut -> {IdentifierPattern StructPattern TuplePattern InternedPattern}
+TuplePattern [color=deeppink penwidth=3]
+TuplePattern -> {PatternList}
+PatternList [color=deeppink penwidth=3]
+PatternList -> {Pattern}
+}

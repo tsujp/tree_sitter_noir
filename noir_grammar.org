@@ -182,11 +182,11 @@ Parser: [[file:noir/compiler/noirc_frontend/src/parser/parser/item.rs::pub(crate
   - [[#h:ADB184CE-E43C-423B-803F-DE1679A91829][Use]]
   - [[#h:9204514E-E5FC-488B-8066-66F0D9AF0C85][ModOrContract]]
   - [[#h:A53DF633-322A-464B-9947-E56B64A112C7][Struct]]
-  - Impl
+  - [[#h:954A182F-703F-48FC-85D3-37C11EC959A3][Implementation]]
   - Trait
   - Global
   - TypeAlias
-  - Function
+  - [[#h:B3C4609F-307A-42A1-B420-DBBAB6CDE6E5][Function]]
 :end:
 
 Parser: [[file:noir/compiler/noirc_frontend/src/parser/parser/item.rs::fn parse_item_kind(&mut self)][parse_item_kind()]]
@@ -1890,7 +1890,7 @@ Does this mean if there is an error (of any kind) then output an error of the ty
 *************** END
 
 
-***** TODO Function                                                    :node:
+***** TODO Function                                                 :cluster:
 :PROPERTIES:
 :CUSTOM_ID: h:B3C4609F-307A-42A1-B420-DBBAB6CDE6E5
 :END:

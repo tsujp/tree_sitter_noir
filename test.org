@@ -613,7 +613,7 @@ impl foo {}
 
 ** TypeAlias
 
-** Functions
+** Function
 
 *************** TODO The Functions subtree can be flattened out so modifiers test all things modifiers are applicable to instead of ONLY in the context of functions
 *************** END

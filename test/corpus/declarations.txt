@@ -659,10 +659,10 @@ impl foo {}
 )
 
 
-=======================
-Functions / Definitions
+======================
+Function / Definitions
 :skip
-=======================
+======================
 
 fn hello_world() {}
 
@@ -690,46 +690,46 @@ fn before123four_five_678() {}
 )
 
 
-============================================================
-Functions / Definitions / Starting with integer literal (e1)
+===========================================================
+Function / Definitions / Starting with integer literal (e1)
 :error
-============================================================
+===========================================================
 
 fn 123_not_okay() {}
 ---
 
 
-==============================================================
-Functions / Definitions / Starting with negation operator (e1)
+=============================================================
+Function / Definitions / Starting with negation operator (e1)
 :error
-==============================================================
+=============================================================
 
 fn !nope() {}
 ---
 
 
-=====================================================
-Functions / Definitions / Missing parameter list (e1)
+====================================================
+Function / Definitions / Missing parameter list (e1)
 :error
-=====================================================
+====================================================
 
 fn nah {}
 ---
 
 
-=======================================================
-Functions / Definitions / Missing block expression (e1)
+======================================================
+Function / Definitions / Missing block expression (e1)
 :error
-=======================================================
+======================================================
 
 fn silly()
 ---
 
 
-=====================
-Functions / Modifiers
+====================
+Function / Modifiers
 :skip
-=====================
+====================
 
 pub fn one() {}
 pub(crate) fn two() {}
@@ -803,64 +803,64 @@ pub(crate) unconstrained comptime fn nine() {}
 )
 
 
-================================================
-Functions / Modifiers / Visibility position (e1)
+===============================================
+Function / Modifiers / Visibility position (e1)
 :error
-================================================
+===============================================
 
 fn pub one() {}
 ---
 
 
-================================================
-Functions / Modifiers / Visibility position (e2)
+===============================================
+Function / Modifiers / Visibility position (e2)
 :error
-================================================
+===============================================
 
 fn pub(crate) one() {}
 ---
 
 
-================================================
-Functions / Modifiers / Visibility repeated (e1)
+===============================================
+Function / Modifiers / Visibility repeated (e1)
 :error
-================================================
+===============================================
 
 fn pub pub one() {}
 ---
 
 
-================================================
-Functions / Modifiers / Visibility repeated (e2)
+===============================================
+Function / Modifiers / Visibility repeated (e2)
 :error
-================================================
+===============================================
 
 fn pub(crate) pub one() {}
 ---
 
 
-===================================================
-Functions / Modifiers / Unconstrained position (e1)
+==================================================
+Function / Modifiers / Unconstrained position (e1)
 :error
-===================================================
+==================================================
 
 fn unconstrained pub one() {}
 ---
 
 
-===================================================
-Functions / Modifiers / Unconstrained position (e2)
+==================================================
+Function / Modifiers / Unconstrained position (e2)
 :error
-===================================================
+==================================================
 
 unconstrained pub fn one() {}
 ---
 
 
-===================================================
-Functions / Modifiers / Unconstrained repeated (e1)
+==================================================
+Function / Modifiers / Unconstrained repeated (e1)
 :error
-===================================================
+==================================================
 
 fn unconstrained unconstrained one() {}
 ---
