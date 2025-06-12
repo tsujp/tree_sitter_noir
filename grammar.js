@@ -225,7 +225,7 @@ module.exports = grammar({
         // Noirc: FunctionParameter.
         function_parameter: ($) => seq(
             optional($.visibility),
-            // PatternOrSelf
+            $._pattern_or_self,
             ':',
             $._type,
         ),
