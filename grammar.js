@@ -99,11 +99,11 @@ module.exports = grammar({
         visibility_modifier: ($) => seq('pub', optional('(crate)')),
         
         // Noirc: Visibility.
-        visibility: ($) => optional(choice(
+        visibility: ($) => choice(
             'pub',
             'return_data',
             seq('call_data(', $.int_literal ,')'),
-        )),
+        ),
         
         // TODO: Differentiate between inner/non-inner in grammar, for now not doing so in order to focus on completing grammar entirely (broadly).
         // Noirc: Attributes, and InnerAttribute.
@@ -209,25 +209,38 @@ module.exports = grammar({
         trait_impl: ($) => seq(
             // TODO: Path
             $.generic_type_args,
+            'for',
+            $._type,
+            // optional($.where_clause), // Temp commented for now due to prec error.
         ),
         
+        // Noirc: FunctionParameters.
         function_parameters: ($) => seq(
             '(',
-            // TODO: The rest.
+            sepBy($.function_parameter, ','), // Inlined Noirc: FunctionParametersList
+            optional(','),
             ')',
         ),
         
+        // Noirc: FunctionParameter.
+        function_parameter: ($) => seq(
+            optional($.visibility),
+            // PatternOrSelf
+            ':',
+            $._type,
+        ),
+        
+        // Noirc: Function.
         function_definition: ($) => seq(
             optional($.visibility_modifier),
             optional($.function_modifiers),
             'fn',
             field('name', $.identifier),
             // TODO: Generics
-            $.function_parameters,
-            // optional(seq('->' /* TODO: Return visibility and type */)), // TODO: Temp commented out
-            // TODO: Where clause
-            // $.block, // TODO: Temp commented out
-            // TODO: It's block or ';' see Parser::parse_function()
+            field('parameters', $.function_parameters),
+            optional(seq('->', optional($.visibility), $._type)),
+            optional($.where_clause),
+            choice($.block, ';'),
         ),
         
         function_modifiers: ($) => repeat1(choice(MODIFIERS.Unconstrained, MODIFIERS.Comptime)),
@@ -288,6 +301,8 @@ module.exports = grammar({
 
         // * * * * * * * * * * * * * * * * * * * * * * * * * EXPRESSIONS
 
+        block: _ => 'BLOCK_____TODO', // Temp just so grammar.js compiles.
+        
         block_expression: _ => seq(
             '{',
             // TODO: Optionally repeated Statement.
@@ -452,8 +467,61 @@ module.exports = grammar({
             ')',
         ),
 
+        // * * * * * * * * * * * * * * * * * * * * * * * * * PATTERNS
+
+        // Noirc: PatternOrSelf.
+        _pattern_or_self: ($) => choice(
+            $._pattern,
+            $.self_pattern,
+        ),
+        
+        // Noirc: PatternNoMut.
+        _pattern: ($) => choice(
+            // TODO: InternedPattern? It looks like a compiler-only internal though and not discrete syntax.
+            optional($.mut_bound),
+            $.tuple_pattern,
+            $.struct_pattern,
+            $.identifier, // Noirc: IdentifierPattern.
+        ),
+        
+        // Noirc: TuplePattern.
+        tuple_pattern: ($) => seq(
+            '(',
+            sepBy($._pattern, ','), // Inlined Noirc: PatternList.
+            optional(','),
+            ')',
+        ),
+        
+        // Noirc: StructPattern.
+        struct_pattern: ($) => seq(
+            // TODO: Path
+            '{',
+            sepBy($.struct_pattern_field, ','), // Inlined Noirc: StructPatternFields.
+            optional(','),
+            '}',
+        ),
+        
+        // TODO: Is this similar enough to other rules we can reduce it to a single shared one?
+        // Noirc: StructPatternField.
+        struct_pattern_field: ($) => seq(
+            $.identifier,
+            optional(seq(':', $._pattern)),
+        ),
+        
+        // Noirc: SelfPattern.
+        self_pattern: ($) => seq(
+            optional('&'),
+            optional($.mut_bound),
+            $.self,
+        ),
+
         // * * * * * * * * * * * * * * * * * * * * * * * * * LITERALS
 
+        // TODO: Inlined in master-template until better home.
+        mut_bound: _ => 'mut',
+        self: _ => 'self',
+        // END TODO
+        
         int_literal: _ => token(seq(
             choice(
                 /[0-9][0-9_]*/,
