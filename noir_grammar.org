@@ -184,7 +184,7 @@ Parser: [[file:noir/compiler/noirc_frontend/src/parser/parser/item.rs::pub(crate
   - [[#h:A53DF633-322A-464B-9947-E56B64A112C7][Struct]]
   - [[#h:954A182F-703F-48FC-85D3-37C11EC959A3][Implementation]]
   - Trait
-  - Global
+  - [[#h:C21A19F9-DC0C-4F17-9739-B92412D0C4FF][Global]]
   - TypeAlias
   - [[#h:B3C4609F-307A-42A1-B420-DBBAB6CDE6E5][Function]]
 :end:
@@ -791,8 +791,39 @@ Foo
 
 Only the [[#h:F5A79701-65C9-4FEA-83D8-2413C585A5FA][ItemVisibility]] modifier is applicable, all other [[#h:2A9D09A5-2E52-4B8C-ABA1-0B3B953F093C][Modifiers]] are parse errors.
 
-***** TODO Global
-Foo
+***** TODO Global                                              :cluster:node:
+:PROPERTIES:
+:CUSTOM_ID: h:C21A19F9-DC0C-4F17-9739-B92412D0C4FF
+:END:
+:pgd:
++ =global= (kw) by [[#h:65B0176B-B46F-4679-8535-C504870AC048][ident]] (token) by OptionalTypeAnnotation (TODO)
++ === by [[#h:167542CC-8CDE-49C1-9465-E5157C6A176F][Expression]] by =;=
+:end:
+
+#+begin_src js :treesit t
+// Noirc: Global.
+global_item: ($) => seq(
+    'global',
+    field('name', $.identifier),
+    // TODO: OptionalTypeAnnotation.
+    '=',
+    $._expression,
+    // prec.left(1, $._expression),
+    ';',
+),
+
+// TODO: Put this elsewhere. ExpressionKind::Literal see ast/expression.rs
+// Noirc: Literal
+_literal: ($) => choice(
+    $.bool_literal,
+    $.int_literal,
+    // str, rawstr, fmtstr, quoteexpression, arrayexpression, sliceexpression, blockexpression
+)
+#+end_src
+
+Parser (sop): [[file:noir/compiler/noirc_frontend/src/parser/parser/item.rs::if self.eat_keyword(Keyword::Global) {][parse_global() parent callsite]], [[file:noir/compiler/noirc_frontend/src/parser/parser/global.rs::pub(crate) fn parse_global(][parse_global()]]
+
+2025/06/12: document (as appropriate) ~parse_global~.
 
 ***** TOIMPL Type                                              :node:cluster:
 :PROPERTIES:
@@ -2993,6 +3024,50 @@ Guaranteed to NOT have a colon =:= following it.
 #+transclude: [[file:noir/compiler/noirc_frontend/src/lexer/token.rs::1093][`self` is not a keyword]] :lines 1093-1094 :src rust
 :end:
 
+*** TODO Expression                                            :cluster:node:
+:PROPERTIES:
+:CUSTOM_ID: h:167542CC-8CDE-49C1-9465-E5157C6A176F
+:END:
+:LOGBOOK:
+- State "TODO"       from              [2025-06-12 Thu 18:48]
+:END:
+
+#+begin_src js :treesit t
+_expression: ($) => choice(
+    $.binary_expression,
+    $._literal,
+)
+#+end_src
+
+Parser: [[file:noir/compiler/noirc_frontend/src/parser/parser/expression.rs::pub(crate) fn parse_expression_or_error(&mut self)][parse_expression_or_error()]], [[file:noir/compiler/noirc_frontend/src/parser/parser/expression.rs::fn parse_expression_impl(&mut self, allow_constructors: bool)][parse_expression_impl()]], [[file:noir/compiler/noirc_frontend/src/parser/parser/infix.rs::pub(super) fn parse_equal_or_not_equal(][parse_equal_or_not_equal()]]
+
+**** Infix
+
+#+begin_src js :treesit t
+// Noirc: EqualOrNotEqualExpression -- Entire nested hierarchy flattened and renamed.
+binary_expression: ($) => {
+    const t = [
+        // Highest to lowest.
+        [PRECEDENCE.multiplicitive, choice('*', '/', '%',)],
+        [PRECEDENCE.additive, choice('+', '-')],
+        [PRECEDENCE.bitshift, choice('<<', '>>')],
+        [PRECEDENCE.comparative, choice('<', '<=', '>', '>=')],
+        [PRECEDENCE.bitxor, '^'],
+        [PRECEDENCE.bitand, '&'],
+        [PRECEDENCE.or, '|'],
+        [PRECEDENCE.equality, choice('==', '!=')],
+    ]
+
+    return choice(...t.map(([p, o]) => prec.left(p, seq(
+        field('left', $._expression),
+        field('operator', o),
+        field('right', $._expression),
+    ))))
+}
+#+end_src
+
+All the expression nodes in [[file:noir/compiler/noirc_frontend/src/parser/parser/infix.rs][infix.rs]] constitute binary expressions and their call hierarchy via [[#h:CE180901-F6F2-4A65-878D-6C9154971376][parse_infix]] denotes the reverse of their precedence. Note that the deepest call (in that file) [[file:noir/compiler/noirc_frontend/src/parser/parser/infix.rs::pub(super) fn parse_multiply_or_divide_or_modulo(][parse_multiply_or_divide_or_modulo()]] further calls [[file:noir/compiler/noirc_frontend/src/parser/parser/expression.rs::pub(super) fn parse_term(&mut self, allow_constructors: bool)][parse_term()]] meaning all of Term's (TODO: link) expressions are higher priority still.
+
 *** TODO Literals
 :PROPERTIES:
 :CUSTOM_ID: h:3446FD3E-4526-4DBF-80AB-64BD9078C4F5
@@ -3361,6 +3436,26 @@ Should also link stuff as appropriate. This is lexing documentation.
 *************** TODO Update reg for error on multiple consecutive _ and if a trailing _
 As it is is fine for now however.
 *************** END
+**** SPEC bool                                                          :lex:
+:PROPERTIES:
+:CUSTOM_ID: h:54ACA91F-70A8-4121-A799-F872DDCAF240
+:END:
+:LOGBOOK:
+- State "SPEC"       from              [2025-06-15 Sun 17:15]
+:END:
+:pgd:
+- =true= (kw)
+- =false= (kw)
+:end:
+
+Via [[file:noir/compiler/noirc_frontend/src/parser/parser.rs::fn eat_bool(&mut self)][eat_bool]] eats a token which was lexed as ~Token::Bool~ which are created from either =true= or =false= (see: [[file:noir/compiler/noirc_frontend/src/lexer/token.rs::pub(crate) fn lookup_keyword(word: &str)][lookup_keyword()]]).
+
+#+begin_src js :treesit t
+bool_literal: _ => choice('true', 'false')
+#+end_src
+
+*************** TODO Put lookup_keyword into Internal alongside parse_many and friends if it keeps being called in other places we document (like it is here).
+*************** END
 
 ** Internal
 
@@ -3401,6 +3496,20 @@ Loops [[#h:65B0176B-B46F-4679-8535-C504870AC048][ident]] tokens after the PathKi
 
 Each ident forms a [[file:noir/compiler/noirc_frontend/src/ast/statement.rs::pub struct PathSegment {][PathSegment struct]]. It is possible to eat no idents, returning an empty path.
 
+*** [[file:noir/compiler/noirc_frontend/src/parser/parser/infix.rs::fn parse_infix<Next, Op>(][Parser.parse_infix(allow_constructors, next, op)]]
+:PROPERTIES:
+:CUSTOM_ID: h:CE180901-F6F2-4A65-878D-6C9154971376
+:END:
+
+Param ~next~ is a function name to be called, and param ~op~ is a lambda to be executed **after** ~next~ is executed, possibly multiple times.
+
+Each time ~parse_infix~ is called it updates Parser's ~start_span~ to ~current_token_span~. Then ~next~ is executed, and a loop over ~op~ is created.
+
+For all the expression AST nodes in the selfsame file ~parse_infix~ is in they pass a ~next~ which results in calling ~parse_infix~ again. This means for those AST nodes the operator precedence (for the language grammar) is the inverse of their call hierarchy. So ==== and =!== have the least precedence, and =*=, =/=, =%= the most.
+
+*************** TODO My understanding of the precedence here is correct yeah?
+*************** END
+
 * Grammar
 :PROPERTIES:
 :header-args: :noweb-sep ",\n\n"
@@ -3428,6 +3537,18 @@ const INTEGER_TYPES = [
     'i32',
     'i64',    
 ]
+
+const PRECEDENCE = {
+    // TODO: Term's even-higher precedence items.
+    multiplicitive: 9,
+    additive: 8,
+    bitshift: 7,
+    comparative: 6,
+    bitxor: 5,
+    bitand: 4,
+    or: 3,
+    equality: 2,
+}
 
 <<Modifiers>>
 
@@ -3468,6 +3589,7 @@ module.exports = grammar({
             $.module_or_contract_item,
             $.struct_item,
             $.impl_item,
+            $.global_item,
         ),
 
         item_list: ($) => seq(
@@ -3579,7 +3701,7 @@ TODO
 
 **** Global
 
-TODO
+#+transclude: [[#h:C21A19F9-DC0C-4F17-9739-B92412D0C4FF][Global]] :treesit
 
 **** TypeAlias
 
@@ -3619,6 +3741,8 @@ A special kind of type intended for narrow usage.
 :header-args+: :noweb-ref Expressions
 :END:
 
+#+transclude: [[#h:167542CC-8CDE-49C1-9465-E5157C6A176F][Expression]] :treesit
+
 #+transclude: [[#h:B34CADE5-71B4-41F2-AB54-00483EE593A6][Block]] :treesit
 
 *** Patterns
@@ -3636,6 +3760,8 @@ A special kind of type intended for narrow usage.
 These almost entirely come from lexing.
 
 #+transclude: [[#h:CA7F6441-C376-4A8E-9C59-B128CC1F841A][Int]] :treesit
+
+#+transclude: [[#h:54ACA91F-70A8-4121-A799-F872DDCAF240][bool]] :treesit
 
 **** Comment
 

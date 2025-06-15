@@ -618,8 +618,11 @@ impl foo {}
 *************** TODO The Functions subtree can be flattened out so modifiers test all things modifiers are applicable to instead of ONLY in the context of functions
 *************** END
 
+Need to test:
+  - Return visibility (i.e. Visibility headline)
+
 *** Definitions
-#+begin_test :extract :skip
+#+begin_test :extract
 fn hello_world() {}
 
 fn foo() {}
@@ -777,6 +780,199 @@ fn unconstrained unconstrained one() {}
 :PROPERTIES:
 :export_file_name: expressions.txt
 :END:
+
+** Binary
+
+*** Simple
+#+begin_test
+global foo1 = 1 * 1;
+global foo2 = 1 / 1;
+global foo3 = 1 % 1;
+
+global bar1 = 1 + 1;
+global bar2 = 1 - 1;
+
+global baz1 = 1 << 1;
+global baz2 = 1 >> 1;
+
+global lorem1 = 1 < 1;
+global lorem2 = 1 <= 1;
+global lorem3 = 1 > 1;
+global lorem4 = 1 >= 1;
+
+global ipsum = 1 ^ 1;
+
+global dolor = 1 & 1;
+
+global etut = 1 | 1;
+
+global boo1 = 1 | 1;
+global boo2 = 1 | 1;
+
+---
+
+(global_item
+  name: (identifier)
+  (binary_expression
+    left: (int_literal)
+    right: (int_literal)))
+(global_item
+  name: (identifier)
+  (binary_expression
+    left: (int_literal)
+    right: (int_literal)))
+(global_item
+  name: (identifier)
+  (binary_expression
+    left: (int_literal)
+    right: (int_literal)))
+
+(global_item
+  name: (identifier)
+  (binary_expression
+    left: (int_literal)
+    right: (int_literal)))
+(global_item
+  name: (identifier)
+  (binary_expression
+    left: (int_literal)
+    right: (int_literal)))
+
+(global_item
+  name: (identifier)
+  (binary_expression
+    left: (int_literal)
+    right: (int_literal)))
+(global_item
+  name: (identifier)
+  (binary_expression
+    left: (int_literal)
+    right: (int_literal)))
+
+(global_item
+  name: (identifier)
+  (binary_expression
+    left: (int_literal)
+    right: (int_literal)))
+(global_item
+  name: (identifier)
+  (binary_expression
+    left: (int_literal)
+    right: (int_literal)))
+(global_item
+  name: (identifier)
+  (binary_expression
+    left: (int_literal)
+    right: (int_literal)))
+(global_item
+  name: (identifier)
+  (binary_expression
+    left: (int_literal)
+    right: (int_literal)))
+
+(global_item
+  name: (identifier)
+  (binary_expression
+    left: (int_literal)
+    right: (int_literal)))
+
+(global_item
+  name: (identifier)
+  (binary_expression
+    left: (int_literal)
+    right: (int_literal)))
+
+(global_item
+  name: (identifier)
+  (binary_expression
+    left: (int_literal)
+    right: (int_literal)))
+
+(global_item
+  name: (identifier)
+  (binary_expression
+    left: (int_literal)
+    right: (int_literal)))
+(global_item
+  name: (identifier)
+  (binary_expression
+    left: (int_literal)
+    right: (int_literal)))
+#+end_test
+
+*** Precedence
+
+**** Same
+
+So =a * x / y % z= equivalent to =((a * x) / y) % z=
+
+#+begin_test
+global foo = false * 2 / 3 % true;
+
+---
+
+(global_item
+  name: (identifier)
+  (binary_expression
+    left: (binary_expression
+      left: (binary_expression
+        left: (bool_literal)
+        right: (int_literal))
+      right: (int_literal))
+    right: (bool_literal)))
+#+end_test
+
+**** Different
+
+So =x + y - z= equivalent to =(x + y) - z=
+
+#+begin_test
+global bar = 1 + true - 3;
+
+global foo = false * 2 / 3 % true  +  false / 5   -   10 * true;
+
+---
+
+(global_item
+  name: (identifier)
+  (binary_expression
+    left: (binary_expression
+      left: (int_literal)
+      right: (bool_literal))
+    right: (int_literal)))
+
+(global_item
+  name: (identifier)
+  (binary_expression
+    left: (binary_expression
+      left: (binary_expression
+        left: (binary_expression
+          left: (binary_expression
+            left: (bool_literal)
+            right: (int_literal))
+          right: (int_literal))
+        right: (bool_literal))
+
+      right: (binary_expression
+        left: (bool_literal)
+        right: (int_literal)))
+
+    right: (binary_expression
+      left: (int_literal)
+      right: (bool_literal))))
+#+end_test
+
+*************** TODO Even more nested precedence levels?
+i.e. =<<= and =>>= etc all the way down to ==== and =!==.
+*************** END
+
+*** Parenthesized
+
+TODO
+
+** Unary
+
+TODO
 
 * Types
 :PROPERTIES:

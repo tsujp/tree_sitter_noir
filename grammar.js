@@ -18,6 +18,18 @@ const INTEGER_TYPES = [
     'i64',    
 ]
 
+const PRECEDENCE = {
+    // TODO: Term's even-higher precedence items.
+    multiplicitive: 9,
+    additive: 8,
+    bitshift: 7,
+    comparative: 6,
+    bitxor: 5,
+    bitand: 4,
+    or: 3,
+    equality: 2,
+}
+
 // Noirc: Modifiers -- except for visibility (in order).
 const MODIFIERS = {
     Unconstrained: 'unconstrained',
@@ -85,6 +97,7 @@ module.exports = grammar({
             $.module_or_contract_item,
             $.struct_item,
             $.impl_item,
+            $.global_item,
         ),
 
         item_list: ($) => seq(
@@ -214,6 +227,25 @@ module.exports = grammar({
             // optional($.where_clause), // Temp commented for now due to prec error.
         ),
         
+        // Noirc: Global.
+        global_item: ($) => seq(
+            'global',
+            field('name', $.identifier),
+            // TODO: OptionalTypeAnnotation.
+            '=',
+            $._expression,
+            // prec.left(1, $._expression),
+            ';',
+        ),
+        
+        // TODO: Put this elsewhere. ExpressionKind::Literal see ast/expression.rs
+        // Noirc: Literal
+        _literal: ($) => choice(
+            $.bool_literal,
+            $.int_literal,
+            // str, rawstr, fmtstr, quoteexpression, arrayexpression, sliceexpression, blockexpression
+        ),
+        
         // Noirc: FunctionParameters.
         function_parameters: ($) => seq(
             '(',
@@ -301,6 +333,32 @@ module.exports = grammar({
 
         // * * * * * * * * * * * * * * * * * * * * * * * * * EXPRESSIONS
 
+        _expression: ($) => choice(
+            $.binary_expression,
+            $._literal,
+        ),
+        
+        // Noirc: EqualOrNotEqualExpression -- Entire nested hierarchy flattened and renamed.
+        binary_expression: ($) => {
+            const t = [
+                // Highest to lowest.
+                [PRECEDENCE.multiplicitive, choice('*', '/', '%',)],
+                [PRECEDENCE.additive, choice('+', '-')],
+                [PRECEDENCE.bitshift, choice('<<', '>>')],
+                [PRECEDENCE.comparative, choice('<', '<=', '>', '>=')],
+                [PRECEDENCE.bitxor, '^'],
+                [PRECEDENCE.bitand, '&'],
+                [PRECEDENCE.or, '|'],
+                [PRECEDENCE.equality, choice('==', '!=')],
+            ]
+        
+            return choice(...t.map(([p, o]) => prec.left(p, seq(
+                field('left', $._expression),
+                field('operator', o),
+                field('right', $._expression),
+            ))))
+        },
+        
         block: _ => 'BLOCK_____TODO', // Temp just so grammar.js compiles.
         
         block_expression: _ => seq(
@@ -529,6 +587,8 @@ module.exports = grammar({
             )
         )),
         
+        bool_literal: _ => token(choice('true', 'false')),
+        
         comment: ($) => choice(
             $.line_comment,
             $.block_comment,
@@ -575,6 +635,10 @@ module.exports = grammar({
             ),
             '*/',
         ),
+        
+        _path: ($) => optional(choice(
+        
+        )),
         
         __path_no_turbofish: ($) => seq(
             optional($.path_kind),

@@ -1,0 +1,181 @@
+===============
+Binary / Simple
+===============
+
+global foo1 = 1 * 1;
+global foo2 = 1 / 1;
+global foo3 = 1 % 1;
+
+global bar1 = 1 + 1;
+global bar2 = 1 - 1;
+
+global baz1 = 1 << 1;
+global baz2 = 1 >> 1;
+
+global lorem1 = 1 < 1;
+global lorem2 = 1 <= 1;
+global lorem3 = 1 > 1;
+global lorem4 = 1 >= 1;
+
+global ipsum = 1 ^ 1;
+
+global dolor = 1 & 1;
+
+global etut = 1 | 1;
+
+global boo1 = 1 | 1;
+global boo2 = 1 | 1;
+
+---
+
+(source_file
+  (global_item
+    name: (identifier)
+    (binary_expression
+      left: (int_literal)
+      right: (int_literal)))
+  (global_item
+    name: (identifier)
+    (binary_expression
+      left: (int_literal)
+      right: (int_literal)))
+  (global_item
+    name: (identifier)
+    (binary_expression
+      left: (int_literal)
+      right: (int_literal)))
+
+  (global_item
+    name: (identifier)
+    (binary_expression
+      left: (int_literal)
+      right: (int_literal)))
+  (global_item
+    name: (identifier)
+    (binary_expression
+      left: (int_literal)
+      right: (int_literal)))
+
+  (global_item
+    name: (identifier)
+    (binary_expression
+      left: (int_literal)
+      right: (int_literal)))
+  (global_item
+    name: (identifier)
+    (binary_expression
+      left: (int_literal)
+      right: (int_literal)))
+
+  (global_item
+    name: (identifier)
+    (binary_expression
+      left: (int_literal)
+      right: (int_literal)))
+  (global_item
+    name: (identifier)
+    (binary_expression
+      left: (int_literal)
+      right: (int_literal)))
+  (global_item
+    name: (identifier)
+    (binary_expression
+      left: (int_literal)
+      right: (int_literal)))
+  (global_item
+    name: (identifier)
+    (binary_expression
+      left: (int_literal)
+      right: (int_literal)))
+
+  (global_item
+    name: (identifier)
+    (binary_expression
+      left: (int_literal)
+      right: (int_literal)))
+
+  (global_item
+    name: (identifier)
+    (binary_expression
+      left: (int_literal)
+      right: (int_literal)))
+
+  (global_item
+    name: (identifier)
+    (binary_expression
+      left: (int_literal)
+      right: (int_literal)))
+
+  (global_item
+    name: (identifier)
+    (binary_expression
+      left: (int_literal)
+      right: (int_literal)))
+  (global_item
+    name: (identifier)
+    (binary_expression
+      left: (int_literal)
+      right: (int_literal)))
+)
+
+
+==========================
+Binary / Precedence / Same
+==========================
+
+global foo = false * 2 / 3 % true;
+
+---
+
+(source_file
+  (global_item
+    name: (identifier)
+    (binary_expression
+      left: (binary_expression
+        left: (binary_expression
+          left: (bool_literal)
+          right: (int_literal))
+        right: (int_literal))
+      right: (bool_literal)))
+)
+
+
+===============================
+Binary / Precedence / Different
+===============================
+
+global bar = 1 + true - 3;
+
+global foo = false * 2 / 3 % true  +  false / 5   -   10 * true;
+
+---
+
+(source_file
+  (global_item
+    name: (identifier)
+    (binary_expression
+      left: (binary_expression
+        left: (int_literal)
+        right: (bool_literal))
+      right: (int_literal)))
+
+  (global_item
+    name: (identifier)
+    (binary_expression
+      left: (binary_expression
+        left: (binary_expression
+          left: (binary_expression
+            left: (binary_expression
+              left: (bool_literal)
+              right: (int_literal))
+            right: (int_literal))
+          right: (bool_literal))
+
+  right: (binary_expression
+    left: (bool_literal)
+    right: (int_literal)))
+
+  right: (binary_expression
+    left: (int_literal)
+    right: (bool_literal))))
+)
