@@ -817,7 +817,8 @@ global_item: ($) => seq(
 _literal: ($) => choice(
     $.bool_literal,
     $.int_literal,
-    // str, rawstr, fmtstr, quoteexpression, arrayexpression, sliceexpression, blockexpression
+    $.str_literal,
+    // rawstr, fmtstr, quoteexpression, arrayexpression, sliceexpression, blockexpression
 )
 #+end_src
 
@@ -3388,6 +3389,28 @@ So ~Token::InnerAttribute~ cannot have the name of any ~FunctionAttribute~ (aka.
 In source its listed as Attribute::Secondary but the comment for secondary attributes begins after it. For now I've taken it as the comment describes (thus considering it a primary attribute).
 *************** END
 
+**** SPEC bool                                                          :lex:
+:PROPERTIES:
+:CUSTOM_ID: h:54ACA91F-70A8-4121-A799-F872DDCAF240
+:END:
+:LOGBOOK:
+- State "SPEC"       from              [2025-06-15 Sun 17:15]
+:END:
+:pgd:
+- =true= (kw)
+- =false= (kw)
+:end:
+
+Via [[file:noir/compiler/noirc_frontend/src/parser/parser.rs::fn eat_bool(&mut self)][eat_bool]] eats a token which was lexed as ~Token::Bool~ which are created from either =true= or =false= (see: [[file:noir/compiler/noirc_frontend/src/lexer/token.rs::pub(crate) fn lookup_keyword(word: &str)][lookup_keyword()]]).
+
+#+begin_src js :treesit t
+// Noirc: bool.
+bool_literal: _ => choice('true', 'false')
+#+end_src
+
+*************** TODO Put lookup_keyword into Internal alongside parse_many and friends if it keeps being called in other places we document (like it is here).
+*************** END
+
 **** SPEC int                                                           :lex:
 :PROPERTIES:
 :CUSTOM_ID: h:CA7F6441-C376-4A8E-9C59-B128CC1F841A
@@ -3401,6 +3424,7 @@ In source its listed as Attribute::Secondary but the comment for secondary attri
 :end:
 
 #+begin_src js :treesit t
+// Noirc: int.
 int_literal: _ => token(seq(
     choice(
         /[0-9][0-9_]*/,
@@ -3436,26 +3460,52 @@ Should also link stuff as appropriate. This is lexing documentation.
 *************** TODO Update reg for error on multiple consecutive _ and if a trailing _
 As it is is fine for now however.
 *************** END
-**** SPEC bool                                                          :lex:
+
+**** DONE str                                                           :lex:
+CLOSED: [2025-06-15 Sun 19:09]
 :PROPERTIES:
-:CUSTOM_ID: h:54ACA91F-70A8-4121-A799-F872DDCAF240
+:CUSTOM_ID: h:6135F05F-8F23-4B77-98E2-CF6D639F4D7A
 :END:
 :LOGBOOK:
-- State "SPEC"       from              [2025-06-15 Sun 17:15]
+- State "DONE"       from              [2025-06-15 Sun 19:09]
 :END:
-:pgd:
-- =true= (kw)
-- =false= (kw)
-:end:
 
-Via [[file:noir/compiler/noirc_frontend/src/parser/parser.rs::fn eat_bool(&mut self)][eat_bool]] eats a token which was lexed as ~Token::Bool~ which are created from either =true= or =false= (see: [[file:noir/compiler/noirc_frontend/src/lexer/token.rs::pub(crate) fn lookup_keyword(word: &str)][lookup_keyword()]]).
+Lexed via [[#h:2AE110C8-8650-4F3B-AAA0-FFE5E79C8C81][next_token]] pattern ="= calls [[file:noir/compiler/noirc_frontend/src/lexer/lexer.rs::fn eat_string_literal(&mut self)][eat_string_literal()]] which lexes and returns a ~Token::Str~.
+Parsed via [[file:noir/compiler/noirc_frontend/src/parser/parser.rs::fn eat_str(&mut self)][eat_str]] which eats a token which was lexed as ~Token::Str~.
+
+Lexer eats until ending ="= allowing the following escape characters within the string: =\r=, =\n=, =\t=, =\0=, =\"=, =\\=.
 
 #+begin_src js :treesit t
-bool_literal: _ => choice('true', 'false')
+// Noirc: str.
+str_literal: ($) => seq(
+    '"',
+    repeat(choice(
+        $.str_content,
+        $.escape_sequence,
+    )),
+    token.immediate('"'),
+),
+
+escape_sequence: ($) => seq(
+    '\\',
+    // TODO: Do we want to be strict on valid escape sequences (r, n, t etc) or accept any ASCII. Problem is error recovery in tree-sitter and how that affects highlighting.
+    token.immediate(choice(
+        'r', 'n', 't', '0', '"', '\\',
+    )),
+),
+
+// Whitespace characters, and printable ASCII except " (x22) and \ (x5C).
+str_content: _ => /[\x20-\x21\x23-\x5B\x5D-\x7E\s]+/
 #+end_src
 
-*************** TODO Put lookup_keyword into Internal alongside parse_many and friends if it keeps being called in other places we document (like it is here).
+*************** TODO Keep as-is or use an external scanner?
+Seems to be fine for now.
 *************** END
+
+**** rawstr
+x
+**** fmtstr
+x
 
 ** Internal
 
@@ -3509,6 +3559,13 @@ For all the expression AST nodes in the selfsame file ~parse_infix~ is in they p
 
 *************** TODO My understanding of the precedence here is correct yeah?
 *************** END
+
+*** [[file:noir/compiler/noirc_frontend/src/lexer/lexer.rs::fn next_token(&mut self)][Lexer.next_token()]]
+:PROPERTIES:
+:CUSTOM_ID: h:2AE110C8-8650-4F3B-AAA0-FFE5E79C8C81
+:END:
+
+Major fork where ~Token~\s are created. After a series of whitespace is ignored: attempts to lex [[#h:47747650-8CB5-48B1-A085-AFAF3C469B8B][Glue]], and single-character tokens are made followed by more complex tokens.
 
 * Grammar
 :PROPERTIES:
@@ -3759,9 +3816,11 @@ A special kind of type intended for narrow usage.
 
 These almost entirely come from lexing.
 
+#+transclude: [[#h:54ACA91F-70A8-4121-A799-F872DDCAF240][bool]] :treesit
+
 #+transclude: [[#h:CA7F6441-C376-4A8E-9C59-B128CC1F841A][Int]] :treesit
 
-#+transclude: [[#h:54ACA91F-70A8-4121-A799-F872DDCAF240][bool]] :treesit
+#+transclude: [[#h:6135F05F-8F23-4B77-98E2-CF6D639F4D7A][str]] :treesit
 
 **** Comment
 

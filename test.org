@@ -781,6 +781,60 @@ fn unconstrained unconstrained one() {}
 :export_file_name: expressions.txt
 :END:
 
+** Literal
+
+*** String
+#+begin_test
+global foo = "";
+global foo = "\\";
+
+global bar = "hello";
+global bar = "hello\"escaped\"";
+
+global lorem = "hello
+multiline
+        with scapes and *&!@#%!@#(&!#())
+some escapes \r \n \"nested string \r\n\"
+blah";
+
+---
+
+(global_item
+  name: (identifier)
+  (str_literal))
+(global_item
+  name: (identifier)
+  (str_literal
+    (escape_sequence)))
+
+(global_item
+  name: (identifier)
+  (str_literal
+    (str_content)))
+(global_item
+  name: (identifier)
+  (str_literal
+    (str_content)
+    (escape_sequence)
+    (str_content)
+    (escape_sequence)))
+
+(global_item
+  name: (identifier)
+  (str_literal
+    (str_content)
+    (escape_sequence)
+    (str_content)
+    (escape_sequence)
+    (str_content)
+    (escape_sequence)
+    (str_content)
+    (escape_sequence)
+    (escape_sequence)
+    (escape_sequence)
+    (str_content)))
+#+end_test
+
 ** Binary
 
 *** Simple

@@ -243,7 +243,8 @@ module.exports = grammar({
         _literal: ($) => choice(
             $.bool_literal,
             $.int_literal,
-            // str, rawstr, fmtstr, quoteexpression, arrayexpression, sliceexpression, blockexpression
+            $.str_literal,
+            // rawstr, fmtstr, quoteexpression, arrayexpression, sliceexpression, blockexpression
         ),
         
         // Noirc: FunctionParameters.
@@ -580,6 +581,10 @@ module.exports = grammar({
         self: _ => 'self',
         // END TODO
         
+        // Noirc: bool.
+        bool_literal: _ => choice('true', 'false'),
+        
+        // Noirc: int.
         int_literal: _ => token(seq(
             choice(
                 /[0-9][0-9_]*/,
@@ -587,7 +592,26 @@ module.exports = grammar({
             )
         )),
         
-        bool_literal: _ => token(choice('true', 'false')),
+        // Noirc: str.
+        str_literal: ($) => seq(
+            '"',
+            repeat(choice(
+                $.str_content,
+                $.escape_sequence,
+            )),
+            token.immediate('"'),
+        ),
+        
+        escape_sequence: ($) => seq(
+            '\\',
+            // TODO: Do we want to be strict on valid escape sequences (r, n, t etc) or accept any ASCII. Problem is error recovery in tree-sitter and how that affects highlighting.
+            token.immediate(choice(
+                'r', 'n', 't', '0', '"', '\\',
+            )),
+        ),
+        
+        // Whitespace characters, and printable ASCII except " (x22) and \ (x5C).
+        str_content: _ => /[\x20-\x21\x23-\x5B\x5D-\x7E\s]+/,
         
         comment: ($) => choice(
             $.line_comment,
