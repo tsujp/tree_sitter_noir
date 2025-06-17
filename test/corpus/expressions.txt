@@ -54,6 +54,104 @@ blah";
 )
 
 
+====================
+Literal / Raw string
+====================
+
+global foo = r"minimal";
+global foo = r##"foo"##;
+global foo = r"hi\there";
+global foo = r"r#r";
+
+---
+
+(source_file
+  (global_item
+    name: (identifier)
+    (raw_str_literal
+      (str_content)))
+  (global_item
+    name: (identifier)
+    (raw_str_literal
+      (str_content)))
+  (global_item
+    name: (identifier)
+    (raw_str_literal
+      (str_content)))
+  (global_item
+    name: (identifier)
+    (raw_str_literal
+      (str_content)))
+)
+
+
+===================================
+Literal / Raw string / Double quote
+===================================
+
+global foo = r#""foo""#;
+
+---
+
+(source_file
+  (global_item
+    name: (identifier)
+    (raw_str_literal
+      (str_content)))
+)
+
+
+==============================
+Literal / Raw string / Complex
+==============================
+
+global foo = r#"minimal\"escapes\"are\nall\rignored
+
+in "here""#;
+
+global bar = r####"foo ##"blah"##"####;
+
+---
+
+(source_file
+  (global_item
+    name: (identifier)
+    (raw_str_literal
+      (str_content)))
+  (global_item
+    name: (identifier)
+    (raw_str_literal
+      (str_content)))
+)
+
+
+===========================================
+Literal / Raw string / Pounds balanced (e1)
+:error
+===========================================
+
+global foo = r###"unbalanced"##;
+---
+
+
+===================================================
+Literal / Raw string / Pounds nested magnitude (e1)
+:error
+===================================================
+
+global foo = r##"can only nest with ####"fewer pounds"#### blah"##;
+---
+
+
+===========================================
+Literal / Raw string / Quote no pounds (e1)
+:error
+===========================================
+
+global foo = r"you need at least 1 pound in delimiter to have quotes _within_ the string like: " <- that even if you try: \" <- that also";
+---
+
+
 ===============
 Binary / Simple
 ===============

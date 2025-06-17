@@ -835,6 +835,80 @@ blah";
     (str_content)))
 #+end_test
 
+*** Raw string
+#+begin_test
+global foo = r"minimal";
+global foo = r##"foo"##;
+global foo = r"hi\there";
+global foo = r"r#r";
+
+---
+
+(global_item
+  name: (identifier)
+  (raw_str_literal
+    (str_content)))
+(global_item
+  name: (identifier)
+  (raw_str_literal
+    (str_content)))
+(global_item
+  name: (identifier)
+  (raw_str_literal
+    (str_content)))
+(global_item
+  name: (identifier)
+  (raw_str_literal
+    (str_content)))
+#+end_test
+
+**** Double quote
+#+begin_test
+global foo = r#""foo""#;
+
+---
+
+(global_item
+  name: (identifier)
+  (raw_str_literal
+    (str_content)))
+#+end_test
+
+**** Complex
+#+begin_test
+global foo = r#"minimal\"escapes\"are\nall\rignored
+
+in "here""#;
+
+global bar = r####"foo ##"blah"##"####;
+
+---
+
+(global_item
+  name: (identifier)
+  (raw_str_literal
+    (str_content)))
+(global_item
+  name: (identifier)
+  (raw_str_literal
+    (str_content)))
+#+end_test
+
+**** Pounds balanced
+#+begin_test :error
+global foo = r###"unbalanced"##;
+#+end_test
+
+**** Pounds nested magnitude
+#+begin_test :error
+global foo = r##"can only nest with ####"fewer pounds"#### blah"##;
+#+end_test
+
+**** Quote no pounds
+#+begin_test :error
+global foo = r"you need at least 1 pound in delimiter to have quotes _within_ the string like: " <- that even if you try: \" <- that also";
+#+end_test
+
 ** Binary
 
 *** Simple

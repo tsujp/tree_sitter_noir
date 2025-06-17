@@ -818,7 +818,9 @@ _literal: ($) => choice(
     $.bool_literal,
     $.int_literal,
     $.str_literal,
-    // rawstr, fmtstr, quoteexpression, arrayexpression, sliceexpression, blockexpression
+    $.raw_str_literal,
+    // $.fmt_str_literal,
+    // quoteexpression, arrayexpression, sliceexpression, blockexpression
 )
 #+end_src
 
@@ -3470,11 +3472,6 @@ CLOSED: [2025-06-15 Sun 19:09]
 - State "DONE"       from              [2025-06-15 Sun 19:09]
 :END:
 
-Lexed via [[#h:2AE110C8-8650-4F3B-AAA0-FFE5E79C8C81][next_token]] pattern ="= calls [[file:noir/compiler/noirc_frontend/src/lexer/lexer.rs::fn eat_string_literal(&mut self)][eat_string_literal()]] which lexes and returns a ~Token::Str~.
-Parsed via [[file:noir/compiler/noirc_frontend/src/parser/parser.rs::fn eat_str(&mut self)][eat_str]] which eats a token which was lexed as ~Token::Str~.
-
-Lexer eats until ending ="= allowing the following escape characters within the string: =\r=, =\n=, =\t=, =\0=, =\"=, =\\=.
-
 #+begin_src js :treesit t
 // Noirc: str.
 str_literal: ($) => seq(
@@ -3498,14 +3495,48 @@ escape_sequence: ($) => seq(
 str_content: _ => /[\x20-\x21\x23-\x5B\x5D-\x7E\s]+/
 #+end_src
 
+Lexed via [[#h:2AE110C8-8650-4F3B-AAA0-FFE5E79C8C81][next_token]] pattern ="= calls [[file:noir/compiler/noirc_frontend/src/lexer/lexer.rs::fn eat_string_literal(&mut self)][eat_string_literal()]] which lexes and returns a ~Token::Str~.
+Parsed via [[file:noir/compiler/noirc_frontend/src/parser/parser.rs::fn eat_str(&mut self)][eat_str]] which eats a token which was lexed as ~Token::Str~.
+
+Lexer eats until ending ="= allowing the following escape characters within the string: =\r=, =\n=, =\t=, =\0=, =\"=, =\\=.
+
 *************** TODO Keep as-is or use an external scanner?
 Seems to be fine for now.
 *************** END
 
-**** rawstr
-x
-**** fmtstr
-x
+**** DONE raw_str                                                       :lex:
+CLOSED: [2025-06-17 Tue 16:40]
+:PROPERTIES:
+:CUSTOM_ID: h:0573AE7E-F170-4CC3-BE8C-852249558A04
+:END:
+:LOGBOOK:
+- State "DONE"       from              [2025-06-17 Tue 16:40]
+:END:
+
+#+begin_src js :treesit t
+// Noirc: rawstr.
+raw_str_literal: ($) => seq(
+    $._raw_str_literal_start,
+    alias($._raw_str_literal_content, $.str_content),
+    $._raw_str_literal_end,
+)
+#+end_src
+
+Lexed via [[#h:2AE110C8-8650-4F3B-AAA0-FFE5E79C8C81][next_token]] pattern =r= calls [[file:noir/compiler/noirc_frontend/src/lexer/lexer.rs::fn eat_raw_string_or_alpha_numeric(&mut self)][eat_raw_string_or_alpha_numeric()]] which peeks at the following 2 characters. If they are (order matters) of the following patterns: (=#=, =#=) OR (=#=, ="=) OR (="=, ANYTHING) then [[file:noir/compiler/noirc_frontend/src/lexer/lexer.rs::fn eat_raw_string(&mut self)][eat_raw_string()]] is called which finalises the lexing and returns a ~Token::RawStr~.
+
+If none of those patterns are matched then [[file:noir/compiler/noirc_frontend/src/lexer/lexer.rs::fn eat_alpha_numeric(&mut self, initial_char: char)][eat_alpha_numeric()]] is called which will attempt to eat the span via ~eat_word~, which see.
+
+~eat_raw_string~ eats all leading =#= and records the count. Technically over 255 leading =#= is an error. A ="= must immediately follow after the pounds. Loop doing: eat characters until ="= at which point all the =#= after the ="= are eaten and counted. If the count of these pounds equals the leading ones that terminates the raw string literal, otherwise the ="= and eaten =#= are also string contents and the loop continues.
+
+Essentially this all means that a raw string literal is started via =r"= or =r#"= where there can be 0 to 255 =#=\s. The amount of =#=\s form the delimiter. The raw string literal only ends when an ="= or ="#= is encountered, in the latters case where the amount of =#=\s matches the starting delimiter exactly. No escape sequences are handled at all.
+
+Parsed via [[file:noir/compiler/noirc_frontend/src/parser/parser.rs::fn eat_raw_str(&mut self)][eat_raw_str]] which eats a token which was lexed as ~Token::RawStr~.
+
+**** fmt_str
+
+#+begin_src js :treesit t
+// Noirc: fmtstr.
+#+end_src
 
 ** Internal
 
@@ -3615,6 +3646,10 @@ module.exports = grammar({
     name: 'noir',
 
     externals: ($) => [
+        $._raw_str_literal_start,
+        $._raw_str_literal_content,
+        $._raw_str_literal_end,
+        // Block comments are `extras` and can occur anywhere, so must be last in this list otherwise they will clobber other tokens we use an external scanner for.
         $._block_comment_content,
         $.__inner_block_comment_doc_style,
         $.__outer_block_comment_doc_style,
@@ -3821,6 +3856,8 @@ These almost entirely come from lexing.
 #+transclude: [[#h:CA7F6441-C376-4A8E-9C59-B128CC1F841A][Int]] :treesit
 
 #+transclude: [[#h:6135F05F-8F23-4B77-98E2-CF6D639F4D7A][str]] :treesit
+
+#+transclude: [[#h:0573AE7E-F170-4CC3-BE8C-852249558A04][raw_str]] :treesit
 
 **** Comment
 

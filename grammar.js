@@ -66,6 +66,10 @@ module.exports = grammar({
     name: 'noir',
 
     externals: ($) => [
+        $._raw_str_literal_start,
+        $._raw_str_literal_content,
+        $._raw_str_literal_end,
+        // Block comments are `extras` and can occur anywhere, so must be last in this list otherwise they will clobber other tokens we use an external scanner for.
         $._block_comment_content,
         $.__inner_block_comment_doc_style,
         $.__outer_block_comment_doc_style,
@@ -244,7 +248,9 @@ module.exports = grammar({
             $.bool_literal,
             $.int_literal,
             $.str_literal,
-            // rawstr, fmtstr, quoteexpression, arrayexpression, sliceexpression, blockexpression
+            $.raw_str_literal,
+            // $.fmt_str_literal,
+            // quoteexpression, arrayexpression, sliceexpression, blockexpression
         ),
         
         // Noirc: FunctionParameters.
@@ -612,6 +618,13 @@ module.exports = grammar({
         
         // Whitespace characters, and printable ASCII except " (x22) and \ (x5C).
         str_content: _ => /[\x20-\x21\x23-\x5B\x5D-\x7E\s]+/,
+        
+        // Noirc: rawstr.
+        raw_str_literal: ($) => seq(
+            $._raw_str_literal_start,
+            alias($._raw_str_literal_content, $.str_content),
+            $._raw_str_literal_end,
+        ),
         
         comment: ($) => choice(
             $.line_comment,
