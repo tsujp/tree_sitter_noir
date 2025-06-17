@@ -193,6 +193,22 @@ global foo = f"no \"quotes\" can be escaped in a format string";
 ---
 
 
+====================
+Literal / Quasiquote
+:skip
+====================
+
+global foo = quote { 1 };
+
+---
+
+(source_file
+  (global_item
+    name: (identifier)
+    (quote_expression))
+)
+
+
 ===============
 Binary / Simple
 ===============

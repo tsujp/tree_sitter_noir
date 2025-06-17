@@ -942,6 +942,17 @@ global bar = f"escape sequences are \n literal \t";
 global foo = f"no \"quotes\" can be escaped in a format string";
 #+end_test
 
+*** Quasiquote
+#+begin_test :skip
+global foo = quote { 1 };
+
+---
+
+(global_item
+  name: (identifier)
+  (quote_expression))
+#+end_test
+
 ** Binary
 
 *** Simple

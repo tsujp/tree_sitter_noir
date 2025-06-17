@@ -820,7 +820,8 @@ _literal: ($) => choice(
     $.str_literal,
     $.raw_str_literal,
     $.fmt_str_literal,
-    // quoteexpression, arrayexpression, sliceexpression, blockexpression
+    // $.quote_expression, // TODO: Broken for now.
+    // arrayexpression, sliceexpression, blockexpression
 )
 #+end_src
 
@@ -3044,6 +3045,11 @@ _expression: ($) => choice(
 
 Parser: [[file:noir/compiler/noirc_frontend/src/parser/parser/expression.rs::pub(crate) fn parse_expression_or_error(&mut self)][parse_expression_or_error()]], [[file:noir/compiler/noirc_frontend/src/parser/parser/expression.rs::fn parse_expression_impl(&mut self, allow_constructors: bool)][parse_expression_impl()]], [[file:noir/compiler/noirc_frontend/src/parser/parser/infix.rs::pub(super) fn parse_equal_or_not_equal(][parse_equal_or_not_equal()]]
 
+*************** TODO Document Literal as appropriate in org tree
+Currently lots of confusing names, got lexing at the top, literal at the bottom with more lexing info (which does make sense tho) and then also an AST node called Literal we should keep track of:
+[[file:noir/compiler/noirc_frontend/src/parser/parser/expression.rs::/// Literal][Literal doc]]
+*************** END
+
 **** Infix
 
 #+begin_src js :treesit t
@@ -3070,6 +3076,25 @@ binary_expression: ($) => {
 #+end_src
 
 All the expression nodes in [[file:noir/compiler/noirc_frontend/src/parser/parser/infix.rs][infix.rs]] constitute binary expressions and their call hierarchy via [[#h:CE180901-F6F2-4A65-878D-6C9154971376][parse_infix]] denotes the reverse of their precedence. Note that the deepest call (in that file) [[file:noir/compiler/noirc_frontend/src/parser/parser/infix.rs::pub(super) fn parse_multiply_or_divide_or_modulo(][parse_multiply_or_divide_or_modulo()]] further calls [[file:noir/compiler/noirc_frontend/src/parser/parser/expression.rs::pub(super) fn parse_term(&mut self, allow_constructors: bool)][parse_term()]] meaning all of Term's (TODO: link) expressions are higher priority still.
+
+**** TODO QuoteExpression                                              :node:
+:LOGBOOK:
+- State "TODO"       from              [2025-06-17 Tue 18:15] \\
+  Top-level recursion, see quote literal, deferring ultimately.
+:END:
+https://noir-lang.org/docs/noir/concepts/comptime#quasi-quote
+
+#+begin_src js :treesit t
+// Noirc: QuoteExpression.
+quote_expression: ($) => alias($.quote_literal, $.quote_expression)
+#+end_src
+
+**** ArrayExpression
+
+**** SliceExpression
+
+**** BlockExpression
+
 
 *** TODO Literals
 :PROPERTIES:
@@ -3544,7 +3569,7 @@ CLOSED: [2025-06-17 Tue 17:43]
 #+begin_src js :treesit t
 // Noirc: fmtstr.
 fmt_str_literal: ($) => seq(
-    'f', '"',
+    'f"',
     repeat(alias($.fmt_str_content, $.str_content)),
     token.immediate('"'),
 ),
@@ -3558,6 +3583,37 @@ Lexed via [[#h:2AE110C8-8650-4F3B-AAA0-FFE5E79C8C81][next_token]] pattern =f= ca
 No escape sequences appear to be interpreted, so =\"= within the string contents will result in an error.
 
 Parsed via [[file:noir/compiler/noirc_frontend/src/parser/parser.rs::fn eat_fmt_str(&mut self)][eat_fmt_str]] which eats a token which was lexed as ~Token::FmtStr~.
+
+**** TODO quote                                                         :lex:
+:PROPERTIES:
+:CUSTOM_ID: h:3F001F84-17D8-4B0D-912F-67AF98F72CD4
+:END:
+:LOGBOOK:
+- State "TODO"       from              [2025-06-17 Tue 18:10] \\
+  For now will eat arbitrary characters, without nesting, until rest of grammar is completed.
+:END:
+:pgd:
++ =quote=
++ ={= OR =[= OR =(=
++ ANYTHING next_token CAN VALIDLY LEX (TODO: Expand and represent this)
++ =}= OR =]= OR =)= (matching the opening)
+:end:
+
+#+begin_src js :treesit t
+// TODO: This isn't /really/ a literal (in terms of where we've placed it here) as quote allows all things next_token can lex and so we'll want to parse strings, variables etc all over again within the quote area. For now we'll make it a very dumb stubbed rule since this really depends on everything else and we'll want everything else working so we can develop and evaluate proper coverage of this meta-programming/macro rule.
+// TODO: https://noir-lang.org/docs/noir/concepts/comptime#quasi-quote
+// TODO: Will likely require an external scanner since we need to match the opening delimiter which can be 1 of 3 options, and there is nesting. For now: only braces.
+quote_literal: _ => seq(
+    'quote',
+    '{',
+    /.*/,
+    '}',
+)
+#+end_src
+
+Lexed via [[#h:2AE110C8-8650-4F3B-AAA0-FFE5E79C8C81][next_token]] pattern =q= calls [[file:noir/compiler/noirc_frontend/src/lexer/lexer.rs::fn eat_quote_or_alpha_numeric(&mut self)][eat_quote_or_alpha_numeric()]] which eats =quote= (via [[#h:E76126FE-1E7A-40E9-A0C2-14F3FD3DB7E5][lex_word]]). Get the delimiter type via ~next_token~, where braces (={}=), brackets (=[]=), and parentheses (=()=) are valid delimiters. Then, while keeping track of potential delimiter nesting, consume tokens via ~next_token~.
+
+Parsed via [[file:noir/compiler/noirc_frontend/src/parser/parser.rs::fn eat_quote(&mut self)][eat_quote]] which eats a token which was lexed as ~Token::Quote~.
 
 ** Internal
 
@@ -3618,6 +3674,13 @@ For all the expression AST nodes in the selfsame file ~parse_infix~ is in they p
 :END:
 
 Major fork where ~Token~\s are created. After a series of whitespace is ignored: attempts to lex [[#h:47747650-8CB5-48B1-A085-AFAF3C469B8B][Glue]], and single-character tokens are made followed by more complex tokens.
+
+*** [[file:noir/compiler/noirc_frontend/src/lexer/lexer.rs::fn lex_word(&mut self, initial_char: char)][Lexer.lex_word(initial_char)]]
+:PROPERTIES:
+:CUSTOM_ID: h:E76126FE-1E7A-40E9-A0C2-14F3FD3DB7E5
+:END:
+
+From (and including) parameter =initial_char= eat characters which are ascii alphabetic (Rust stdlib), or numeric (Rust stdlib) or =_= and return the start/end positions of the eaten characters and said characters.
 
 * Grammar
 :PROPERTIES:
@@ -3881,6 +3944,8 @@ These almost entirely come from lexing.
 #+transclude: [[#h:0573AE7E-F170-4CC3-BE8C-852249558A04][raw_str]] :treesit
 
 #+transclude: [[#h:196B9814-8776-49F7-B43A-6084A8A3256A][fmt_str]] :treesit
+
+#+transclude: [[#h:3F001F84-17D8-4B0D-912F-67AF98F72CD4][quote]] :treesit
 
 **** Comment
 

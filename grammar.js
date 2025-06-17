@@ -250,7 +250,8 @@ module.exports = grammar({
             $.str_literal,
             $.raw_str_literal,
             $.fmt_str_literal,
-            // quoteexpression, arrayexpression, sliceexpression, blockexpression
+            // $.quote_expression, // TODO: Broken for now.
+            // arrayexpression, sliceexpression, blockexpression
         ),
         
         // Noirc: FunctionParameters.
@@ -365,6 +366,9 @@ module.exports = grammar({
                 field('right', $._expression),
             ))))
         },
+        
+        // Noirc: QuoteExpression.
+        quote_expression: ($) => alias($.quote_literal, $.quote_expression),
         
         block: _ => 'BLOCK_____TODO', // Temp just so grammar.js compiles.
         
@@ -628,13 +632,23 @@ module.exports = grammar({
         
         // Noirc: fmtstr.
         fmt_str_literal: ($) => seq(
-            'f', '"',
+            'f"',
             repeat(alias($.fmt_str_content, $.str_content)),
             token.immediate('"'),
         ),
         
         // Whitespace characters, and printable ASCII except " (x22).
         fmt_str_content: _ => /[\x20-\x21\x23-\x7E\s]+/,
+        
+        // TODO: This isn't /really/ a literal (in terms of where we've placed it here) as quote allows all things next_token can lex and so we'll want to parse strings, variables etc all over again within the quote area. For now we'll make it a very dumb stubbed rule since this really depends on everything else and we'll want everything else working so we can develop and evaluate proper coverage of this meta-programming/macro rule.
+        // TODO: https://noir-lang.org/docs/noir/concepts/comptime#quasi-quote
+        // TODO: Will likely require an external scanner since we need to match the opening delimiter which can be 1 of 3 options, and there is nesting. For now: only braces.
+        quote_literal: _ => seq(
+            'quote',
+            '{',
+            /.*/,
+            '}',
+        ),
         
         comment: ($) => choice(
             $.line_comment,
