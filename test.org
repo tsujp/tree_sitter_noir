@@ -909,6 +909,39 @@ global foo = r##"can only nest with ####"fewer pounds"#### blah"##;
 global foo = r"you need at least 1 pound in delimiter to have quotes _within_ the string like: " <- that even if you try: \" <- that also";
 #+end_test
 
+*** Format string
+#+begin_test
+global foo = f"";
+global foo = f"\\";
+
+global bar = f"hello";
+global bar = f"escape sequences are \n literal \t";
+
+---
+
+(global_item
+  name: (identifier)
+  (fmt_str_literal))
+(global_item
+  name: (identifier)
+  (fmt_str_literal
+    (str_content)))
+
+(global_item
+  name: (identifier)
+  (fmt_str_literal
+    (str_content)))
+(global_item
+  name: (identifier)
+  (fmt_str_literal
+    (str_content)))
+#+end_test
+
+**** Quote escape
+#+begin_test :error
+global foo = f"no \"quotes\" can be escaped in a format string";
+#+end_test
+
 ** Binary
 
 *** Simple

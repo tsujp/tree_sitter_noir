@@ -249,7 +249,7 @@ module.exports = grammar({
             $.int_literal,
             $.str_literal,
             $.raw_str_literal,
-            // $.fmt_str_literal,
+            $.fmt_str_literal,
             // quoteexpression, arrayexpression, sliceexpression, blockexpression
         ),
         
@@ -625,6 +625,16 @@ module.exports = grammar({
             alias($._raw_str_literal_content, $.str_content),
             $._raw_str_literal_end,
         ),
+        
+        // Noirc: fmtstr.
+        fmt_str_literal: ($) => seq(
+            'f', '"',
+            repeat(alias($.fmt_str_content, $.str_content)),
+            token.immediate('"'),
+        ),
+        
+        // Whitespace characters, and printable ASCII except " (x22).
+        fmt_str_content: _ => /[\x20-\x21\x23-\x7E\s]+/,
         
         comment: ($) => choice(
             $.line_comment,

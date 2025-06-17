@@ -152,6 +152,47 @@ global foo = r"you need at least 1 pound in delimiter to have quotes _within_ th
 ---
 
 
+=======================
+Literal / Format string
+=======================
+
+global foo = f"";
+global foo = f"\\";
+
+global bar = f"hello";
+global bar = f"escape sequences are \n literal \t";
+
+---
+
+(source_file
+  (global_item
+    name: (identifier)
+    (fmt_str_literal))
+  (global_item
+    name: (identifier)
+    (fmt_str_literal
+      (str_content)))
+
+  (global_item
+    name: (identifier)
+    (fmt_str_literal
+      (str_content)))
+  (global_item
+    name: (identifier)
+    (fmt_str_literal
+      (str_content)))
+)
+
+
+===========================================
+Literal / Format string / Quote escape (e1)
+:error
+===========================================
+
+global foo = f"no \"quotes\" can be escaped in a format string";
+---
+
+
 ===============
 Binary / Simple
 ===============
