@@ -3777,7 +3777,7 @@ From (and including) parameter =initial_char= eat characters which are ascii alp
 
 Constructed grammar from investigating Noir compiler frontend.
 
-#+begin_src js :noweb yes :tangle grammar_old.js
+#+begin_src js
 const REG_ALPHABETIC = /[a-zA-Z]/
 // TODO: Using this where Noir parser frontend checks for numeric which actually includes unicode stuff also, but the rest of Noir only allows ASCII so.. this is probably fine.
 const REG_NUMERIC = /[0-9]/
