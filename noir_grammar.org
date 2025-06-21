@@ -1499,11 +1499,13 @@ Parse logic when entered here attempts to parse any valid non-literal type, befo
         - [ ] ~parse_parenthesized_type_or_type_expression()~.
         - [ ] ~parse_type()~.
 
-***** TOIMPL TypeExpression                                            :node:
+***** DONE TypeExpression                                              :node:
+CLOSED: [2025-06-22 Sun 02:13]
 :PROPERTIES:
 :CUSTOM_ID: h:0DEF3192-4840-41B3-A941-714798677092
 :END:
 :LOGBOOK:
+- State "DONE"       from "TOIMPL"     [2025-06-22 Sun 02:13]
 - State "TOIMPL"     from "TODO"       [2024-11-16 Sat 20:20]
 :END:
 
@@ -1549,9 +1551,13 @@ The entire call-tree from AddOrSubtractTypeExpression's parser [[file:noir/compi
 }
 #+end_src
 
-****** TOIMPL TermTypeExpression                                       :node:
+****** DONE TermTypeExpression                                         :node:
+CLOSED: [2025-06-22 Sun 02:12]
 :PROPERTIES:
 :CUSTOM_ID: h:414EDA73-C80F-4081-A2FC-D4C7DFEDC964
+:END:
+:LOGBOOK:
+- State "DONE"       from "TOIMPL"     [2025-06-22 Sun 02:12]
 :END:
 
 #+name: unary_type_expr
@@ -1570,11 +1576,13 @@ The parser continually eats =-= forming that "binary" (really, unary) expression
 Teeny tiny change, fix if not already done as it seems Noir is now at 0.38.0 so some updating will be required anyway.
 *************** END
 
-****** TODO AtomTypeExpression                                         :node:
+****** SPEC AtomTypeExpression                                         :node:
 :PROPERTIES:
 :CUSTOM_ID: h:4E7B0693-6BFF-4B90-A0FB-6BD577A41989
 :END:
 :LOGBOOK:
+- State "SPEC"       from "TODO"       [2025-06-22 Sun 02:12] \\
+  Still needs Path completed for full test coverage.
 - State "TODO"       from              [2025-06-21 Sat 19:07]
 :END:
 
@@ -3023,11 +3031,13 @@ https://noir-lang.org/docs/noir/concepts/comptime#quasi-quote
 alias(<<r("quote")>>, $.quote_expression)
 #+end_src
 
-**** TODO ArrayExpression                                              :node:
+**** DONE ArrayExpression                                              :node:
+CLOSED: [2025-06-22 Sun 02:11]
 :PROPERTIES:
 :CUSTOM_ID: h:48EA91F0-AB43-4FEF-94F1-3837C634CF38
 :END:
 :LOGBOOK:
+- State "DONE"       from "TODO"       [2025-06-22 Sun 02:11]
 - State "TODO"       from              [2025-06-21 Sat 16:38]
 :END:
 :pgd:
@@ -3040,16 +3050,16 @@ alias(<<r("quote")>>, $.quote_expression)
 seq(
     '[',
     choice(
+        // Inlined Noirc: StandardArrayLiteral and ArrayElements.
+        seq(
+            sepBy(<<r("expression")>>, ','),
+            optional(','),
+        ),
         // Inlined Noirc: RepeatedArrayLiteral.
         seq(
             <<r("expression")>>,
             ';',
             field('length', <<r("type_expr")>>),
-        ),
-        // Inlined Noirc: StandardArrayLiteral and ArrayElements.
-        seq(
-            sepBy(<<r("expression")>>, ','),
-            optional(','),
         ),
     ),
     ']',
@@ -3062,11 +3072,13 @@ Parser: [[file:noir/compiler/noirc_frontend/src/parser/parser/expression.rs::if 
 
 #+transclude: [[file:noir/compiler/noirc_frontend/src/parser/parser/expression.rs::620][ArrayLiteral, StandardArrayLiteral, ArrayElements, RepeatedArrayLiteral docs]] :lines 620-628 :src fundamental
 
-***** TODO StandardArrayLiteral                                        :node:
+***** DONE StandardArrayLiteral                                        :node:
+CLOSED: [2025-06-22 Sun 02:11]
 :PROPERTIES:
 :CUSTOM_ID: h:D27534C1-90A8-4A0C-A601-55A631D16C89
 :END:
 :LOGBOOK:
+- State "DONE"       from "TODO"       [2025-06-22 Sun 02:11]
 - State "TODO"       from              [2025-06-21 Sat 16:54]
 :END:
 :pgd:
@@ -3082,11 +3094,13 @@ Here StandardArrayLiteral and ArrayElements form the same kind of "Foo" in a "Fo
 
 Parser at parent. Returns ~ArrayLiteral::Standard~
 
-***** TODO RepeatedArrayLiteral                                        :node:
+***** DONE RepeatedArrayLiteral                                        :node:
+CLOSED: [2025-06-22 Sun 02:11]
 :PROPERTIES:
 :CUSTOM_ID: h:437EA6B2-BF82-44D3-8B1F-ABA5BD8B3675
 :END:
 :LOGBOOK:
+- State "DONE"       from "TODO"       [2025-06-22 Sun 02:11]
 - State "TODO"       from              [2025-06-21 Sat 16:54]
 :END:
 :pgd:
@@ -3096,9 +3110,11 @@ Parser at parent. Returns ~ArrayLiteral::Standard~
 Parser at parent. Returns ~ArrayLiteral::Repeated~.
 
 **** SliceExpression
+2025/06/22 2:11 am jordan continue from here
 
 **** BlockExpression
 
+x
 
 *** TODO Literals
 :PROPERTIES:
