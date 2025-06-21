@@ -20,6 +20,7 @@ const INTEGER_TYPES = [
 
 const PRECEDENCE = {
     // TODO: Term's even-higher precedence items.
+    unary: 10,
     multiplicitive: 9,
     additive: 8,
     bitshift: 7,
@@ -332,6 +333,25 @@ module.exports = grammar({
         // [[file:noir_grammar.org::quote_expression]]
         quote_expression: $ => alias($.quote_literal, $.quote_expression),
         
+        // [[file:noir_grammar.org::array_expression]]
+        array_expression: $ => seq(
+            '[',
+            choice(
+                // Inlined Noirc: RepeatedArrayLiteral.
+                seq(
+                    $._expression,
+                    ';',
+                    field('length', $._type_expr),
+                ),
+                // Inlined Noirc: StandardArrayLiteral and ArrayElements.
+                seq(
+                    sepBy($._expression, ','),
+                    optional(','),
+                ),
+            ),
+            ']',
+        ),
+        
         // TODO: Relocate/place these more properly.
         
         // [[file:noir_grammar.org::block]]
@@ -414,6 +434,42 @@ module.exports = grammar({
         ),
         // [[file:noir_grammar.org::ordered_type_arg]]
         __ordered_type_arg: _ => 'ORDERED_TYPE_ARG___TODO',
+        
+        // 'TypeExpressions' are limited to constant integers, variables, and basic numeric binary operators; they are a special type that is allowed in the length position of an array (and some other limited places).
+        // Using 'expr' in-place of 'expression' so-as-to- not conflate with _real_ expressions.
+        
+        // [[file:noir_grammar.org::type_expr]]
+        _type_expr: $ => choice(
+            alias($.__binary_type_expr, $.binary_expression),
+            // TODO: Replace literal $.unary_expression with noweb ref function
+            alias($.__unary_type_expr, $.unary_expression),
+            $.__atom_type_expr,
+        ),
+        // [[file:noir_grammar.org::binary_type_expr]]
+        __binary_type_expr: $ => {
+            const t = [
+                // Highest to lowest.
+                [PRECEDENCE.multiplicitive, choice('*', '/', '%',)],
+                [PRECEDENCE.additive, choice('+', '-')],
+            ]
+        
+            return choice(...t.map(([p, o]) => prec.left(p, seq(
+                field('left', $._type_expr),
+                field('operator', o),
+                field('right', $._type_expr),
+            ))))
+        },
+        // [[file:noir_grammar.org::unary_type_expr]]
+        __unary_type_expr: $ => prec(PRECEDENCE.unary, seq('-', $._type_expr)),
+        // [[file:noir_grammar.org::atom_type_expr]]
+        __atom_type_expr: $ => choice(
+            $.int_literal, // Inlined Noirc: ConstantTypeExpression.
+            $.__path, // Inlined Noirc: VariableTypeExpression.
+            // TODO: Replace hardcoded rule name with noweb ref.
+            alias($.parenthesized_expression, $.parenthesized_expression),
+        ),
+        // [[file:noir_grammar.org::parenthesised_type_expr]]
+        parenthesized_expression: $ => seq('(', $._type_expr, ')'),
 
         // * * * * * * * * * * * * * * * * * * * * * * * * * PATTERNS
         
@@ -469,7 +525,8 @@ module.exports = grammar({
             $.raw_str_literal,
             $.fmt_str_literal,
             // $.quote_expression, // TODO: Broken for now.
-            // arrayexpression, sliceexpression, blockexpression
+            $.array_expression,
+            // sliceexpression, blockexpression
         ),
         
         // [[file:noir_grammar.org::bool]]
@@ -582,10 +639,10 @@ module.exports = grammar({
         ),
         
         // [[file:noir_grammar.org::path]]
-        __path: $ => optional(choice(
+        __path: $ => choice(
             'TODO_____PATH_STUB_ALPHA',
             'TODO_____PATH_STUB_BETA',
-        )),
+        ),
         // [[file:noir_grammar.org::path_no_turbofish]]
         __path_no_turbofish: $ => seq(
             optional($.path_kind),

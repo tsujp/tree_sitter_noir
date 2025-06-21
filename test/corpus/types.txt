@@ -13,17 +13,31 @@ type Foo = ();
 )
 
 
-=========================
-TypeExpressions / Literal
+==========================
+Type expressions / Literal
 :skip
-=========================
+==========================
 
-fn main() {
-  let foo: [Field; 69] = [0; 69];
-}
+global foo = [u8; 69];
 
 ---
 
 (source_file
-  (source_file)
+  (global_item
+    name: (identifier)
+    )
+)
+
+
+=========================
+Type expressions / Binary
+:skip
+=========================
+
+global foo = [u8; 1 + 2];
+
+---
+
+(source_file
+
 )

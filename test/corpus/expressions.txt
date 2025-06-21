@@ -209,6 +209,182 @@ global foo = quote { 1 };
 )
 
 
+=====================================
+Literal / Array expression / Standard
+=====================================
+
+global foo1 = [true, false, 1, 2, 3];
+global foo2 = [1 + 1, 2 + 2];
+
+---
+
+(source_file
+  (global_item
+    name: (identifier)
+    (array_expression
+      (bool_literal)
+      (bool_literal)
+      (int_literal)
+      (int_literal)
+      (int_literal)))
+  (global_item
+    name: (identifier)
+    (array_expression
+      (binary_expression
+        left: (int_literal)
+        right: (int_literal))
+      (binary_expression
+        left: (int_literal)
+        right: (int_literal))))
+)
+
+
+==================================================
+Literal / Array expression / Standard / Degenerate
+==================================================
+
+global foo1 = [1,];
+global foo2 = [,];
+
+---
+
+(source_file
+  (global_item
+    name: (identifier)
+    (array_expression
+      (int_literal)))
+  (global_item
+    name: (identifier)
+    (array_expression))
+)
+
+
+=====================================
+Literal / Array expression / Repeated
+=====================================
+
+global foo1 = [1; 2];
+global foo2 = [1; 2 + 3];
+
+global bar1 = [true; 1 + 2 - 3];
+global bar2 = ["foo"; -5];
+global bar4 = [f"bar"; 1];
+
+global lorem1 = [false; (1)];
+global lorem2 = ["foo"; (-1 + 5)];
+global lorem3 = [1; -(2 + 2)];
+
+---
+
+(source_file
+  (global_item
+    name: (identifier)
+    (array_expression
+      (int_literal)
+      length: (int_literal)))
+  (global_item
+    name: (identifier)
+    (array_expression
+      (int_literal)
+      length: (binary_expression
+        left: (int_literal)
+        right: (int_literal))))
+
+  (global_item
+    name: (identifier)
+    (array_expression
+      (bool_literal)
+      length: (binary_expression
+        left: (binary_expression
+          left: (int_literal)
+          right: (int_literal))
+        right: (int_literal))))
+  (global_item
+    name: (identifier)
+    (array_expression
+      (str_literal
+        (str_content))
+      length: (unary_expression
+        (int_literal))))
+  (global_item
+    name: (identifier)
+    (array_expression
+      (fmt_str_literal
+        (str_content))
+      length: (int_literal)))
+
+  (global_item
+    name: (identifier)
+    (array_expression
+      (bool_literal)
+      length: (parenthesized_expression
+        (int_literal))))
+  (global_item
+    name: (identifier)
+    (array_expression
+      (str_literal
+        (str_content))
+      length: (parenthesized_expression
+        (binary_expression
+          left: (unary_expression
+            (int_literal))
+          right: (int_literal)))))
+  (global_item
+    name: (identifier)
+    (array_expression
+      (int_literal)
+      length: (unary_expression
+        (parenthesized_expression
+          (binary_expression
+            left: (int_literal)
+            right: (int_literal))))))
+)
+
+
+==================================================
+Literal / Array expression / Repeated / Degenerate
+==================================================
+
+global foo1 = [1; --5];
+global foo2 = [true; --5 + 1];
+
+---
+
+(source_file
+  (global_item
+    name: (identifier)
+    (array_expression
+      (int_literal)
+      length: (unary_expression
+        (unary_expression
+          (int_literal)))))
+  (global_item
+    name: (identifier)
+    (array_expression
+      (bool_literal)
+      length: (binary_expression
+        left: (unary_expression
+          (unary_expression
+            (int_literal)))
+        right: (int_literal))))
+)
+
+
+=================================
+Literal / Array expression / Path
+:skip
+=================================
+
+global foo = [1; N];
+global foo = [1; foo::bar];
+
+---
+
+(source_file
+
+)
+
+
 ===============
 Binary / Simple
 ===============
