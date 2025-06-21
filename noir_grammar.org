@@ -25,8 +25,7 @@ Concerning Noir's frontend compiler:
 - Tag =node= being used as a non-terminal symbol.
 - Tag =leaf= used as a terminal symbol.
 
-Entry:
-#+transclude: [[file:noir/compiler/noirc_frontend/src/parser/parser.rs][parse_program()]] :lines 43-43 :src rust
+Entry: [[file:noir/compiler/noirc_frontend/src/parser/parser.rs::pub fn parse_program(source_program: &str)][parse_program]]
 
 ** Lexing
 
@@ -283,7 +282,8 @@ In parent all the parsed attributes are collected.
 + (opt) =mut=
 :end:
 
-#+begin_src js :treesit t
+#+name: modifiers
+#+begin_src js
 // Noirc: Modifiers -- except for visibility (in order).
 const MODIFIERS = {
     Unconstrained: 'unconstrained',
@@ -323,9 +323,9 @@ Using eglot to show the call hierarchy Traits apparently call this parser, so wh
 - NIL.
 :end:
 
-#+begin_src js :treesit t
-// Noirc: ItemVisibility.
-visibility_modifier: ($) => seq('pub', optional('(crate)'))
+#+name: item_visibility
+#+begin_src js :rule visibility_modifier :arg $ :ast ItemVisibility
+seq('pub', optional('(crate)'))
 #+end_src
 
 Parser: [[file:noir/compiler/noirc_frontend/src/parser/parser/item_visibility.rs::fn parse_item_visibility(&mut self)][parse_item_visibility()]]
@@ -349,12 +349,13 @@ CLOSED: [2025-06-08 Sun 17:35]
 + =;=
 :end:
 
-#+begin_src js :treesit t
-// Noirc: Use.
-use_declaration: ($) => seq(
-    optional($.visibility_modifier),
+#+name: use
+#+begin_src js :rule use_declaration :arg $ :ast Use
+seq(
+    optional(<<r("item_visibility")>>),
     'use',
-    field('tree', $.__use_tree_variants),
+    // field('tree', $.__use_tree_variants),
+    field('tree', <<r("use_tree")>>),
     ';',
 )
 #+end_src
@@ -396,15 +397,18 @@ CLOSED: [2025-06-08 Sun 17:35]
   + =}=
 :end:
 
-#+begin_src js :treesit t
-// Noirc: UseTree.
-__use_tree_variants: ($) => choice(
+#+name: use_tree
+#+begin_src js :rule __use_tree_variants :arg $ :ast UseTree
+choice(
     $.__path_no_kind_no_turbofish,
-    $.use_list,
+    // $.use_list,
+    <<r("use_tree_list__nopath")>>,
     // XXX: Alias name here needs to match that in __path_no_kind_no_turbofish.
-    alias($.__use_list_path_prefix, $.path),
+    // alias($.__use_list_path_prefix, $.path),
+    alias(<<r("use_tree_list__path")>>, $.path),
     // TODO: The structure of how use alias appears in the CST isn't really cognate to use_list.. but can refine this later once the entire grammar is done.
-    $.use_alias,
+    // $.use_alias,
+    <<r("use_alias")>>,
 )
 #+end_src
 
@@ -435,18 +439,22 @@ CLOSED: [2025-06-08 Sun 17:35]
 + (opt) =,=
 :end:
 
-#+begin_src js :treesit t
-// Noirc: UseTreeList -- if path beforehand.
-__use_list_path_prefix: ($) => seq(
+#+name: use_tree_list__path
+#+begin_src js :rule __use_list_path_prefix :arg $ :ast "UseTreeList -- if path beforehand."
+seq(
     optional(field('scope', optional($.__path_no_kind_no_turbofish))),
     '::',
-    field('list', $.use_list),
-),
+    // field('list', $.use_list),
+    field('list', <<r("use_tree_list__nopath")>>),
+)
+#+end_src
 
-// Noirc: UseTreeList -- if no path beforehand.
-use_list: ($) => seq(
+#+name: use_tree_list__nopath
+#+begin_src js :rule use_list :arg $ :ast "UseTreeList -- if no path beforehand."
+seq(
     '{',
-    sepBy($.__use_tree_variants, ','),
+    // sepBy($.__use_tree_variants, ','),
+    sepBy(<<r("use_tree")>>, ','),
     optional(','),
     '}',
 )
@@ -468,9 +476,9 @@ CLOSED: [2025-06-08 Sun 17:35]
   + [[#h:65B0176B-B46F-4679-8535-C504870AC048][ident]] (token)
 :end:
 
-#+begin_src js :treesit t
-// Ours: UseTreeAs.
-use_alias: ($) => seq(
+#+name: use_alias
+#+begin_src js :arg $ :ast UseTreeAs
+seq(
     field('scope', $.__path_no_kind_no_turbofish),
     'as',
     field('alias', $.identifier),
@@ -501,10 +509,10 @@ CLOSED: [2025-06-08 Sun 21:02]
   - =;=
 :end:
 
-#+begin_src js :treesit t
-// Noirc: ModOrContract.
-module_or_contract_item: ($) => seq(
-    optional($.visibility_modifier),
+#+name: mod_or_contract
+#+begin_src js :rule module_or_contract_item :arg $ :ast ModOrContract
+seq(
+    optional(<<r("item_visibility")>>),
     choice('mod', 'contract'), // TODO: Discriminate kind into a field?
     field('name', $.identifier),
     choice(
@@ -537,10 +545,10 @@ i.e. =mod foo;= is a module declaration and =mod { let x = 123; }= is a real mod
 + ={= by (rep0) [[#h:AE5E66EF-9D42-49F2-853D-5C1E7763416E][StructField]] by =}=
 :end:
 
-#+begin_src js :treesit t
-// Noirc: Struct.
-struct_item: ($) => seq(
-    optional($.visibility_modifier),
+#+name: struct
+#+begin_src js :rule struct_item :arg $ :ast Struct
+seq(
+    optional(<<r("item_visibility")>>),
     'struct',
     field('name', $.identifier),
     // optional($.generics), // TODO: Generics
@@ -577,19 +585,21 @@ CLOSED: [2025-06-08 Sun 23:43]
 + [[#h:B3490B7C-F387-49C7-BF94-DC9CE8AC3581][Type]]
 :end:
 
-#+begin_src js :treesit t
-// TODO: If this is general enough and in-use elsewhere like Impl or Enum then reduce it to 1.
-// Noirc: StructField.
-struct_field_item: ($) => seq(
-    optional($.visibility_modifier),
+#+name: struct_field
+#+begin_src js :rule struct_field_item :arg $ :ast StructField
+seq(
+    optional(<<r("item_visibility")>>),
     field('name', $.identifier),
     ':',
     field('type', $._type),
-),
-    
-struct_field_list: ($) => seq(
+)
+#+end_src
+
+#+name: struct_field_list
+#+begin_src js :arg $
+seq(
     '{',
-    sepBy($.struct_field_item, ','),
+    sepBy(<<r("struct_field")>>, ','),
     optional(','),
     '}',
 )
@@ -600,6 +610,8 @@ Types: [[file:noir/compiler/noirc_frontend/src/ast/structure.rs::pub struct Stru
 
 Since [[#h:8E0DC05B-1ED6-47BE-9589-64DC06FAECCA][parse_many]] is used, and our callsite does not check, a trailing comma (the separator in use) is accepted.
 
+*************** TODO If this is general enough and in-use elsewhere like Impl or Enum then reduce it to 1.
+*************** END
 *************** TODO BNF for StructField is wrong
 Parses item visibility. Update at remote after grammar is done.
 *************** END
@@ -617,14 +629,16 @@ Parses item visibility. Update at remote after grammar is done.
 - [[#h:EBF1C149-1814-4314-AAFB-C5CF198DA61D][TraitImpl]]
 :end:
 
-#+begin_src js :treesit t
-impl_item: ($) => seq(
+#+name: impl
+#+begin_src js :rule impl_item :arg $
+seq(
     'impl',
     // TODO: Generics
     // TODO: Path
 
     // TODO: Choice between TypeImpl or TraitImpl
-    $.trait_impl,
+    // $.trait_impl,
+    <<r("trait_impl")>>,
 )
 #+end_src
 
@@ -692,10 +706,11 @@ JORDAN: This looks done, need to do ts grammar for this node up. Calls to functi
 + [[#h:AE12BD3E-D350-4D0C-88E7-2FC471E9FB9C][TraitImplBody]]
 :end:
 
-#+begin_src js :treesit t
-trait_impl: ($) => seq(
+#+name: trait_impl
+#+begin_src js :arg $
+seq(
     // TODO: Path
-    $.generic_type_args,
+    <<r("generic_type_args")>>,
     'for',
     $._type,
     // optional($.where_clause), // Temp commented for now due to prec error.
@@ -800,9 +815,9 @@ Only the [[#h:F5A79701-65C9-4FEA-83D8-2413C585A5FA][ItemVisibility]] modifier is
 + === by [[#h:167542CC-8CDE-49C1-9465-E5157C6A176F][Expression]] by =;=
 :end:
 
-#+begin_src js :treesit t
-// Noirc: Global.
-global_item: ($) => seq(
+#+name: global
+#+begin_src js :rule global_item :arg $ :ast Global
+seq(
     'global',
     field('name', $.identifier),
     // TODO: OptionalTypeAnnotation.
@@ -810,14 +825,19 @@ global_item: ($) => seq(
     $._expression,
     // prec.left(1, $._expression),
     ';',
-),
+)
+#+end_src
 
 // TODO: Put this elsewhere. ExpressionKind::Literal see ast/expression.rs
-// Noirc: Literal
-_literal: ($) => choice(
-    $.bool_literal,
-    $.int_literal,
-    $.str_literal,
+#+name: literal
+#+begin_src js :rule __literal :arg $ :ast Literal
+choice(
+    <<r("bool")>>,
+    // $.bool_literal,
+    <<r("int")>>,
+    // $.int_literal,
+    <<r("str")>>,
+    // $.str_literal,
     $.raw_str_literal,
     $.fmt_str_literal,
     // $.quote_expression, // TODO: Broken for now.
@@ -847,14 +867,14 @@ Parser (sop): [[file:noir/compiler/noirc_frontend/src/parser/parser/item.rs::if 
 - [[#h:F2E3D7E1-0978-44DF-A49E-EBE348F9D973][UnresolvedNamedType]]
 :end:
 
-#+begin_src js :treesit t
-// Ours: Type.
-_type: ($) => choice(
-    $.primitive_type,
+#+name: type
+#+begin_src js :rule _type :arg $
+choice(
+    <<r("primitive_type")>>,
     $._parentheses_type,
-    $.array_or_slice_type,
-    $.mutable_reference_type,
-    $.function_type,
+    // $.array_or_slice_type,
+    // $.mutable_reference_type,
+    // $.function_type,
     // TODO: TraitAsType, AsTraitPathType, UnresolvedNamedType
 )
 #+end_src
@@ -905,13 +925,14 @@ When lexing [[file:noir/compiler/noirc_frontend/src/lexer/token.rs::fn lookup_ke
 - [[#h:21789349-305A-46D0-8D87-D7B8647482CF][InternedType]] (TODO: Also ignore, similar reasons for now)
 :end:
 
-#+begin_src js :treesit t
-primitive_type: ($) => choice(
-    $._field_type,
-    $._integer_type,
-    $._bool_type,
-    $._string_type,
-    $._format_string_type,
+#+name: primitive_type
+#+begin_src js :arg $
+choice(
+    <<r("field_type")>>,
+    <<r("int_type")>>,
+    <<r("bool_type")>>,
+    <<r("str_type")>>,
+    <<r("fmt_str_type")>>,
 )
 #+end_src
 
@@ -933,8 +954,9 @@ Double check other grammars none appear to go deeper on primitive types (intenti
 + =Field= (kw)
 :end:
 
-#+begin_src js :treesit t
-_field_type: _ => 'Field'
+#+name: field_type
+#+begin_src js :rule __field_type
+'Field'
 #+end_src
 
 Parser: [[file:noir/compiler/noirc_frontend/src/parser/parser/types.rs::fn parse_field_type(&mut self)][parse_field_type()]]
@@ -952,8 +974,9 @@ Parser: [[file:noir/compiler/noirc_frontend/src/parser/parser/types.rs::fn parse
 + =1= OR =8= OR =16= OR =32= OR =64=
 :end:
 
-#+begin_src js :treesit t
-_integer_type: _ => choice(...INTEGER_TYPES)
+#+name: int_type
+#+begin_src js :rule __integer_type
+choice(...INTEGER_TYPES)
 #+end_src
 
 Parser: [[file:noir/compiler/noirc_frontend/src/parser/parser/types.rs::fn parse_int_type(&mut self)][parse_int_type()]]
@@ -1003,8 +1026,9 @@ Parser: [[file:noir/compiler/noirc_frontend/src/lexer/token.rs::fn lookup_int_ty
 + =bool= (kw)
 :end:
 
-#+begin_src js :treesit t
-_bool_type: _ => 'bool'
+#+name: bool_type
+#+begin_src js :rule __bool_type
+'bool'
 #+end_src
 
 Parser: [[file:noir/compiler/noirc_frontend/src/parser/parser/types.rs::fn parse_bool_type(&mut self)][parse_bool_type()]]
@@ -1026,8 +1050,9 @@ Parses the literal /keyword/ =bool= *and not* literal words =true= or =false=.
 + =>=
 :end:
 
-#+begin_src js :treesit t
-_string_type: ($) => seq(
+#+name: str_type
+#+begin_src js :rule __string_type :arg $
+seq(
     'str',
     '<',
     // TODO: TypeExpression goes here.
@@ -1055,8 +1080,9 @@ It looks like it _is_ a parser error so..?
 + =fmtstr= (kw)
 :end:
 
-#+begin_src js :treesit t
-_format_string_type: _ => 'fmtstr'
+#+name: fmt_str_type
+#+begin_src js :rule __format_string_type
+'fmtstr'
 #+end_src
 
 Parser: [[file:noir/compiler/noirc_frontend/src/parser/parser/types.rs::fn parse_fmtstr_type(&mut self)][parse_fmtstr_type()]]
@@ -1150,10 +1176,11 @@ i.e. no literal string keyword that lookup_keyword matches.
 - [[#h:CF9505CB-8110-4FC2-8A6B-5D88A7EB1D06][TupleType]]
 :end:
 
-#+begin_src js :treesit t
-_parentheses_type: ($) => choice(
-    $.unit_type,
-    $.tuple_type,
+#+name: parentheses_type
+#+begin_src js :rule _parentheses_type :arg $
+choice(
+    <<r("unit_type")>>,
+    <<r("tuple_type")>>,
 )
 #+end_src
 
@@ -1171,8 +1198,9 @@ Parser: [[file:noir/compiler/noirc_frontend/src/parser/parser/types.rs::fn parse
 + =(= by =)=
 :end:
 
-#+begin_src js :treesit t
-unit_type: _ => seq('(', ')')
+#+name: unit_type
+#+begin_src js
+seq('(', ')')
 #+end_src
 
 Parser: /in slice of parent/.
@@ -1193,10 +1221,11 @@ Parser: /in slice of parent/.
 + =)=
 :end:
 
-#+begin_src js :treesit t
-tuple_type: ($) => seq(
+#+name: tuple_type
+#+begin_src js :arg $
+seq(
     '(',
-    sepBy1($._type, ','),
+    sepBy1(<<r("type")>>, ','),
     optional(','),
     ')',
 )
@@ -1699,9 +1728,11 @@ Parser: [[file:noir/compiler/noirc_frontend/src/parser/parser/type_expression.rs
 + (rep0 grp) =::= by [[#h:65B0176B-B46F-4679-8535-C504870AC048][ident]] (token) by (opt) [[#h:D0AD78D7-3BF6-4D89-A709-C8CD28968213][Turbofish]]
 :end:
 
-#+begin_src js :treesit t
-_path: ($) => optional(choice(
-    
+#+name: path
+#+begin_src js :rule __path :arg $
+optional(choice(
+    'TODO_____PATH_STUB_ALPHA',
+    'TODO_____PATH_STUB_BETA',
 ))
 #+end_src
 
@@ -1749,10 +1780,11 @@ If they are can reduce nesting complexity.
 + [[#h:3E35071C-E186-4562-AC61-1916E637A72E][IdentifiersInPathNoTurbofish]]
 :end:
 
-#+begin_src js :treesit t
-__path_no_turbofish: ($) => seq(
-    optional($.path_kind),
-    $.__path_no_kind_no_turbofish,
+#+name: path_no_turbofish
+#+begin_src js :rule __path_no_turbofish :arg $
+seq(
+    optional(<<r("path_kind")>>),
+    <<r("path_no_kind_no_turbofish")>>,
 )
 #+end_src
 
@@ -1785,31 +1817,35 @@ See [[#h:ADB184CE-E43C-423B-803F-DE1679A91829][Use]] for why this node exists.
 
 We also want to collect each identifier into a nested structure so Use can be better represented in the final CST.
 
+*************** TODO This snippet useful or delete?
+// __identifiers_in_path_no_turbofish: ($) => prec.left(seq(
+//     sepBy1($.identifier, '::'),
+//     optional('::'),
+// ))
+*************** END
 *************** TODO Rename this heading?
 We're using path_kind (decomposed) since we check crate/dep/super as required but it's "depth-first" in that the deepest node has that set now instead of as some prefix. It works and it's correct but perhaps not the most obvious structure. Idk.
 
 pgd for this to be changed as well..?
 *************** END
 
-#+begin_src js :treesit t
-// __identifiers_in_path_no_turbofish: ($) => prec.left(seq(
-//     sepBy1($.identifier, '::'),
-//     optional('::'),
-// ))
-
-__nested_scopes_in_path_no_turbofish: ($) => seq(
-    field('scope', $.__path_no_kind_no_turbofish),
+#+name: path_no_turbofish__nested_scopes
+#+begin_src js :rule __nested_scopes_in_path_no_turbofish :arg $
+seq(
+    field('scope', <<r("path_no_kind_no_turbofish")>>),
     '::',
     field('name', $.identifier),
-),
+)
+#+end_src
 
-// TODO: Obviously this rule's name is wrong, but needs to be this way for now.
-// Ours: IdentifiersInPathNoTurbofish.
-__path_no_kind_no_turbofish: ($) => seq(
+TODO: Obviously this rule's name is wrong, but needs to be this way for now.
+#+name: path_no_kind_no_turbofish
+#+begin_src js :rule __path_no_kind_no_turbofish :arg $
+seq(
     choice(
         choice($.crate, $.dep, $.super, $.identifier),
         // $.identifier,
-        alias($.__nested_scopes_in_path_no_turbofish, $.path),
+        alias(<<r("path_no_turbofish__nested_scopes")>>, $.path),
     ),
 )
 #+end_src
@@ -1857,15 +1893,12 @@ see ast statement.rs line 394 context.
 - NIL
 :end:
 
-#+begin_src js :treesit t
-// TODO: Optional wrapping this or not?
+TODO: Does this mean =crate ::= is valid like =crate::= is? notice the space present
+TODO: Optional wrapping this or not?
 
-crate: _ => 'crate',
-dep: _ => 'dep',
-super: _ => 'super',
-
-// Noirc: PathKind.
-path_kind: ($) => seq(
+#+name: path_kind
+#+begin_src js :arg $ :ast PathKind
+seq(
     choice($.crate, $.dep, $.super),
     '::',
 )
@@ -1937,23 +1970,24 @@ Does this mean if there is an error (of any kind) then output an error of the ty
   - =;=
 :end:
 
-#+begin_src js :treesit t
-// Noirc: Function.
-function_definition: ($) => seq(
-    optional($.visibility_modifier),
-    optional($.function_modifiers),
+#+name: function
+#+begin_src js :arg $ :ast Function
+seq(
+    optional(<<r("item_visibility")>>),
+    optional(<<r("function_modifiers")>>),
     'fn',
     field('name', $.identifier),
     // TODO: Generics
-    field('parameters', $.function_parameters),
-    optional(seq('->', optional($.visibility), $._type)),
-    optional($.where_clause),
+    field('parameters', <<r("function_parameters")>>),
+    optional(seq('->', optional(<<r("visibility")>>), $._type)),
+    optional(<<r("where")>>),
     choice($.block, ';'),
 )
 #+end_src
 
-#+begin_src js :treesit t
-function_modifiers: ($) => repeat1(choice(MODIFIERS.Unconstrained, MODIFIERS.Comptime))
+#+name: function_modifiers
+#+begin_src js :arg $
+repeat1(choice(MODIFIERS.Unconstrained, MODIFIERS.Comptime))
 #+end_src
 
 Parser: [[file:noir/compiler/noirc_frontend/src/parser/parser/item.rs::if self.eat_keyword(Keyword::Fn) {][parse_function() parent callsite]], [[file:noir/compiler/noirc_frontend/src/parser/parser/function.rs::fn parse_function(][parse_function()]]
@@ -2001,11 +2035,11 @@ TraitFunction is a new type (in Noirc).
 + =)=
 :end:
 
-#+begin_src js :treesit t
-// Noirc: FunctionParameters.
-function_parameters: ($) => seq(
+#+name: function_parameters
+#+begin_src js :arg $ :ast FunctionParameters
+seq(
     '(',
-    sepBy($.function_parameter, ','), // Inlined Noirc: FunctionParametersList
+    sepBy(<<r("function_parameter")>>, ','), // Inlined Noirc: FunctionParametersList
     optional(','),
     ')',
 )
@@ -2039,10 +2073,10 @@ Via [[#h:8E0DC05B-1ED6-47BE-9589-64DC06FAECCA][parse_many]] in parent, split by 
 + [[#h:B3490B7C-F387-49C7-BF94-DC9CE8AC3581][Type]]
 :end:
 
-#+begin_src js :treesit t
-// Noirc: FunctionParameter.
-function_parameter: ($) => seq(
-    optional($.visibility),
+#+name: function_parameter
+#+begin_src js :arg $ :ast FunctionParameter
+seq(
+    optional(<<r("visibility")>>),
     $._pattern_or_self,
     ':',
     $._type,
@@ -2071,12 +2105,12 @@ Tired, perhaps parse_function_parameter, pattern_param, self_pattern_param have 
 - NIL
 :end:
 
-#+begin_src js :treesit t
-// Noirc: Visibility.
-visibility: ($) => choice(
+#+name: visibility
+#+begin_src js :arg $ :ast Visibility
+choice(
     'pub',
     'return_data',
-    seq('call_data(', $.int_literal ,')'),
+    seq('call_data(', <<r("int")>> ,')'),
 )
 #+end_src
 
@@ -2102,10 +2136,14 @@ Strictly function return visibility. Default visibility is private. Within paren
 + =}=
 :end:
 
-#+begin_src js :treesit t
-block: _ => 'BLOCK_____TODO', // Temp just so grammar.js compiles.
-       
-block_expression: _ => seq(
+#+name: block
+#+begin_src js
+'BLOCK_____TODO'
+#+end_src
+
+#+name: block_expression
+#+begin_src js
+seq(
     '{',
     // TODO: Optionally repeated Statement.
     '}',
@@ -2484,12 +2522,13 @@ Foo
 + (grp) =<= by (opt) [[#h:8C6AF1F0-DBAC-4030-AEFC-8FBF6B069EAD][GenericTypeArgsList]] by =>=
 :end:
 
-#+begin_src js :treesit t
-// TODO: If GenericTypeArgsList is referenced by anything else in addition to GenericTypeArgs, then it needs to be its own rule so we can re-use it. Here it's been inlined.
-// Noirc: GenericTypeArgs.
-generic_type_args: ($) => seq(
+TODO: If GenericTypeArgsList is referenced by anything else in addition to GenericTypeArgs, then it needs to be its own rule so we can re-use it. Here it's been inlined.
+
+#+name: generic_type_args
+#+begin_src js :arg $ :ast GenericTypeArgs
+seq(
     '<',
-    sepBy($.generic_type_arg, ','), // Inlined Noirc: GenericTypeArgsList.
+    sepBy(<<r("generic_type_arg")>>, ','), // Inlined Noirc: GenericTypeArgsList.
     optional(','),
     '>',
 )
@@ -2535,11 +2574,11 @@ Split by =,= until =>=, each parsed as [[#h:B2EDBA96-AA93-449F-A8EB-5636CCFC4F1C
 - [[#h:43662F12-2EC8-47E8-B5B8-DFF8A1226EB2][OrderedTypeArg]]
 :end:
 
-#+begin_src js :treesit t
-// Noirc: GenericTypeArg.
-generic_type_arg: ($) => choice(
-    $.named_type_arg,
-    $._ordered_type_arg,
+#+name: generic_type_arg
+#+begin_src js :arg $ :ast GenericTypeArg
+choice(
+    <<r("named_type_arg")>>,
+    <<r("ordered_type_arg")>>,
 )
 #+end_src
 
@@ -2562,12 +2601,12 @@ First checks if current token is ~Token::Ident~ followed by ~Token::Assign~ (===
 + [[#h:B3490B7C-F387-49C7-BF94-DC9CE8AC3581][Type]]
 :end:
 
-#+begin_src js :treesit t
-// Noirc: NamedTypeArg.
-named_type_arg: ($) => seq(
+#+name: named_type_arg
+#+begin_src js :arg $ :ast NamedTypeArg
+seq(
     $.identifier,
     '=',
-    $._type,
+    <<r("type")>>,
 )
 #+end_src
 
@@ -2594,10 +2633,11 @@ Call to Type wrapped in ~parse_type_or_error~.
 + [[#h:A32A351C-092B-42F1-AB03-DE49862B35D4][TypeOrTypeExpression]]
 :end:
 
-#+begin_src js :treesit t
-// Noirc: OrderedTypeArg.
 // _ordered_type_arg: _ => alias($.TODO_TYPE_OR_TYPE_EXPRESSION, $.ordered_type_arg)
-_ordered_type_arg: _ => 'ORDERED_TYPE_ARG___TODO'
+
+#+name: ordered_type_arg
+#+begin_src js :rule __ordered_type_arg :ast OrderedTypeArg
+'ORDERED_TYPE_ARG___TODO'
 #+end_src
 
 *************** TODO How I structure TypeOrTypeExpression as a rule in the grammar directly affects this since it can simply be an alias for that
@@ -2623,10 +2663,11 @@ Return ~AST::GenericTypeArg::Ordered()~.
 + (opt) [[#h:40EAA2CE-8D14-4663-B5A8-83F4D34EABF0][WhereClauseItems]]
 :end:
 
-#+begin_src js :treesit t
-where_clause: ($) => seq(
+#+name: where
+#+begin_src js :rule where_clause :arg $
+seq(
         'where',
-        sepBy1($.where_clause_item, ','),
+        sepBy1(<<r("where_clause")>>, ','),
         optional(',')
 )
 #+end_src
@@ -2655,8 +2696,9 @@ Does this mean =impl Bar for Foo where {}= is valid in noir then? (there's no co
 + (opt) =,=
 :end:
 
-#+begin_src js :treesit t
-where_clause_item: ($) => seq(
+#+name: where_clause
+#+begin_src js :rule where_clause_item :arg $
+seq(
         $._type,
         ':',
         $.trait_bounds,
@@ -2695,9 +2737,10 @@ If Type returns ~None~ then parser early returns ~None~ also.
 + (opt) =+=
 :end:
 
-#+begin_src js :treesit t
-trait_bounds: ($) => seq(
-    sepBy1($.trait_bound, '+'),
+#+name: trait_bounds
+#+begin_src js :arg $ :ast TraitBounds
+seq(
+    sepBy1(<<r("trait_bound")>>, '+'),
     optional('+'),
 )
 #+end_src
@@ -2725,10 +2768,11 @@ Really tired right now, double check any undocumented BNF implications of this
 + [[#h:3267D7A4-7AA4-49FB-91FA-A9601BC6868A][GenericTypeArgs]]
 :end:
 
-#+begin_src js :treesit t
-trait_bound: ($) => seq(
-    optional($.__path_no_turbofish),
-    $.generic_type_args,
+#+name: trait_bound
+#+begin_src js :arg $ :ast TraitBound
+seq(
+    optional(<<r("path_no_turbofish")>>),
+    <<r("generic_type_args")>>,
 )
 #+end_src
 
@@ -2748,10 +2792,10 @@ A ~TraitBound~ is a single type path used to constrain a trait.
 + [[#h:D349E307-F033-4D2A-A729-F2EE5B483065][Pattern]] OR [[#h:5B14A337-12EC-477C-8269-961094FAB41B][SelfPattern]]
 :end:
 
-#+begin_src js :treesit t
-// Noirc: PatternOrSelf.
-_pattern_or_self: ($) => choice(
-    $._pattern,
+#+name: pattern_or_self
+#+begin_src js :rule _pattern_or_self :arg $ :ast PatternOrSelf
+choice(
+    <<r("pattern")>>,
     $.self_pattern,
 )
 #+end_src
@@ -2794,13 +2838,13 @@ In all cases Pattern is further parsed by call to ~parse_pattern_after_modifiers
 + [[#h:4A5BB563-4244-4B1F-8084-1116B58FA40F][PatternNoMut]]
 :end:
 
-#+begin_src js :treesit t
-// Noirc: PatternNoMut.
-_pattern: ($) => choice(
+#+name: pattern
+#+begin_src js :rule _pattern :arg $ :ast PatternNoMut
+choice(
     // TODO: InternedPattern? It looks like a compiler-only internal though and not discrete syntax.
     optional($.mut_bound),
-    $.tuple_pattern,
-    $.struct_pattern,
+    <<r("tuple_pattern")>>,
+    <<r("struct_pattern")>>,
     $.identifier, // Noirc: IdentifierPattern.
 )
 #+end_src
@@ -2869,11 +2913,11 @@ TODO: PGD block for this
 + =(= by (opt) [[#h:3C5C665F-CB91-4C4E-9B39-ACFEE421F5DB][PatternList]] by =)=
 :end:
 
-#+begin_src js :treesit t
-// Noirc: TuplePattern.
-tuple_pattern: ($) => seq(
+#+name: tuple_pattern
+#+begin_src js :arg $ :ast TuplePattern
+seq(
     '(',
-    sepBy($._pattern, ','), // Inlined Noirc: PatternList.
+    sepBy(<<r("pattern")>>, ','), // Inlined Noirc: PatternList.
     optional(','),
     ')',
 )
@@ -2920,12 +2964,12 @@ Via [[#h:8E0DC05B-1ED6-47BE-9589-64DC06FAECCA][parse_many]] in [[#h:5EC2C25E-781
 + =}=
 :end:
 
-#+begin_src js :treesit t
-// Noirc: StructPattern.
-struct_pattern: ($) => seq(
+#+name: struct_pattern
+#+begin_src js :arg $ :ast StructPattern
+seq(
     // TODO: Path
     '{',
-    sepBy($.struct_pattern_field, ','), // Inlined Noirc: StructPatternFields.
+    sepBy(<<r("struct_pattern_field")>>, ','), // Inlined Noirc: StructPatternFields.
     optional(','),
     '}',
 )
@@ -2971,12 +3015,13 @@ The question mark in the grouping should be an asterisk no?
 + (opt grp) =:= by [[#h:D349E307-F033-4D2A-A729-F2EE5B483065][Pattern]]
 :end:
 
-#+begin_src js :treesit t
-// TODO: Is this similar enough to other rules we can reduce it to a single shared one?
-// Noirc: StructPatternField.
-struct_pattern_field: ($) => seq(
+TODO: Is this similar enough to other rules we can reduce it to a single shared one?
+
+#+name: struct_pattern_field
+#+begin_src js :arg $ :ast StructPatternField
+seq(
     $.identifier,
-    optional(seq(':', $._pattern)),
+    optional(seq(':', <<r("pattern")>>)),
 )
 #+end_src
 
@@ -3004,9 +3049,9 @@ Parser: [[file:noir/compiler/noirc_frontend/src/parser/parser/pattern.rs::fn par
 + (opt) =&= by (opt) =mut= (kw) by =self=
 :end:
 
-#+begin_src js :treesit t
-// Noirc: SelfPattern.
-self_pattern: ($) => seq(
+#+name: self_pattern
+#+begin_src js :arg $ :ast SelfPattern
+seq(
     optional('&'),
     optional($.mut_bound),
     $.self,
@@ -3036,10 +3081,11 @@ Guaranteed to NOT have a colon =:= following it.
 - State "TODO"       from              [2025-06-12 Thu 18:48]
 :END:
 
-#+begin_src js :treesit t
-_expression: ($) => choice(
+#+name: expression
+#+begin_src js :rule _expression :arg $
+choice(
     $.binary_expression,
-    $._literal,
+    <<r("literal")>>,
 )
 #+end_src
 
@@ -3052,14 +3098,18 @@ Currently lots of confusing names, got lexing at the top, literal at the bottom 
 
 **** Infix
 
-#+begin_src js :treesit t
-// Noirc: EqualOrNotEqualExpression -- Entire nested hierarchy flattened and renamed.
-binary_expression: ($) => {
+#+caption: Purely so we can insert literal =<<= and =>>= into the noweb template without it being treated as a noweb reference.
+#+name: ab_lit
+| << | >> |
+
+#+name: binary_expression
+#+begin_src js :arg $ :ast "EqualOrNotEqualExpression -- Entire nested hierarchy flattened and renamed."
+{
     const t = [
         // Highest to lowest.
         [PRECEDENCE.multiplicitive, choice('*', '/', '%',)],
         [PRECEDENCE.additive, choice('+', '-')],
-        [PRECEDENCE.bitshift, choice('<<', '>>')],
+        [PRECEDENCE.bitshift, choice('<<ab_lit()[0,0]>>', '<<ab_lit()[0,1]>>')],
         [PRECEDENCE.comparative, choice('<', '<=', '>', '>=')],
         [PRECEDENCE.bitxor, '^'],
         [PRECEDENCE.bitand, '&'],
@@ -3068,9 +3118,9 @@ binary_expression: ($) => {
     ]
 
     return choice(...t.map(([p, o]) => prec.left(p, seq(
-        field('left', $._expression),
+        field('left', <<r("expression")>>),
         field('operator', o),
-        field('right', $._expression),
+        field('right', <<r("expression")>>),
     ))))
 }
 #+end_src
@@ -3084,12 +3134,13 @@ All the expression nodes in [[file:noir/compiler/noirc_frontend/src/parser/parse
 :END:
 https://noir-lang.org/docs/noir/concepts/comptime#quasi-quote
 
-#+begin_src js :treesit t
-// Noirc: QuoteExpression.
-quote_expression: ($) => alias($.quote_literal, $.quote_expression)
+#+name: quote_expression
+#+begin_src js :arg $ :ast QuoteExpression
+alias(<<r("quote")>>, $.quote_expression)
 #+end_src
 
 **** ArrayExpression
+2025/06/20 2:15 am: continue from here
 
 **** SliceExpression
 
@@ -3165,10 +3216,11 @@ CLOSED: [2025-06-05 Thu 16:39]
   Need to document how this is lexed since parser grabs it by Token type only.
 :END:
 
-#+begin_src js :treesit t
-comment: ($) => choice(
-    $.line_comment,
-    $.block_comment,
+#+name: comment
+#+begin_src js :arg $
+choice(
+    <<r("line_comment")>>,
+    <<r("block_comment")>>,
 )
 #+end_src
 
@@ -3207,22 +3259,33 @@ CLOSED: [2025-05-27 Tue 19:08]
 + ASCII until newline
 :end:
 
-#+begin_src js :treesit t
-__inner_line_comment_doc_style: _ => token.immediate(prec(2, '!')),
-__outer_line_comment_doc_style: _ => token.immediate(prec(2, '/')),
+#+name: line_comment__doc_style__inner
+#+begin_src js :rule __inner_line_comment_doc_style
+token.immediate(prec(2, '!'))
+#+end_src
 
-__line_comment_doc_style: ($) => choice(
-    alias($.__inner_line_comment_doc_style, $.inner_doc_style),
-    alias($.__outer_line_comment_doc_style, $.outer_doc_style),
-),
+#+name: line_comment__doc_style__outer
+#+begin_src js :rule __outer_line_comment_doc_style
+token.immediate(prec(2, '/'))
+#+end_src
 
-line_comment: ($) => seq(
+#+name: line_comment__doc_style
+#+begin_src js :rule __line_comment_doc_style :arg $
+choice(
+    alias(<<r("line_comment__doc_style__inner")>>, $.inner_doc_style),
+    alias(<<r("line_comment__doc_style__outer")>>, $.outer_doc_style),
+)
+#+end_src
+
+#+name: line_comment
+#+begin_src js :arg $
+seq(
     '//',
     choice(
         // Four forward-slashes is still a normal line comment, not an outer-style.
         seq(token.immediate(prec(2, '//')), /.*/),
         seq(
-            field('style', $.__line_comment_doc_style),
+            field('style', <<r("line_comment__doc_style")>>),
             field('content', alias(/.*/, $.doc_comment)),
         ),
         /.*/,
@@ -3259,19 +3322,23 @@ CLOSED: [2025-06-04 Wed 19:29]
 + ASCII until balanced =*/=
 :end:
 
-#+begin_src js :treesit t
-__block_comment_doc_style: ($) => choice(
+#+name: block_comment__doc_style
+#+begin_src js :rule __block_comment_doc_style :arg $
+choice(
     alias($.__inner_block_comment_doc_style, $.inner_doc_style),
     alias($.__outer_block_comment_doc_style, $.outer_doc_style),
-),
+)
+#+end_src
 
-block_comment: ($) => seq(
+#+name: block_comment
+#+begin_src js :arg $
+seq(
     '/*',
     optional(
         choice(
             // Block comments with doc style (see external parser).
             seq(
-                field('style', $.__block_comment_doc_style),
+                field('style', <<r("block_comment__doc_style")>>),
                 optional(field('content', alias($._block_comment_content, $.doc_comment))),
             ),
             // Normal block comments (see external parser).
@@ -3306,10 +3373,11 @@ Appears only place ~Token::Ident~ is created is within [[file:noir/compiler/noir
 
 ~Token::Ident~.
 
-#+begin_src js :treesit t
-// Noir does not support Unicode Identifiers (UAX#31) so XID_Start/XID_Continue. Only ASCII.
-// Noirc: Token::Ident.
-identifier: _ => /[a-zA-Z_][a-zA-Z0-9_]*/
+Noir does not support Unicode Identifiers (UAX#31) so XID_Start/XID_Continue. Only ASCII.
+
+#+name: identifier
+#+begin_src js :ast identifier
+/[a-zA-Z_][a-zA-Z0-9_]*/
 #+end_src
 
 **** AttributeKeywords
@@ -3318,7 +3386,8 @@ identifier: _ => /[a-zA-Z_][a-zA-Z0-9_]*/
 :END:
 
 Also called FunctionAttribute (predefined):
-#+begin_src js :treesit t
+#+name: primary_attributes
+#+begin_src js
 // Functions can only have one primary attribute.
 const PRIMARY_ATTRIBUTES = [
     'foreign',
@@ -3335,7 +3404,8 @@ const PRIMARY_ATTRIBUTES = [
 #+end_src
 
 Include CustomAttribute and InnerAttribute (predefined):
-#+begin_src js :treesit t
+#+name: secondary_attributes
+#+begin_src js
 // Functions can have any number of secondary attributes.
 const SECONDARY_ATTRIBUTES = [
     'deprecated',
@@ -3366,19 +3436,21 @@ CLOSED: [2025-06-05 Thu 20:02]
 + CHARS until first =]=
 :end:
 
-#+begin_src js :treesit t
-// TODO: Differentiate between inner/non-inner in grammar, for now not doing so in order to focus on completing grammar entirely (broadly).
-// Noirc: Attributes, and InnerAttribute.
-attribute_item: ($) => seq(
+#+name: attribute
+#+begin_src js :rule attribute_item :arg $ :ast Attributes, InnerAttribute
+seq(
     '#',
     optional('!'), // Marks InnerAttribute.
     '[',
     optional("'"), // Marks attribute as having a tag
-    alias($.attribute_content, $.content),
+    alias(<<r("attribute_content")>>, $.content),
     ']',
-),
+)
+#+end_src
 
-attribute_content: ($) => seq(repeat1(choice(' ', REG_ALPHABETIC, REG_NUMERIC, REG_ASCII_PUNCTUATION)))
+#+name: attribute_content
+#+begin_src js
+seq(repeat1(choice(' ', REG_ALPHABETIC, REG_NUMERIC, REG_ASCII_PUNCTUATION)))
 #+end_src
 
 Lexer: [[file:noir/compiler/noirc_frontend/src/lexer/lexer.rs::fn eat_attribute(&mut self)][eat_attribute()]], [[file:noir/compiler/noirc_frontend/src/lexer/token.rs::pub(crate) fn lookup_attribute(][Attribute::lookup_attribute()]]
@@ -3412,6 +3484,8 @@ Otherwise a ~Token::Attribute~ wrapping the return value is returned.
 
 So ~Token::InnerAttribute~ cannot have the name of any ~FunctionAttribute~ (aka. Primary) attribute. ~Token::Attribute~ /can/ have the name of any ~FunctionAttribute~ (aka. Primary) or ~SecondaryAttribute~.
 
+*************** TODO // TODO: Differentiate between inner/non-inner in grammar, for now not doing so in order to focus on completing grammar entirely (broadly).
+*************** END
 *************** TODO Is the field attribute primary or secondary?
 In source its listed as Attribute::Secondary but the comment for secondary attributes begins after it. For now I've taken it as the comment describes (thus considering it a primary attribute).
 *************** END
@@ -3430,9 +3504,9 @@ In source its listed as Attribute::Secondary but the comment for secondary attri
 
 Via [[file:noir/compiler/noirc_frontend/src/parser/parser.rs::fn eat_bool(&mut self)][eat_bool]] eats a token which was lexed as ~Token::Bool~ which are created from either =true= or =false= (see: [[file:noir/compiler/noirc_frontend/src/lexer/token.rs::pub(crate) fn lookup_keyword(word: &str)][lookup_keyword()]]).
 
-#+begin_src js :treesit t
-// Noirc: bool.
-bool_literal: _ => choice('true', 'false')
+#+name: bool
+#+begin_src js :rule bool_literal :ast bool
+choice('true', 'false')
 #+end_src
 
 *************** TODO Put lookup_keyword into Internal alongside parse_many and friends if it keeps being called in other places we document (like it is here).
@@ -3450,9 +3524,9 @@ bool_literal: _ => choice('true', 'false')
 - TODO
 :end:
 
-#+begin_src js :treesit t
-// Noirc: int.
-int_literal: _ => token(seq(
+#+name: int
+#+begin_src js :rule int_literal :ast int
+token(seq(
     choice(
         /[0-9][0-9_]*/,
         /0x[0-9a-fA-F_]+/,
@@ -3497,27 +3571,35 @@ CLOSED: [2025-06-15 Sun 19:09]
 - State "DONE"       from              [2025-06-15 Sun 19:09]
 :END:
 
-#+begin_src js :treesit t
-// Noirc: str.
-str_literal: ($) => seq(
+#+name: str
+#+begin_src js :rule str_literal :arg $ :ast str
+seq(
     '"',
     repeat(choice(
-        $.str_content,
-        $.escape_sequence,
+        <<r("str_content")>>,
+        <<r("escape_sequence")>>,
+        // $.str_content,
+        // $.escape_sequence,
     )),
     token.immediate('"'),
-),
+)
+#+end_src
 
-escape_sequence: ($) => seq(
+#+name: escape_sequence
+#+begin_src js :arg $
+seq(
     '\\',
     // TODO: Do we want to be strict on valid escape sequences (r, n, t etc) or accept any ASCII. Problem is error recovery in tree-sitter and how that affects highlighting.
     token.immediate(choice(
         'r', 'n', 't', '0', '"', '\\',
     )),
-),
+)
+#+end_src
 
-// Whitespace characters, and printable ASCII except " (x22) and \ (x5C).
-str_content: _ => /[\x20-\x21\x23-\x5B\x5D-\x7E\s]+/
+Whitespace characters, and printable ASCII except " (x22) and \ (x5C).
+#+name: str_content
+#+begin_src js
+/[\x20-\x21\x23-\x5B\x5D-\x7E\s]+/
 #+end_src
 
 Lexed via [[#h:2AE110C8-8650-4F3B-AAA0-FFE5E79C8C81][next_token]] pattern ="= calls [[file:noir/compiler/noirc_frontend/src/lexer/lexer.rs::fn eat_string_literal(&mut self)][eat_string_literal()]] which lexes and returns a ~Token::Str~.
@@ -3538,9 +3620,9 @@ CLOSED: [2025-06-17 Tue 16:40]
 - State "DONE"       from              [2025-06-17 Tue 16:40]
 :END:
 
-#+begin_src js :treesit t
-// Noirc: rawstr.
-raw_str_literal: ($) => seq(
+#+name: raw_str
+#+begin_src js :rule raw_str_literal :arg $ :ast rawstr
+seq(
     $._raw_str_literal_start,
     alias($._raw_str_literal_content, $.str_content),
     $._raw_str_literal_end,
@@ -3566,16 +3648,19 @@ CLOSED: [2025-06-17 Tue 17:43]
 - State "DONE"       from              [2025-06-17 Tue 17:43]
 :END:
 
-#+begin_src js :treesit t
-// Noirc: fmtstr.
-fmt_str_literal: ($) => seq(
+#+name: fmt_str
+#+begin_src js :rule fmt_str_literal :arg $ :ast fmtstr
+seq(
     'f"',
-    repeat(alias($.fmt_str_content, $.str_content)),
+    repeat(alias(<<r("fmt_str_content")>>, $.str_content)),
     token.immediate('"'),
-),
+)
+#+end_src
 
-// Whitespace characters, and printable ASCII except " (x22).
-fmt_str_content: _ => /[\x20-\x21\x23-\x7E\s]+/
+Whitespace characters, and printable ASCII except " (x22).
+#+name: fmt_str_content
+#+begin_src js
+/[\x20-\x21\x23-\x7E\s]+/
 #+end_src
 
 Lexed via [[#h:2AE110C8-8650-4F3B-AAA0-FFE5E79C8C81][next_token]] pattern =f= calls [[file:noir/compiler/noirc_frontend/src/lexer/lexer.rs::fn eat_format_string_or_alpha_numeric(&mut self)][eat_format_string_or_alpha_numeric()]] which peeks at the next character, only if it is ="= is [[file:noir/compiler/noirc_frontend/src/lexer/lexer.rs::fn eat_fmt_string(&mut self)][eat_fmt_string()]] called which simply eats all characters until first ="= encountered.
@@ -3599,11 +3684,14 @@ Parsed via [[file:noir/compiler/noirc_frontend/src/parser/parser.rs::fn eat_fmt_
 + =}= OR =]= OR =)= (matching the opening)
 :end:
 
-#+begin_src js :treesit t
 // TODO: This isn't /really/ a literal (in terms of where we've placed it here) as quote allows all things next_token can lex and so we'll want to parse strings, variables etc all over again within the quote area. For now we'll make it a very dumb stubbed rule since this really depends on everything else and we'll want everything else working so we can develop and evaluate proper coverage of this meta-programming/macro rule.
 // TODO: https://noir-lang.org/docs/noir/concepts/comptime#quasi-quote
 // TODO: Will likely require an external scanner since we need to match the opening delimiter which can be 1 of 3 options, and there is nesting. For now: only braces.
-quote_literal: _ => seq(
+
+#+name: quote
+#+begin_src js :rule quote_literal :ast quote
+seq(
+    // TODO: Stubbed for now, see org doc.
     'quote',
     '{',
     /.*/,
@@ -3689,7 +3777,7 @@ From (and including) parameter =initial_char= eat characters which are ascii alp
 
 Constructed grammar from investigating Noir compiler frontend.
 
-#+begin_src js :noweb yes :tangle grammar.js
+#+begin_src js :noweb yes :tangle grammar_old.js
 const REG_ALPHABETIC = /[a-zA-Z]/
 // TODO: Using this where Noir parser frontend checks for numeric which actually includes unicode stuff also, but the rest of Noir only allows ASCII so.. this is probably fine.
 const REG_NUMERIC = /[0-9]/
@@ -3959,229 +4047,275 @@ These almost entirely come from lexing.
 
 #+transclude: [[#h:65B0176B-B46F-4679-8535-C504870AC048][Ident]] :treesit
 
-
-* TODO Old stuff bin or categorise
-** TODO Attribute
-
-Document attributes. Note too that SecondaryAttributes can have a tag see 957 in token.rs
-
-***** TODO Top-level statement                                         :node:
-
-- [[Function definition]].
-- Struct definition.
-- Trait definition.
-- Trait implementation.
-- [[Implementation]].
-- Submodule.
-- Contract.
-- Module declaration.
-- Use statement.
-- Global declaration.
-
-#+transclude: [[file:noir/compiler/noirc_frontend/src/parser/parser.rs][top_level_statement_kind()]] :lines 144-170 :src rust
-
-****** TODO Function definition
-
-+ [[Function modifiers]]
-+ Function keyword =fn=
-+ [[Identifier]]
-+ Generics
-+ Function parameters (TODO: That ~parenthesized~ function call)
-+ Function return type
-+ Where clause
-+ Fresh statement (TODO: That spanned block function call)
-
-TODO: Attributes?? Source file line `attributes()`.
-
-Parser:
-#+transclude: [[file:noir/compiler/noirc_frontend/src/parser/parser/function.rs][function_definition()]] :lines 30-76 :src rust
-
-******* TODO Function modifiers
-
-Ordered:
-1. Keyword =unconstrained=
-2. [[Visibility]]
-3. [[Comptime]]
-
-#+transclude: [[file:noir/compiler/noirc_frontend/src/parser/parser/function.rs][function_modifiers()]] :lines 78-85 :src rust
-
-******* TODO Function parameters
-******* TODO Function return type
-******* TODO Fresh statement
-
-What is this?
-
-****** TODO Struct definition
-
-+ Identifier
-+ Parse type
-
-Parser:
-#+transclude: [[file:noir/compiler/noirc_frontend/src/parser/parser/structs.rs][struct_definition()]] :lines 18-41 :src rust
-
-Parser:
-#+transclude: [[file:noir/compiler/noirc_frontend/src/parser/parser/structs.rs][struct_fields()]] :lines 43-49 :src rust
-
-****** Trait definition
-****** Trait implementation
-****** Implementation
-
-+ Non-trait implementation, add a set of methods to a type.
-+ Must contain 1 or more valid function definitions.
-
-Parser:
-#+transclude: [[file:noir/compiler/noirc_frontend/src/parser/parser.rs]] :lines 219-232 :src rust
-
-
-****** Submodule
-****** Contract
-****** Module declaration
-****** Use statement
-****** Global declaration
-
-** Auxiliary
-
-*** TODO Parse type
-
-TODO: This is where Noir's recursive definitions stuff is too.
-
-Parser:
-#+transclude: [[file:noir/compiler/noirc_frontend/src/parser/parser.rs]] :lines 675-697 :src rust
-
-*** TODO Generic
-*** TODO Where clause
-*** TODO Visibility
-
-Handles both crate visibility and /other/ visibility.
-
-*************** TODO Crates
-1. Keyword =pub=
-2. Token =(=
-3. Keyword =crate=
-4. Token =)=
-*************** END
-
-*************** DONE Other                               :leaf:
-CLOSED: [2024-09-23 Mon 18:34]
-:LOGBOOK:
-- State "DONE"       from "TODO"       [2024-09-23 Mon 18:34]
-:END:
-1. Keyword =pub=
-
-Parser:
-#+transclude: [[file:noir/compiler/noirc_frontend/src/parser/parser/visibility.rs][item_visibility()]] :lines 14-27 :src rust
-*************** END
-
-
-*** TODO Comptime                                                      :leaf:
-- State "TODO"       from "DONE"       [2024-09-24 Tue 19:57] \\
-  update noir version
-:LOGBOOK:
-- State "DONE"       from "TODO"       [2024-09-23 Mon 18:37]
-:END:
-
-1. Keyword =comptime=
-
-Parser:
-#+transclude: [[file:noir/compiler/noirc_frontend/src/parser/parser/types.rs]] :lines 14-20 :src rust
-
-*** TODO Identifier
-
-=lexer/lexer.rs=
-https://github.com/noir-lang/noir/blob/a3bb09ebe2df473d4a34a34fbfc3966ffbc630cb/compiler/noirc_frontend/src/lexer/lexer.rs#L318-L355
-
-~Lexer::eat_word~ -> { ~Lexer::lex_word~, ~Lexer::lookup_word_token~ } -> identifier-or-not
-
-~lex_word~ accumulates characters as long as they are: ~[a-z0-9_]~ (in source: ascii alphabetic, numeric, or _).
-~lookup_word_token~ receives from ~lex_word~ the span of such a sequence of characters.
-
-To determine if /span/ of text is an identifier, check:
-
-1. If it's an exact match to a keyword enum: ~Keyword::lookup_keyword~.
-2. If it can be parsed as an integer type: ~IntType::lookup_int_type~.
-
-If these checks fail then it is an identifier.
-
-TODO: But valid identifiers further narrowed to this Regex (Chumsky ident): ~[a-zA-Z_][a-zA-Z0-9_]*~
-TODO: I asked for clarification in Noir's Discord here: https://discord.com/channels/1113924620781883405/1260852401955536927
-
-*** ~lookup_int_type~
-
-=lexer/token.rs=
-https://github.com/noir-lang/noir/blob/a3bb09ebe2df473d4a34a34fbfc3966ffbc630cb/compiler/noirc_frontend/src/lexer/token.rs#L509-L532
-
-Determined by checking:
-
-1. Start with ~i~ or ~u~, comprised of only integers afterwards.
-
-If (1) fails then it is /not/ an integer /type/ (does not mean it's not an integer /literal/).
-
-
-
-** Lexing
-
-- Whitespace not relevant: https://github.com/noir-lang/noir/blob/af57471035e4fa7eaffa71693219df6d029dbcde/compiler/noirc_frontend/src/lexer/lexer.rs#L584-L589
-  - TODO: However, it must be in certain contexts (e.g. a string).
-- Code whitespace: ~'\t'~, ~'\n'~, ~'\r'~, ~' '~: https://github.com/noir-lang/noir/blob/af57471035e4fa7eaffa71693219df6d029dbcde/compiler/noirc_frontend/src/lexer/lexer.rs#L580-L582
-
-*** Keywords
-
-=lexer/token.rs=
-https://github.com/noir-lang/noir/blob/a3bb09ebe2df473d4a34a34fbfc3966ffbc630cb/compiler/noirc_frontend/src/lexer/token.rs#L927-L969
-
-TODO: Checklist of implemented keywords.
-
-
-
-** Parsing
-
-*** Modifiers
-
-**** General
-
-***** Visibility
-
-~pub~ applies generally.
-TODO: function.rs 56-68
-TODO: How it applies to crates.
-TODO: Cannot have a function called ~pub~ right?
-
-**** Function-specific
-
-***** Unconstrained
-
-~unconstrained~ applies optionally before general-visibility.
-TODO: function.rs 73-81
-TODO: Cannot have a function called ~unconstrained~ right?
-
-***** Comptime
-TODO: Does the order come from? https://github.com/noir-lang/noir/blob/af57471035e4fa7eaffa71693219df6d029dbcde/compiler/noirc_frontend/src/parser/parser/function.rs#L41-L43
-TODO: TODO: In later versions, unsure of how applicable this is to the current language version.
-TODO: Is it actually function-specific or can it be any statement?
-TODO: Cannot have a function called ~comptime~ right?
-
-* Temp bin
-
-TODOs and what not (temporary).
-
-*************** TODO Prevent =node= and =leaf= tags from overlapping
-So, if a parent headline has a =node= tag (or inherits one) and a child headline has a =leaf= tag then the =leaf= tag should not inherit (specifically) the =node= tag; it can continue to inherit others.
-
-Or ignore that since technically a leaf is a type of node.
-*************** END
-
-*************** TODO Nargo CLI test langauge grammar?
-Internal CLI to test Noir language grammar stuff? See how the current noir frontend compiler test suite is set up, want a nice way to run the tests alongside any tree-sitter stuff too.
-*************** END
-
-*************** TODO tree-sitter CLI check all syntax examples?
-Have the tree-sitter CLI check all syntax examples in a test marked :error do error, think about this though because technically each test case reads all the input as a single file.
-*************** END
-
-*************** TODO dynamic checkboxes?
-Have the following checkbox list created dynamically from headings, and also link to said headings.
-*************** END
-
-*************** TODO tree-sitter anonymous node queries
-When writing queries eventually, can use anonymous node queries also e.g. ~(function_modifiers "foo")~.
-*************** END
+* Template
+
+Constructed grammar from investigating Noir compiler frontend.
+
+#+begin_src js :tangle grammar.js :noweb yes
+const REG_ALPHABETIC = /[a-zA-Z]/
+// TODO: Using this where Noir parser frontend checks for numeric which actually includes unicode stuff also, but the rest of Noir only allows ASCII so.. this is probably fine.
+const REG_NUMERIC = /[0-9]/
+const REG_ASCII_PUNCTUATION = /[!"#$%&'()*+,\-./:;<=>?@\[\\\]^_`\{|\}~]/
+
+// TODO: Put this in appropriate tangle location instead of literally part of the tangle template maybe? See PrimitiveType > IntegerType.
+const INTEGER_TYPES = [
+    'u1',
+    'u8',
+    'u16',
+    'u32',
+    'u64',
+    //
+    'i1',
+    'i8',
+    'i16',
+    'i32',
+    'i64',
+]
+
+const PRECEDENCE = {
+    // TODO: Term's even-higher precedence items.
+    multiplicitive: 9,
+    additive: 8,
+    bitshift: 7,
+    comparative: 6,
+    bitxor: 5,
+    bitand: 4,
+    or: 3,
+    equality: 2,
+}
+
+<<modifiers>>
+
+<<primary_attributes>>
+
+<<secondary_attributes>>
+
+module.exports = grammar({
+    name: 'noir',
+
+    externals: ($) => [
+        $._raw_str_literal_start,
+        $._raw_str_literal_content,
+        $._raw_str_literal_end,
+        // Block comments are `extras` and can occur anywhere, so must be last in this list otherwise they will clobber other tokens we use an external scanner for.
+        $._block_comment_content,
+        $.__inner_block_comment_doc_style,
+        $.__outer_block_comment_doc_style,
+    ],
+
+    extras: ($) => [
+        /\s/,
+        $.line_comment,
+        $.block_comment,
+    ],
+
+    // TODO: Need to document (for myself) keyword extraction to check we're doing it properly.
+    word: ($) => $.identifier,
+
+    rules: {
+        // Noirc: Module -- top-level AST node is really Program but it immediately wraps Module.
+        source_file: ($) => repeat($._statement),
+
+        // Can statement-ise anything so we'll use this as top-level.
+        // _statement: ($) => choice($._expression_statement, $._declaration_statement),
+        // _expression_statement: ($) => seq($._expression, ';'),
+        _statement: ($) => choice($.__item),
+
+        // Noirc: Module -- Since doc comments can appear anywhere, Module is Item which is ItemKind.
+        __item: ($) => choice(
+            <<r("attribute")>>,
+            <<r("use")>>,
+            <<r("mod_or_contract")>>,
+            <<r("struct")>>,
+            <<r("impl")>>,
+            <<r("global")>>,
+        ),
+
+        item_list: ($) => seq(
+            '{',
+            repeat($.__item),
+            '}',
+        ),
+
+        // * * * * * * * * * * * * * * * * * * * * * * * * * DECLARATIONS / ITEMS
+        <<grp__declarations>>
+
+        // * * * * * * * * * * * * * * * * * * * * * * * * * STATEMENTS
+        // TODO: Consider all Noirc 'statements' except we enforce trailing semicolon where required? Or just have a statements section idk yet.
+        <<grp__statements>>
+
+        // * * * * * * * * * * * * * * * * * * * * * * * * * EXPRESSIONS
+        <<grp__expressions>>
+
+        // * * * * * * * * * * * * * * * * * * * * * * * * * TYPES
+        <<grp__types>>
+
+        // * * * * * * * * * * * * * * * * * * * * * * * * * PATTERNS
+        <<grp__patterns>>
+
+        // * * * * * * * * * * * * * * * * * * * * * * * * * LITERALS
+        <<grp__literals>>
+
+        mut_bound: _ => 'mut',
+        self: _ => 'self',
+
+        crate: _ => 'crate',
+        dep: _ => 'dep',
+        super: _ => 'super',
+    },
+})
+
+// Match one or more occurrences of rule separated by sep.
+function sepBy1(rule, sep) {
+    return seq(rule, repeat(seq(sep, rule)))
+}
+
+// Match zero or more occurrences of rule separated by sep.
+function sepBy(rule, sep) {
+    return optional(sepBy1(rule, sep))
+}
+#+end_src
+
+** Declarations
+
+#+name: grp__declarations
+#+begin_src js :noweb yes
+<<n("item_visibility")>>
+<<n("visibility")>>
+<<c('("attribute" "attribute_content"))>>
+<<c('("use" "use_tree" "use_tree_list__path" "use_tree_list__nopath" "use_alias"))>>
+<<n("mod_or_contract")>>
+<<c('("struct" "struct_field" "struct_field_list"))>>
+<<c('("impl" "trait_impl"))>>
+// TODO: Trait
+<<n("global")>>
+// TODO: TypeAlias
+<<c('("function_parameters" "function_parameter" "function" "function_modifiers"))>>
+<<c('("where" "where_clause" "trait_bounds" "trait_bound"))>>
+#+end_src
+
+** Statements
+
+#+name: grp__statements
+#+begin_src js :noweb yes
+// Foo
+#+end_src
+
+** Expressions
+
+#+name: grp__expressions
+#+begin_src js :noweb yes
+<<n("expression")>>
+<<n("binary_expression")>>
+<<n("quote_expression")>>
+
+// TODO: Relocate/place these more properly.
+<<c('("block" "block_expression"))>>
+#+end_src
+
+** Types
+
+#+name: grp__types
+#+begin_src js :noweb yes
+<<n("type")>>
+<<c('("primitive_type" "field_type" "int_type" "bool_type" "str_type" "fmt_str_type"))>>
+<<c('("parentheses_type" "unit_type" "tuple_type"))>>
+<<c('("generic_type_args" "generic_type_arg" "named_type_arg" "ordered_type_arg"))>>
+#+end_src
+
+** Patterns
+
+#+name: grp__patterns
+#+begin_src js :noweb yes
+<<c('("pattern_or_self" "pattern" "self_pattern"))>>
+<<n("tuple_pattern")>>
+<<c('("struct_pattern" "struct_pattern_field"))>>
+#+end_src
+
+** Literals
+
+#+name: grp__literals
+#+begin_src js :noweb yes
+<<n("literal")>>
+<<n("bool")>>
+<<n("int")>>
+<<c('("str" "str_content" "escape_sequence"))>>
+<<n("raw_str")>>
+<<c('("fmt_str" "fmt_str_content"))>>
+<<n("quote")>>
+<<n("comment")>>
+<<c('("line_comment__doc_style__inner" "line_comment__doc_style__outer" "line_comment__doc_style" "line_comment"))>>
+<<c('("block_comment__doc_style" "block_comment"))>>
+<<c('("path" "path_no_turbofish" "path_no_turbofish__nested_scopes" "path_no_kind_no_turbofish"))>>
+<<n("path_kind")>>
+<<n("identifier")>>
+#+end_src
+
+* Tangle
+
+Custom tangle logic for this file. The goal is to be able to refer to tree-sitter DSL snippets by a constant name which can be easily jumped to, and also to reduce the headache of tedious renaming as things change when using a strategy like this where code snippets may be located far apart in this org document.
+
+In all cases a src-block must have a =#+name= associated which is used to refer to it. The substituted name when tangled may be specified by adding a =:rule= header to the associated src-block.
+
+
+Inserts the name of the src-block it literally appears in.
+#+name: self
+#+begin_src emacs-lisp
+(when-let* ((block-src-info (org-babel-lob--src-info block_name))
+            (block (org-element-at-point (nth 5 block-src-info))))
+  (format "$.%s" (org-element-property :name block)))
+#+end_src
+
+
+Inserts the name of given src-block parameter =block_name= refers to.
+#+name: r
+#+begin_src emacs-lisp :var block_name=""
+;; TODO: Format an error (or better yet elisp call `error` if no block-src-info found)
+(when-let* ((block-src-info (org-babel-lob--src-info block_name))
+            ;; TODO: block_name fallback here error prone.
+            (rule-name (or (cdr (assoc :rule (nth 2 block-src-info))) block_name)))
+  (format "$.%s" rule-name))
+#+end_src
+
+
+Inserts the contents of given src-block parameter =block_name= with it's tangled content name, argument, and org back-links generated.
+#+name: n
+#+begin_src emacs-lisp :var block_name=""
+;; TODO: Use format-spec instead to get $ as ($) or just use a js formatter after tangling.
+(when-let* ((block-src-info (org-babel-lob--src-info block_name))
+            ;; (block-src (cadr block-src-info))
+            (block-src (org-babel-expand-noweb-references block-src-info))
+            (rule-arg (or (cdr (assoc :arg (nth 2 block-src-info))) "_"))
+            (rule-name (or (cdr (assoc :rule (nth 2 block-src-info))) block_name))
+            (buff-name (buffer-name)))
+  (format "\
+\n// [[file:%s::%s]]
+%s: %s => %s,"
+          buff-name block_name
+          rule-name rule-arg block-src))
+#+end_src
+
+
+Executes =n= for each element of given list of src-block =block_name=\s.
+#+name: c
+#+begin_src emacs-lisp :var block_names=""
+(let (res)
+  (dolist (block_name block_names res)
+    ;; (message "=====> processing: %s / %s" block_name (stringp block_name))
+    ;; (message "==========> %s" (org-babel-lob--src-info block_name))
+    ;; (message "===> %s" (concat "$\"" block_name "\""))
+    ;; (setq res (concat res "\ny" (org-sbe "n" (block_name (concat "$\"" block_name "\"")))))
+    ;; (setq res (concat res "\ny" (org-sbe "n" (block_name $"attribute"))))
+
+    ;; pp-macroexpand: (org-sbe "n" (block_name $"attribute"))
+    (setq res (concat res (org-babel-execute-src-block
+                                nil
+                                (list "emacs-lisp" "results" `((:var . ,(format "results=n[](block_name=\"%s\")" block_name)))) '((:results . "none")))))
+    ))
+#+end_src
+
+
+#+name: lit
+#+begin_src emacs-lisp :var literal=""
+(format "\"%s\"" literal)
+#+end_src

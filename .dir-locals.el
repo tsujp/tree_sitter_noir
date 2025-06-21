@@ -15,7 +15,10 @@
                                  (setq-local org-todo-keyword-faces '(("TOIMPL" . org-warning)
                                                                       ("BLOCK" . org-verbatim)
                                                                       ("SPEC" . eldoc-highlight-function-argument)))
-                                 (setq-local org-babel-header-args:js '((treesit . :any))))
+                                 (setq-local org-babel-header-args:js '((treesit . :any)))
+                                 (setq-local org-confirm-babel-evaluate nil))
+                                ((string= bn "experiment_two.org")
+                                 (setq-local org-confirm-babel-evaluate nil))
                                 ((string= bn "test.org")
                                  (add-hook 'after-save-hook #'tst-export-current 0 t)))))))))
 

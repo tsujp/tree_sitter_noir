@@ -608,10 +608,13 @@ impl foo {}
 #+end_test
 
 ** Trait
+x
 
 ** Global
+x
 
 ** TypeAlias
+x
 
 ** Function
 
@@ -1543,4 +1546,3 @@ This would call the noir frontend parser, e.g. say parse_program and vaidate cor
 *************** END
 
 TODO: Default visibility in this file should be outline only (all headings visible but not their content), and all property drawers folded.
-
