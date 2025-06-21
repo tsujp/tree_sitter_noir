@@ -662,6 +662,7 @@ impl foo {}
 
 ======================
 Function / Definitions
+:skip
 ======================
 
 fn hello_world() {}

@@ -464,11 +464,8 @@ module.exports = grammar({
         // [[file:noir_grammar.org::literal]]
         __literal: $ => choice(
             $.bool_literal,
-            // $.bool_literal,
             $.int_literal,
-            // $.int_literal,
             $.str_literal,
-            // $.str_literal,
             $.raw_str_literal,
             $.fmt_str_literal,
             // $.quote_expression, // TODO: Broken for now.

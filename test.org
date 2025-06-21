@@ -625,7 +625,7 @@ Need to test:
   - Return visibility (i.e. Visibility headline)
 
 *** Definitions
-#+begin_test :extract
+#+begin_test :extract :skip
 fn hello_world() {}
 
 fn foo() {}

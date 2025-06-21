@@ -822,7 +822,7 @@ seq(
     field('name', $.identifier),
     // TODO: OptionalTypeAnnotation.
     '=',
-    $._expression,
+    <<r("expression")>>,
     // prec.left(1, $._expression),
     ';',
 )
@@ -833,13 +833,10 @@ seq(
 #+begin_src js :rule __literal :arg $ :ast Literal
 choice(
     <<r("bool")>>,
-    // $.bool_literal,
     <<r("int")>>,
-    // $.int_literal,
     <<r("str")>>,
-    // $.str_literal,
-    $.raw_str_literal,
-    $.fmt_str_literal,
+    <<r("raw_str")>>,
+    <<r("fmt_str")>>,
     // $.quote_expression, // TODO: Broken for now.
     // arrayexpression, sliceexpression, blockexpression
 )
@@ -3084,7 +3081,7 @@ Guaranteed to NOT have a colon =:= following it.
 #+name: expression
 #+begin_src js :rule _expression :arg $
 choice(
-    $.binary_expression,
+    <<r("binary_expression")>>,
     <<r("literal")>>,
 )
 #+end_src
