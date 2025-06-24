@@ -12,3 +12,19 @@ global foo1 = { break; };
     (block
       (break_statement)))
 )
+
+
+========
+Continue
+========
+
+global foo1 = { continue; };
+
+---
+
+(source_file
+  (global_item
+    name: (identifier)
+    (block
+      (continue_statement)))
+)

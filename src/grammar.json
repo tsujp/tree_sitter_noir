@@ -991,12 +991,20 @@
         {
           "type": "SYMBOL",
           "name": "break_statement"
+        },
+        {
+          "type": "SYMBOL",
+          "name": "continue_statement"
         }
       ]
     },
     "break_statement": {
       "type": "STRING",
       "value": "break"
+    },
+    "continue_statement": {
+      "type": "STRING",
+      "value": "continue"
     },
     "_expression": {
       "type": "CHOICE",

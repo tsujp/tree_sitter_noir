@@ -295,6 +295,10 @@
         {
           "type": "break_statement",
           "named": true
+        },
+        {
+          "type": "continue_statement",
+          "named": true
         }
       ]
     }
@@ -1244,6 +1248,10 @@
   },
   {
     "type": "break_statement",
+    "named": true
+  },
+  {
+    "type": "continue_statement",
     "named": true
   },
   {

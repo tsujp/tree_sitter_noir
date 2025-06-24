@@ -2905,6 +2905,7 @@ Loop parsing attributes and statement kind, each statement is delimited by a sem
 #+begin_src js :rule _statement_kind :arg $ :ast StatementKind
 choice(
     <<r("break_statement")>>,
+    <<r("continue_statement")>>,
 )
 #+end_src
 
@@ -2984,30 +2985,34 @@ CLOSED: [2025-06-24 Tue 17:43]
 + =break= (kw)
 :end:
 
-Parser: [[file:noir/compiler/noirc_frontend/src/parser/parser/statement.rs::if self.eat_keyword(Keyword::Break) {][parse break statement parent inline]]
-Takes nothing (unlike say Rust where an expression can follow), only the keyword.
-
 #+name: break_statement
 #+begin_src js :ast BreakStatement
 'break'
 #+end_src
 
-***** TOIMPL ContinueStatement                                         :leaf:
+Parser: [[file:noir/compiler/noirc_frontend/src/parser/parser/statement.rs::if self.eat_keyword(Keyword::Break) {][parse break statement parent inline]]
+Takes nothing (unlike say Rust where an expression can follow), only the keyword.
+
+***** DONE ContinueStatement                                           :leaf:
+CLOSED: [2025-06-24 Tue 17:47]
 :PROPERTIES:
 :CUSTOM_ID: h:6616DE79-93E3-42AA-9633-4A29251F5BA0
 :END:
 :LOGBOOK:
+- State "DONE"       from "TOIMPL"     [2025-06-24 Tue 17:47]
 - State "TOIMPL"     from "TODO"       [2025-05-20 Tue 19:07]
 - State "TODO"       from              [2025-05-20 Tue 18:16]
 :END:
 :pgd:
-+ =continue= (kw).
++ =continue= (kw)
 :end:
 
-#+begin_src js :treesit t
-// Noirc: ContinueStatement.
-continue_statement: _ => seq('continue')
+#+name: continue_statement
+#+begin_src js :ast ContinueStatement
+'continue'
 #+end_src
+
+Parser: [[file:noir/compiler/noirc_frontend/src/parser/parser/statement.rs::if self.eat_keyword(Keyword::Continue) {][parse continue statement parent inline]]
 
 ***** TODO ReturnStatement                                             :node:
 :PROPERTIES:
@@ -4178,7 +4183,7 @@ function sepBy(rule, sep) {
 #+name: grp__statements
 #+begin_src js :noweb yes
 <<n("statement")>>
-<<c('("statement_kind" "break_statement"))>>
+<<c('("statement_kind" "break_statement" "continue_statement"))>>
 #+end_src
 
 ** Expressions

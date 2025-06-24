@@ -791,6 +791,18 @@ global foo1 = { break; };
     (break_statement)))
 #+end_test
 
+** Continue
+#+begin_test
+global foo1 = { continue; };
+
+---
+
+(global_item
+  name: (identifier)
+  (block
+    (continue_statement)))
+#+end_test
+
 * Expressions
 :PROPERTIES:
 :export_file_name: expressions.txt
