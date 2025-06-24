@@ -385,6 +385,54 @@ global foo = [1; foo::bar];
 )
 
 
+=====================================
+Literal / Slice expression / Standard
+=====================================
+
+global foo1 = &[1];
+global foo1 = &     [1];
+
+---
+
+(source_file
+  (global_item
+    name: (identifier)
+    (slice_expression
+      (array_expression
+        (int_literal))))
+  (global_item
+    name: (identifier)
+    (slice_expression
+      (array_expression
+        (int_literal))))
+)
+
+
+=====================================
+Literal / Slice expression / Repeated
+=====================================
+
+global foo1 = &[1; 2];
+global foo2 = &       [1; 2];
+
+---
+
+(source_file
+  (global_item
+    name: (identifier)
+    (slice_expression
+      (array_expression
+        (int_literal)
+        length: (int_literal))))
+  (global_item
+    name: (identifier)
+    (slice_expression
+      (array_expression
+        (int_literal)
+        length: (int_literal))))
+)
+
+
 ===============
 Binary / Simple
 ===============

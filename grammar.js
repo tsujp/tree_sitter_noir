@@ -112,17 +112,17 @@ module.exports = grammar({
 
         // * * * * * * * * * * * * * * * * * * * * * * * * * DECLARATIONS / ITEMS
         
-        // [[file:noir_grammar.org<2>::item_visibility]]
+        // [[file:noir_grammar.org::item_visibility]]
         visibility_modifier: $ => seq('pub', optional('(crate)')),
         
-        // [[file:noir_grammar.org<2>::visibility]]
+        // [[file:noir_grammar.org::visibility]]
         visibility: $ => choice(
             'pub',
             'return_data',
             seq('call_data(', $.int_literal ,')'),
         ),
         
-        // [[file:noir_grammar.org<2>::attribute]]
+        // [[file:noir_grammar.org::attribute]]
         attribute_item: $ => seq(
             '#',
             optional('!'), // Marks InnerAttribute.
@@ -131,10 +131,10 @@ module.exports = grammar({
             alias($.attribute_content, $.content),
             ']',
         ),
-        // [[file:noir_grammar.org<2>::attribute_content]]
+        // [[file:noir_grammar.org::attribute_content]]
         attribute_content: _ => seq(repeat1(choice(' ', REG_ALPHABETIC, REG_NUMERIC, REG_ASCII_PUNCTUATION))),
         
-        // [[file:noir_grammar.org<2>::use]]
+        // [[file:noir_grammar.org::use]]
         use_declaration: $ => seq(
             optional($.visibility_modifier),
             'use',
@@ -142,7 +142,7 @@ module.exports = grammar({
             field('tree', $.__use_tree_variants),
             ';',
         ),
-        // [[file:noir_grammar.org<2>::use_tree]]
+        // [[file:noir_grammar.org::use_tree]]
         __use_tree_variants: $ => choice(
             $.__path_no_kind_no_turbofish,
             // $.use_list,
@@ -154,14 +154,14 @@ module.exports = grammar({
             // $.use_alias,
             $.use_alias,
         ),
-        // [[file:noir_grammar.org<2>::use_tree_list__path]]
+        // [[file:noir_grammar.org::use_tree_list__path]]
         __use_list_path_prefix: $ => seq(
             optional(field('scope', optional($.__path_no_kind_no_turbofish))),
             '::',
             // field('list', $.use_list),
             field('list', $.use_list),
         ),
-        // [[file:noir_grammar.org<2>::use_tree_list__nopath]]
+        // [[file:noir_grammar.org::use_tree_list__nopath]]
         use_list: $ => seq(
             '{',
             // sepBy($.__use_tree_variants, ','),
@@ -169,14 +169,14 @@ module.exports = grammar({
             optional(','),
             '}',
         ),
-        // [[file:noir_grammar.org<2>::use_alias]]
+        // [[file:noir_grammar.org::use_alias]]
         use_alias: $ => seq(
             field('scope', $.__path_no_kind_no_turbofish),
             'as',
             field('alias', $.identifier),
         ),
         
-        // [[file:noir_grammar.org<2>::mod_or_contract]]
+        // [[file:noir_grammar.org::mod_or_contract]]
         module_or_contract_item: $ => seq(
             optional($.visibility_modifier),
             choice('mod', 'contract'), // TODO: Discriminate kind into a field?
@@ -187,7 +187,7 @@ module.exports = grammar({
             ),
         ),
         
-        // [[file:noir_grammar.org<2>::struct]]
+        // [[file:noir_grammar.org::struct]]
         struct_item: $ => seq(
             optional($.visibility_modifier),
             'struct',
@@ -198,14 +198,14 @@ module.exports = grammar({
                 ';', // Empty struct.
             ),
         ),
-        // [[file:noir_grammar.org<2>::struct_field]]
+        // [[file:noir_grammar.org::struct_field]]
         struct_field_item: $ => seq(
             optional($.visibility_modifier),
             field('name', $.identifier),
             ':',
             field('type', $._type),
         ),
-        // [[file:noir_grammar.org<2>::struct_field_list]]
+        // [[file:noir_grammar.org::struct_field_list]]
         struct_field_list: $ => seq(
             '{',
             sepBy($.struct_field_item, ','),
@@ -213,7 +213,7 @@ module.exports = grammar({
             '}',
         ),
         
-        // [[file:noir_grammar.org<2>::impl]]
+        // [[file:noir_grammar.org::impl]]
         impl_item: $ => seq(
             'impl',
             // TODO: Generics
@@ -223,7 +223,7 @@ module.exports = grammar({
             // $.trait_impl,
             $.trait_impl,
         ),
-        // [[file:noir_grammar.org<2>::trait_impl]]
+        // [[file:noir_grammar.org::trait_impl]]
         trait_impl: $ => seq(
             // TODO: Path
             $.generic_type_args,
@@ -233,7 +233,7 @@ module.exports = grammar({
         ),
         // TODO: Trait
         
-        // [[file:noir_grammar.org<2>::global]]
+        // [[file:noir_grammar.org::global]]
         global_item: $ => seq(
             'global',
             field('name', $.identifier),
@@ -245,21 +245,21 @@ module.exports = grammar({
         ),
         // TODO: TypeAlias
         
-        // [[file:noir_grammar.org<2>::function_parameters]]
+        // [[file:noir_grammar.org::function_parameters]]
         function_parameters: $ => seq(
             '(',
             sepBy($.function_parameter, ','), // Inlined Noirc: FunctionParametersList
             optional(','),
             ')',
         ),
-        // [[file:noir_grammar.org<2>::function_parameter]]
+        // [[file:noir_grammar.org::function_parameter]]
         function_parameter: $ => seq(
             optional($.visibility),
             $._pattern_or_self,
             ':',
             $._type,
         ),
-        // [[file:noir_grammar.org<2>::function]]
+        // [[file:noir_grammar.org::function]]
         function: $ => seq(
             optional($.visibility_modifier),
             optional($.function_modifiers),
@@ -271,27 +271,27 @@ module.exports = grammar({
             optional($.where_clause),
             choice($.block, ';'),
         ),
-        // [[file:noir_grammar.org<2>::function_modifiers]]
+        // [[file:noir_grammar.org::function_modifiers]]
         function_modifiers: $ => repeat1(choice(MODIFIERS.Unconstrained, MODIFIERS.Comptime)),
         
-        // [[file:noir_grammar.org<2>::where]]
+        // [[file:noir_grammar.org::where]]
         where_clause: $ => seq(
                 'where',
                 sepBy1($.where_clause_item, ','),
                 optional(',')
         ),
-        // [[file:noir_grammar.org<2>::where_clause]]
+        // [[file:noir_grammar.org::where_clause]]
         where_clause_item: $ => seq(
                 $._type,
                 ':',
                 $.trait_bounds,
         ),
-        // [[file:noir_grammar.org<2>::trait_bounds]]
+        // [[file:noir_grammar.org::trait_bounds]]
         trait_bounds: $ => seq(
             sepBy1($.trait_bound, '+'),
             optional('+'),
         ),
-        // [[file:noir_grammar.org<2>::trait_bound]]
+        // [[file:noir_grammar.org::trait_bound]]
         trait_bound: $ => seq(
             optional($.__path_no_turbofish),
             $.generic_type_args,
@@ -303,13 +303,13 @@ module.exports = grammar({
 
         // * * * * * * * * * * * * * * * * * * * * * * * * * EXPRESSIONS
         
-        // [[file:noir_grammar.org<2>::expression]]
+        // [[file:noir_grammar.org::expression]]
         _expression: $ => choice(
             $.binary_expression,
             $.__literal,
         ),
         
-        // [[file:noir_grammar.org<2>::binary_expression]]
+        // [[file:noir_grammar.org::binary_expression]]
         binary_expression: $ => {
             const t = [
                 // Highest to lowest.
@@ -330,10 +330,10 @@ module.exports = grammar({
             ))))
         },
         
-        // [[file:noir_grammar.org<2>::quote_expression]]
+        // [[file:noir_grammar.org::quote_expression]]
         quote_expression: $ => alias($.quote_literal, $.quote_expression),
         
-        // [[file:noir_grammar.org<2>::array_expression]]
+        // [[file:noir_grammar.org::array_expression]]
         array_expression: $ => seq(
             '[',
             choice(
@@ -352,11 +352,14 @@ module.exports = grammar({
             ']',
         ),
         
+        // [[file:noir_grammar.org::slice_expression]]
+        slice_expression: $ => seq('&', $.array_expression),
+        
         // TODO: Relocate/place these more properly.
         
-        // [[file:noir_grammar.org<2>::block]]
+        // [[file:noir_grammar.org::block]]
         block: _ => 'BLOCK_____TODO',
-        // [[file:noir_grammar.org<2>::block_expression]]
+        // [[file:noir_grammar.org::block_expression]]
         block_expression: _ => seq(
             '{',
             // TODO: Optionally repeated Statement.
@@ -365,7 +368,7 @@ module.exports = grammar({
 
         // * * * * * * * * * * * * * * * * * * * * * * * * * TYPES
         
-        // [[file:noir_grammar.org<2>::type]]
+        // [[file:noir_grammar.org::type]]
         _type: $ => choice(
             $.primitive_type,
             $._parentheses_type,
@@ -375,7 +378,7 @@ module.exports = grammar({
             // TODO: TraitAsType, AsTraitPathType, UnresolvedNamedType
         ),
         
-        // [[file:noir_grammar.org<2>::primitive_type]]
+        // [[file:noir_grammar.org::primitive_type]]
         primitive_type: $ => choice(
             $.__field_type,
             $.__integer_type,
@@ -383,30 +386,30 @@ module.exports = grammar({
             $.__string_type,
             $.__format_string_type,
         ),
-        // [[file:noir_grammar.org<2>::field_type]]
+        // [[file:noir_grammar.org::field_type]]
         __field_type: _ => 'Field',
-        // [[file:noir_grammar.org<2>::int_type]]
+        // [[file:noir_grammar.org::int_type]]
         __integer_type: _ => choice(...INTEGER_TYPES),
-        // [[file:noir_grammar.org<2>::bool_type]]
+        // [[file:noir_grammar.org::bool_type]]
         __bool_type: _ => 'bool',
-        // [[file:noir_grammar.org<2>::str_type]]
+        // [[file:noir_grammar.org::str_type]]
         __string_type: $ => seq(
             'str',
             '<',
             // TODO: TypeExpression goes here.
             '>',
         ),
-        // [[file:noir_grammar.org<2>::fmt_str_type]]
+        // [[file:noir_grammar.org::fmt_str_type]]
         __format_string_type: _ => 'fmtstr',
         
-        // [[file:noir_grammar.org<2>::parentheses_type]]
+        // [[file:noir_grammar.org::parentheses_type]]
         _parentheses_type: $ => choice(
             $.unit_type,
             $.tuple_type,
         ),
-        // [[file:noir_grammar.org<2>::unit_type]]
+        // [[file:noir_grammar.org::unit_type]]
         unit_type: _ => seq('(', ')'),
-        // [[file:noir_grammar.org<2>::tuple_type]]
+        // [[file:noir_grammar.org::tuple_type]]
         tuple_type: $ => seq(
             '(',
             sepBy1($._type, ','),
@@ -414,38 +417,38 @@ module.exports = grammar({
             ')',
         ),
         
-        // [[file:noir_grammar.org<2>::generic_type_args]]
+        // [[file:noir_grammar.org::generic_type_args]]
         generic_type_args: $ => seq(
             '<',
             sepBy($.generic_type_arg, ','), // Inlined Noirc: GenericTypeArgsList.
             optional(','),
             '>',
         ),
-        // [[file:noir_grammar.org<2>::generic_type_arg]]
+        // [[file:noir_grammar.org::generic_type_arg]]
         generic_type_arg: $ => choice(
             $.named_type_arg,
             $.__ordered_type_arg,
         ),
-        // [[file:noir_grammar.org<2>::named_type_arg]]
+        // [[file:noir_grammar.org::named_type_arg]]
         named_type_arg: $ => seq(
             $.identifier,
             '=',
             $._type,
         ),
-        // [[file:noir_grammar.org<2>::ordered_type_arg]]
+        // [[file:noir_grammar.org::ordered_type_arg]]
         __ordered_type_arg: _ => 'ORDERED_TYPE_ARG___TODO',
         
         // 'TypeExpressions' are limited to constant integers, variables, and basic numeric binary operators; they are a special type that is allowed in the length position of an array (and some other limited places).
         // Using 'expr' in-place of 'expression' so-as-to- not conflate with _real_ expressions.
         
-        // [[file:noir_grammar.org<2>::type_expr]]
+        // [[file:noir_grammar.org::type_expr]]
         _type_expr: $ => choice(
             alias($.__binary_type_expr, $.binary_expression),
             // TODO: Replace literal $.unary_expression with noweb ref function
             alias($.__unary_type_expr, $.unary_expression),
             $.__atom_type_expr,
         ),
-        // [[file:noir_grammar.org<2>::binary_type_expr]]
+        // [[file:noir_grammar.org::binary_type_expr]]
         __binary_type_expr: $ => {
             const t = [
                 // Highest to lowest.
@@ -459,26 +462,26 @@ module.exports = grammar({
                 field('right', $._type_expr),
             ))))
         },
-        // [[file:noir_grammar.org<2>::unary_type_expr]]
+        // [[file:noir_grammar.org::unary_type_expr]]
         __unary_type_expr: $ => prec(PRECEDENCE.unary, seq('-', $._type_expr)),
-        // [[file:noir_grammar.org<2>::atom_type_expr]]
+        // [[file:noir_grammar.org::atom_type_expr]]
         __atom_type_expr: $ => choice(
             $.int_literal, // Inlined Noirc: ConstantTypeExpression.
             $.__path, // Inlined Noirc: VariableTypeExpression.
             // TODO: Replace hardcoded rule name with noweb ref.
             alias($.parenthesized_expression, $.parenthesized_expression),
         ),
-        // [[file:noir_grammar.org<2>::parenthesised_type_expr]]
+        // [[file:noir_grammar.org::parenthesised_type_expr]]
         parenthesized_expression: $ => seq('(', $._type_expr, ')'),
 
         // * * * * * * * * * * * * * * * * * * * * * * * * * PATTERNS
         
-        // [[file:noir_grammar.org<2>::pattern_or_self]]
+        // [[file:noir_grammar.org::pattern_or_self]]
         _pattern_or_self: $ => choice(
             $._pattern,
             $.self_pattern,
         ),
-        // [[file:noir_grammar.org<2>::pattern]]
+        // [[file:noir_grammar.org::pattern]]
         _pattern: $ => choice(
             // TODO: InternedPattern? It looks like a compiler-only internal though and not discrete syntax.
             optional($.mut_bound),
@@ -486,14 +489,14 @@ module.exports = grammar({
             $.struct_pattern,
             $.identifier, // Noirc: IdentifierPattern.
         ),
-        // [[file:noir_grammar.org<2>::self_pattern]]
+        // [[file:noir_grammar.org::self_pattern]]
         self_pattern: $ => seq(
             optional('&'),
             optional($.mut_bound),
             $.self,
         ),
         
-        // [[file:noir_grammar.org<2>::tuple_pattern]]
+        // [[file:noir_grammar.org::tuple_pattern]]
         tuple_pattern: $ => seq(
             '(',
             sepBy($._pattern, ','), // Inlined Noirc: PatternList.
@@ -501,7 +504,7 @@ module.exports = grammar({
             ')',
         ),
         
-        // [[file:noir_grammar.org<2>::struct_pattern]]
+        // [[file:noir_grammar.org::struct_pattern]]
         struct_pattern: $ => seq(
             // TODO: Path
             '{',
@@ -509,7 +512,7 @@ module.exports = grammar({
             optional(','),
             '}',
         ),
-        // [[file:noir_grammar.org<2>::struct_pattern_field]]
+        // [[file:noir_grammar.org::struct_pattern_field]]
         struct_pattern_field: $ => seq(
             $.identifier,
             optional(seq(':', $._pattern)),
@@ -517,7 +520,7 @@ module.exports = grammar({
 
         // * * * * * * * * * * * * * * * * * * * * * * * * * LITERALS
         
-        // [[file:noir_grammar.org<2>::literal]]
+        // [[file:noir_grammar.org::literal]]
         __literal: $ => choice(
             $.bool_literal,
             $.int_literal,
@@ -526,13 +529,14 @@ module.exports = grammar({
             $.fmt_str_literal,
             // $.quote_expression, // TODO: Broken for now.
             $.array_expression,
-            // sliceexpression, blockexpression
+            $.slice_expression,
+            // blockexpression
         ),
         
-        // [[file:noir_grammar.org<2>::bool]]
+        // [[file:noir_grammar.org::bool]]
         bool_literal: _ => choice('true', 'false'),
         
-        // [[file:noir_grammar.org<2>::int]]
+        // [[file:noir_grammar.org::int]]
         int_literal: _ => token(seq(
             choice(
                 /[0-9][0-9_]*/,
@@ -540,7 +544,7 @@ module.exports = grammar({
             )
         )),
         
-        // [[file:noir_grammar.org<2>::str]]
+        // [[file:noir_grammar.org::str]]
         str_literal: $ => seq(
             '"',
             repeat(choice(
@@ -551,9 +555,9 @@ module.exports = grammar({
             )),
             token.immediate('"'),
         ),
-        // [[file:noir_grammar.org<2>::str_content]]
+        // [[file:noir_grammar.org::str_content]]
         str_content: _ => /[\x20-\x21\x23-\x5B\x5D-\x7E\s]+/,
-        // [[file:noir_grammar.org<2>::escape_sequence]]
+        // [[file:noir_grammar.org::escape_sequence]]
         escape_sequence: $ => seq(
             '\\',
             // TODO: Do we want to be strict on valid escape sequences (r, n, t etc) or accept any ASCII. Problem is error recovery in tree-sitter and how that affects highlighting.
@@ -562,23 +566,23 @@ module.exports = grammar({
             )),
         ),
         
-        // [[file:noir_grammar.org<2>::raw_str]]
+        // [[file:noir_grammar.org::raw_str]]
         raw_str_literal: $ => seq(
             $._raw_str_literal_start,
             alias($._raw_str_literal_content, $.str_content),
             $._raw_str_literal_end,
         ),
         
-        // [[file:noir_grammar.org<2>::fmt_str]]
+        // [[file:noir_grammar.org::fmt_str]]
         fmt_str_literal: $ => seq(
             'f"',
             repeat(alias($.fmt_str_content, $.str_content)),
             token.immediate('"'),
         ),
-        // [[file:noir_grammar.org<2>::fmt_str_content]]
+        // [[file:noir_grammar.org::fmt_str_content]]
         fmt_str_content: _ => /[\x20-\x21\x23-\x7E\s]+/,
         
-        // [[file:noir_grammar.org<2>::quote]]
+        // [[file:noir_grammar.org::quote]]
         quote_literal: _ => seq(
             // TODO: Stubbed for now, see org doc.
             'quote',
@@ -587,22 +591,22 @@ module.exports = grammar({
             '}',
         ),
         
-        // [[file:noir_grammar.org<2>::comment]]
+        // [[file:noir_grammar.org::comment]]
         comment: $ => choice(
             $.line_comment,
             $.block_comment,
         ),
         
-        // [[file:noir_grammar.org<2>::line_comment__doc_style__inner]]
+        // [[file:noir_grammar.org::line_comment__doc_style__inner]]
         __inner_line_comment_doc_style: _ => token.immediate(prec(2, '!')),
-        // [[file:noir_grammar.org<2>::line_comment__doc_style__outer]]
+        // [[file:noir_grammar.org::line_comment__doc_style__outer]]
         __outer_line_comment_doc_style: _ => token.immediate(prec(2, '/')),
-        // [[file:noir_grammar.org<2>::line_comment__doc_style]]
+        // [[file:noir_grammar.org::line_comment__doc_style]]
         __line_comment_doc_style: $ => choice(
             alias($.__inner_line_comment_doc_style, $.inner_doc_style),
             alias($.__outer_line_comment_doc_style, $.outer_doc_style),
         ),
-        // [[file:noir_grammar.org<2>::line_comment]]
+        // [[file:noir_grammar.org::line_comment]]
         line_comment: $ => seq(
             '//',
             choice(
@@ -616,12 +620,12 @@ module.exports = grammar({
             ),
         ),
         
-        // [[file:noir_grammar.org<2>::block_comment__doc_style]]
+        // [[file:noir_grammar.org::block_comment__doc_style]]
         __block_comment_doc_style: $ => choice(
             alias($.__inner_block_comment_doc_style, $.inner_doc_style),
             alias($.__outer_block_comment_doc_style, $.outer_doc_style),
         ),
-        // [[file:noir_grammar.org<2>::block_comment]]
+        // [[file:noir_grammar.org::block_comment]]
         block_comment: $ => seq(
             '/*',
             optional(
@@ -638,23 +642,23 @@ module.exports = grammar({
             '*/',
         ),
         
-        // [[file:noir_grammar.org<2>::path]]
+        // [[file:noir_grammar.org::path]]
         __path: $ => choice(
             'TODO_____PATH_STUB_ALPHA',
             'TODO_____PATH_STUB_BETA',
         ),
-        // [[file:noir_grammar.org<2>::path_no_turbofish]]
+        // [[file:noir_grammar.org::path_no_turbofish]]
         __path_no_turbofish: $ => seq(
             optional($.path_kind),
             $.__path_no_kind_no_turbofish,
         ),
-        // [[file:noir_grammar.org<2>::path_no_turbofish__nested_scopes]]
+        // [[file:noir_grammar.org::path_no_turbofish__nested_scopes]]
         __nested_scopes_in_path_no_turbofish: $ => seq(
             field('scope', $.__path_no_kind_no_turbofish),
             '::',
             field('name', $.identifier),
         ),
-        // [[file:noir_grammar.org<2>::path_no_kind_no_turbofish]]
+        // [[file:noir_grammar.org::path_no_kind_no_turbofish]]
         __path_no_kind_no_turbofish: $ => seq(
             choice(
                 choice($.crate, $.dep, $.super, $.identifier),
@@ -663,13 +667,13 @@ module.exports = grammar({
             ),
         ),
         
-        // [[file:noir_grammar.org<2>::path_kind]]
+        // [[file:noir_grammar.org::path_kind]]
         path_kind: $ => seq(
             choice($.crate, $.dep, $.super),
             '::',
         ),
         
-        // [[file:noir_grammar.org<2>::identifier]]
+        // [[file:noir_grammar.org::identifier]]
         identifier: _ => /[a-zA-Z_][a-zA-Z0-9_]*/,
 
         mut_bound: _ => 'mut',

@@ -839,7 +839,8 @@ choice(
     <<r("fmt_str")>>,
     // $.quote_expression, // TODO: Broken for now.
     <<r("array_expression")>>,
-    // sliceexpression, blockexpression
+    <<r("slice_expression")>>,
+    // blockexpression
 )
 #+end_src
 
@@ -3109,8 +3110,23 @@ CLOSED: [2025-06-22 Sun 02:11]
 
 Parser at parent. Returns ~ArrayLiteral::Repeated~.
 
-**** SliceExpression
-2025/06/22 2:11 am jordan continue from here
+**** DONE SliceExpression                                              :node:
+CLOSED: [2025-06-24 Tue 16:48]
+:PROPERTIES:
+:CUSTOM_ID: h:C6FDB5DB-21D9-46A2-A4E8-DEE2AFFD1F6F
+:END:
+:LOGBOOK:
+- State "DONE"       from              [2025-06-24 Tue 16:48]
+:END:
+
+#+name: slice_expression
+#+begin_src js :arg $ :ast SliceExpression
+seq('&', <<r("array_expression")>>)
+#+end_src
+
+Parser: [[file:noir/compiler/noirc_frontend/src/parser/parser/expression.rs::if let Some(literal) = self.parse_slice_literal() {][parse_slice_literal() parent callsite]], [[file:noir/compiler/noirc_frontend/src/parser/parser/expression.rs::fn parse_slice_literal(&mut self)][parse_slice_literal()]]
+
+#+transclude: [[file:noir/compiler/noirc_frontend/src/parser/parser/expression.rs::670][SliceExpression doc]] :lines 670-670 :src fundamental
 
 **** BlockExpression
 
@@ -4179,6 +4195,7 @@ function sepBy(rule, sep) {
 <<n("binary_expression")>>
 <<n("quote_expression")>>
 <<n("array_expression")>>
+<<n("slice_expression")>>
 
 // TODO: Relocate/place these more properly.
 <<c('("block" "block_expression"))>>

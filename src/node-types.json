@@ -63,6 +63,10 @@
           "named": true
         },
         {
+          "type": "slice_expression",
+          "named": true
+        },
+        {
           "type": "str_literal",
           "named": true
         }
@@ -126,6 +130,10 @@
           },
           {
             "type": "raw_str_literal",
+            "named": true
+          },
+          {
+            "type": "slice_expression",
             "named": true
           },
           {
@@ -246,6 +254,10 @@
           },
           {
             "type": "raw_str_literal",
+            "named": true
+          },
+          {
+            "type": "slice_expression",
             "named": true
           },
           {
@@ -391,6 +403,10 @@
         },
         {
           "type": "raw_str_literal",
+          "named": true
+        },
+        {
+          "type": "slice_expression",
           "named": true
         },
         {
@@ -647,6 +663,21 @@
       "types": [
         {
           "type": "str_content",
+          "named": true
+        }
+      ]
+    }
+  },
+  {
+    "type": "slice_expression",
+    "named": true,
+    "fields": {},
+    "children": {
+      "multiple": false,
+      "required": true,
+      "types": [
+        {
+          "type": "array_expression",
           "named": true
         }
       ]

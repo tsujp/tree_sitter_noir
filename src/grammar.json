@@ -1409,6 +1409,19 @@
         }
       ]
     },
+    "slice_expression": {
+      "type": "SEQ",
+      "members": [
+        {
+          "type": "STRING",
+          "value": "&"
+        },
+        {
+          "type": "SYMBOL",
+          "name": "array_expression"
+        }
+      ]
+    },
     "block": {
       "type": "STRING",
       "value": "BLOCK_____TODO"
@@ -2129,6 +2142,10 @@
         {
           "type": "SYMBOL",
           "name": "array_expression"
+        },
+        {
+          "type": "SYMBOL",
+          "name": "slice_expression"
         }
       ]
     },

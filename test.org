@@ -1112,6 +1112,50 @@ global foo = [1; N];
 global foo = [1; foo::bar];
 #+end_test
 
+*** Slice expression
+
+Only really need to test =&= prefix, rest is array expression.
+
+**** Standard
+#+begin_test
+global foo1 = &[1];
+global foo1 = &     [1];
+
+---
+
+(global_item
+  name: (identifier)
+  (slice_expression
+    (array_expression
+      (int_literal))))
+(global_item
+  name: (identifier)
+  (slice_expression
+    (array_expression
+      (int_literal))))
+#+end_test
+
+**** Repeated
+#+begin_test
+global foo1 = &[1; 2];
+global foo2 = &       [1; 2];
+
+---
+
+(global_item
+  name: (identifier)
+  (slice_expression
+    (array_expression
+      (int_literal)
+      length: (int_literal))))
+(global_item
+  name: (identifier)
+  (slice_expression
+    (array_expression
+      (int_literal)
+      length: (int_literal))))
+#+end_test
+
 ** Binary
 
 *** Simple
