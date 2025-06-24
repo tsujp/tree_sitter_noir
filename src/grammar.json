@@ -1423,10 +1423,6 @@
       ]
     },
     "block": {
-      "type": "STRING",
-      "value": "BLOCK_____TODO"
-    },
-    "block_expression": {
       "type": "SEQ",
       "members": [
         {
@@ -2146,6 +2142,10 @@
         {
           "type": "SYMBOL",
           "name": "slice_expression"
+        },
+        {
+          "type": "SYMBOL",
+          "name": "block"
         }
       ]
     },

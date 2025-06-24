@@ -47,6 +47,10 @@
           "named": true
         },
         {
+          "type": "block",
+          "named": true
+        },
+        {
           "type": "bool_literal",
           "named": true
         },
@@ -110,6 +114,10 @@
           },
           {
             "type": "binary_expression",
+            "named": true
+          },
+          {
+            "type": "block",
             "named": true
           },
           {
@@ -237,6 +245,10 @@
             "named": true
           },
           {
+            "type": "block",
+            "named": true
+          },
+          {
             "type": "bool_literal",
             "named": true
           },
@@ -271,6 +283,11 @@
         ]
       }
     }
+  },
+  {
+    "type": "block",
+    "named": true,
+    "fields": {}
   },
   {
     "type": "block_comment",
@@ -387,6 +404,10 @@
         },
         {
           "type": "binary_expression",
+          "named": true
+        },
+        {
+          "type": "block",
           "named": true
         },
         {

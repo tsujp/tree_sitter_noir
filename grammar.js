@@ -355,14 +355,9 @@ module.exports = grammar({
         // [[file:noir_grammar.org::slice_expression]]
         slice_expression: $ => seq('&', $.array_expression),
         
-        // TODO: Relocate/place these more properly.
-        
-        // [[file:noir_grammar.org::block]]
-        block: _ => 'BLOCK_____TODO',
         // [[file:noir_grammar.org::block_expression]]
-        block_expression: _ => seq(
+        block: $ => seq(
             '{',
-            // TODO: Optionally repeated Statement.
             '}',
         ),
 
@@ -530,7 +525,7 @@ module.exports = grammar({
             // $.quote_expression, // TODO: Broken for now.
             $.array_expression,
             $.slice_expression,
-            // blockexpression
+            $.block,
         ),
         
         // [[file:noir_grammar.org::bool]]
