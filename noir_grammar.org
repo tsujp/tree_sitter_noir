@@ -2835,6 +2835,7 @@ Parser: [[file:noir/compiler/noirc_frontend/src/parser/parser/expression.rs::if 
 #+begin_src js :rule block :arg $ :ast BlockExpression
 seq(
     '{',
+    repeat(<<r("statement")>>),
     '}',
 )
 #+end_src
@@ -2859,27 +2860,25 @@ But the pseudo-grammar says it is, so what is it really?
 :CUSTOM_ID: h:788ECB8C-0A48-4255-B35E-F5850902AA32
 :END:
 :pgd:
-+ Attributes (TODO link to).
-+ [[#h:7BCA6405-C905-45AB-A3C7-1B7F6064454A][StatementKind]].
-+ (opt) =;=.
++ Attributes (TODO link to) by [[#h:7BCA6405-C905-45AB-A3C7-1B7F6064454A][StatementKind]] by (opt) =;=
 :end:
 
-#+begin_src js :treesit t
-statement: ($) => choice(
+#+name: statement
+#+begin_src js :rule _statement_ast :arg $ :ast Statement
+seq(
     // TODO: Attributes.
+    <<r("statement_kind")>>,
+    ';',
 )
 #+end_src
 
-Parser: [[file:noir/compiler/noirc_frontend/src/parser/parser/statement.rs::fn parse_statement(&mut self)][parse_statement()]].
+Parser: [[file:noir/compiler/noirc_frontend/src/parser/parser/statement.rs::fn parse_statement(&mut self)][parse_statement()]]
 
-#+transclude: [[file:noir/compiler/noirc_frontend/src/parser/parser/statement.rs][Statement doc]] :lines 25-25 :src fundamental
+#+transclude: [[file:noir/compiler/noirc_frontend/src/parser/parser/statement.rs::25][Statement doc]] :lines 25-25 :src fundamental
 
-#+transclude: [[file:noir/compiler/noirc_frontend/src/ast/statement.rs][Statement AST info]] :lines 36-38 :src fundamental
+#+transclude: [[file:noir/compiler/noirc_frontend/src/ast/statement.rs::36][Statement AST info]] :lines 36-38 :src fundamental
 
-*************** TODO Parser notes for parse_statement
-*************** END
-*************** TODO StatementKind and below... holy there are a lot
-*************** END
+Loop parsing attributes and statement kind, each statement is delimited by a semicolon.
 
 **** TODO StatementKind                                        :node:cluster:
 :PROPERTIES:
@@ -2889,31 +2888,34 @@ Parser: [[file:noir/compiler/noirc_frontend/src/parser/parser/statement.rs::fn p
 - State "TODO"       from              [2025-05-20 Tue 18:16]
 :END:
 :pgd:
-- [[#h:71AB7D76-FD24-4B91-A187-E9968024DC0C][BreakStatement]].
-- [[#h:6616DE79-93E3-42AA-9633-4A29251F5BA0][ContinueStatement]].
-- [[#h:17935AE3-A964-49D1-927B-E67D035FD8D7][ReturnStatement]].
-- [[#h:FD70AFA1-5D45-434E-A9D0-7E8F6DD38058][LetStatement]].
-- [[#h:25216601-CAF6-4246-8289-B106F9A9166B][ConstrainStatement]].
-- [[#h:A0796B1B-462F-4DC6-BE7D-F1D87112AFD4][ComptimeStatement]].
-- [[#h:F444339D-00F1-4553-ACF6-DE0B5E2EE35E][ForStatement]].
-- [[#h:BB36CCC8-4FE6-4529-A365-69F0011CEC2A][IfStatement]].
-- [[#h:B305BFF3-A865-4292-A8E5-5448D38CE872][BlockStatement]].
-- [[#h:D8D0BBE8-6152-479B-8C19-282B2B56C4A9][AssignStatement]].
-- [[#h:12F5ADF9-E496-4D5B-896E-5CE97D44BE3D][ExpressionStatement]].
+- [[#h:71AB7D76-FD24-4B91-A187-E9968024DC0C][BreakStatement]]
+- [[#h:6616DE79-93E3-42AA-9633-4A29251F5BA0][ContinueStatement]]
+- [[#h:17935AE3-A964-49D1-927B-E67D035FD8D7][ReturnStatement]]
+- [[#h:FD70AFA1-5D45-434E-A9D0-7E8F6DD38058][LetStatement]]
+- [[#h:25216601-CAF6-4246-8289-B106F9A9166B][ConstrainStatement]]
+- [[#h:A0796B1B-462F-4DC6-BE7D-F1D87112AFD4][ComptimeStatement]]
+- [[#h:F444339D-00F1-4553-ACF6-DE0B5E2EE35E][ForStatement]]
+- [[#h:BB36CCC8-4FE6-4529-A365-69F0011CEC2A][IfStatement]]
+- [[#h:B305BFF3-A865-4292-A8E5-5448D38CE872][BlockStatement]]
+- [[#h:D8D0BBE8-6152-479B-8C19-282B2B56C4A9][AssignStatement]]
+- [[#h:12F5ADF9-E496-4D5B-896E-5CE97D44BE3D][ExpressionStatement]]
 :end:
 
-#+begin_src js :treesit t
-// Noirc: StatementKind.
+#+name: statement_kind
+#+begin_src js :rule _statement_kind :arg $ :ast StatementKind
+choice(
+    <<r("break_statement")>>,
+)
 #+end_src
 
 Parser: [[file:noir/compiler/noirc_frontend/src/parser/parser/statement.rs::fn parse_statement_kind(][parse_statement_kind()]]
 Types: [[file:noir/compiler/noirc_frontend/src/ast/statement.rs::pub struct Statement {][Statement struct]] / [[file:noir/compiler/noirc_frontend/src/ast/statement.rs::pub enum StatementKind {][StatementKind enum]]
 
-#+transclude: [[file:noir/compiler/noirc_frontend/src/parser/parser/statement.rs][StatementKind doc]] :lines 59-70 :src fundamental
+#+transclude: [[file:noir/compiler/noirc_frontend/src/parser/parser/statement.rs::59][StatementKind doc]] :lines 59-70 :src fundamental
 
 Top of parser function checks for a specially lexed ~TokenKind::InternedStatement~. If that is the next token a ~StatementKind::Interned~ of that statement is returned. Remember the return here returns at the function (i.e. ~parse_statement_kind()~ level).
 
-#+transclude: [[file:noir/compiler/noirc_frontend/src/parser/parser/statement.rs][TokenKind::InternedStatement check]] :lines 91-98 :src rust
+#+transclude: [[file:noir/compiler/noirc_frontend/src/parser/parser/statement.rs::91][TokenKind::InternedStatement check]] :lines 91-98 :src rust
 
 *************** TODO Have we done/added stuff for interned statements yet? Lex notes for interned statements also?
 *************** END
@@ -2968,23 +2970,26 @@ Some ~StatementKind~\s do not require a terminating semicolon. Function ~Stateme
 *************** TODO Comptime statement recurses a bit, do that later. See line 99
 *************** END
 
-***** TOIMPL BreakStatement                                            :leaf:
+***** DONE BreakStatement                                              :leaf:
+CLOSED: [2025-06-24 Tue 17:43]
 :PROPERTIES:
 :CUSTOM_ID: h:71AB7D76-FD24-4B91-A187-E9968024DC0C
 :END:
 :LOGBOOK:
+- State "DONE"       from "TOIMPL"     [2025-06-24 Tue 17:43]
 - State "TOIMPL"     from "TODO"       [2025-05-20 Tue 19:03]
 - State "TODO"       from              [2025-05-20 Tue 18:16]
 :END:
 :pgd:
-+ =break= (kw).
++ =break= (kw)
 :end:
 
+Parser: [[file:noir/compiler/noirc_frontend/src/parser/parser/statement.rs::if self.eat_keyword(Keyword::Break) {][parse break statement parent inline]]
 Takes nothing (unlike say Rust where an expression can follow), only the keyword.
 
-#+begin_src js :treesit t
-// Noirc: BreakStatement.
-break_statement: _ => seq('break')
+#+name: break_statement
+#+begin_src js :ast BreakStatement
+'break'
 #+end_src
 
 ***** TOIMPL ContinueStatement                                         :leaf:
@@ -4114,7 +4119,7 @@ module.exports = grammar({
         // * * * * * * * * * * * * * * * * * * * * * * * * * DECLARATIONS / ITEMS
         <<grp__declarations>>
 
-        // * * * * * * * * * * * * * * * * * * * * * * * * * STATEMENTS
+        // * * * * * * * * * * * * * * * * * * * * * * * * * STATEMENT KINDS (AST)
         // TODO: Consider all Noirc 'statements' except we enforce trailing semicolon where required? Or just have a statements section idk yet.
         <<grp__statements>>
 
@@ -4172,7 +4177,8 @@ function sepBy(rule, sep) {
 
 #+name: grp__statements
 #+begin_src js :noweb yes
-// Foo
+<<n("statement")>>
+<<c('("statement_kind" "break_statement"))>>
 #+end_src
 
 ** Expressions

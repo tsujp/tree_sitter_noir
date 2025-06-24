@@ -779,6 +779,18 @@ fn unconstrained unconstrained one() {}
 :export_file_name: statements.txt
 :END:
 
+** Break
+#+begin_test
+global foo1 = { break; };
+
+---
+
+(global_item
+  name: (identifier)
+  (block
+    (break_statement)))
+#+end_test
+
 * Expressions
 :PROPERTIES:
 :export_file_name: expressions.txt
@@ -1155,6 +1167,9 @@ global foo2 = &       [1; 2];
       (int_literal)
       length: (int_literal))))
 #+end_test
+
+*** Block expression
+TODO (after statements)
 
 ** Binary
 

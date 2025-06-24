@@ -287,7 +287,17 @@
   {
     "type": "block",
     "named": true,
-    "fields": {}
+    "fields": {},
+    "children": {
+      "multiple": true,
+      "required": false,
+      "types": [
+        {
+          "type": "break_statement",
+          "named": true
+        }
+      ]
+    }
   },
   {
     "type": "block_comment",
@@ -1231,6 +1241,10 @@
   {
     "type": "bool",
     "named": false
+  },
+  {
+    "type": "break_statement",
+    "named": true
   },
   {
     "type": "contract",

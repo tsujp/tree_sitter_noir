@@ -972,6 +972,32 @@
         }
       ]
     },
+    "_statement_ast": {
+      "type": "SEQ",
+      "members": [
+        {
+          "type": "SYMBOL",
+          "name": "_statement_kind"
+        },
+        {
+          "type": "STRING",
+          "value": ";"
+        }
+      ]
+    },
+    "_statement_kind": {
+      "type": "CHOICE",
+      "members": [
+        {
+          "type": "SYMBOL",
+          "name": "break_statement"
+        }
+      ]
+    },
+    "break_statement": {
+      "type": "STRING",
+      "value": "break"
+    },
     "_expression": {
       "type": "CHOICE",
       "members": [
@@ -1428,6 +1454,13 @@
         {
           "type": "STRING",
           "value": "{"
+        },
+        {
+          "type": "REPEAT",
+          "content": {
+            "type": "SYMBOL",
+            "name": "_statement_ast"
+          }
         },
         {
           "type": "STRING",
