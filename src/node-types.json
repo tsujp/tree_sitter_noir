@@ -301,6 +301,10 @@
           "named": true
         },
         {
+          "type": "let_statement",
+          "named": true
+        },
+        {
           "type": "return_statement",
           "named": true
         }
@@ -511,6 +515,76 @@
     }
   },
   {
+    "type": "let_statement",
+    "named": true,
+    "fields": {
+      "pattern": {
+        "multiple": true,
+        "required": true,
+        "types": [
+          {
+            "type": "identifier",
+            "named": true
+          },
+          {
+            "type": "mut_pattern",
+            "named": true
+          },
+          {
+            "type": "struct_pattern",
+            "named": true
+          },
+          {
+            "type": "tuple_pattern",
+            "named": true
+          }
+        ]
+      },
+      "value": {
+        "multiple": false,
+        "required": true,
+        "types": [
+          {
+            "type": "array_expression",
+            "named": true
+          },
+          {
+            "type": "binary_expression",
+            "named": true
+          },
+          {
+            "type": "block",
+            "named": true
+          },
+          {
+            "type": "bool_literal",
+            "named": true
+          },
+          {
+            "type": "fmt_str_literal",
+            "named": true
+          },
+          {
+            "type": "int_literal",
+            "named": true
+          },
+          {
+            "type": "raw_str_literal",
+            "named": true
+          },
+          {
+            "type": "slice_expression",
+            "named": true
+          },
+          {
+            "type": "str_literal",
+            "named": true
+          }
+        ]
+      }
+    }
+  },
+  {
     "type": "line_comment",
     "named": true,
     "fields": {
@@ -571,6 +645,33 @@
       "types": [
         {
           "type": "visibility_modifier",
+          "named": true
+        }
+      ]
+    }
+  },
+  {
+    "type": "mut_pattern",
+    "named": true,
+    "fields": {},
+    "children": {
+      "multiple": true,
+      "required": false,
+      "types": [
+        {
+          "type": "identifier",
+          "named": true
+        },
+        {
+          "type": "mut_pattern",
+          "named": true
+        },
+        {
+          "type": "struct_pattern",
+          "named": true
+        },
+        {
+          "type": "tuple_pattern",
           "named": true
         }
       ]
@@ -920,6 +1021,48 @@
     }
   },
   {
+    "type": "struct_pattern",
+    "named": true,
+    "fields": {},
+    "children": {
+      "multiple": true,
+      "required": false,
+      "types": [
+        {
+          "type": "struct_pattern_field",
+          "named": true
+        }
+      ]
+    }
+  },
+  {
+    "type": "struct_pattern_field",
+    "named": true,
+    "fields": {},
+    "children": {
+      "multiple": true,
+      "required": true,
+      "types": [
+        {
+          "type": "identifier",
+          "named": true
+        },
+        {
+          "type": "mut_pattern",
+          "named": true
+        },
+        {
+          "type": "struct_pattern",
+          "named": true
+        },
+        {
+          "type": "tuple_pattern",
+          "named": true
+        }
+      ]
+    }
+  },
+  {
     "type": "trait_impl",
     "named": true,
     "fields": {},
@@ -941,6 +1084,33 @@
         },
         {
           "type": "unit_type",
+          "named": true
+        }
+      ]
+    }
+  },
+  {
+    "type": "tuple_pattern",
+    "named": true,
+    "fields": {},
+    "children": {
+      "multiple": true,
+      "required": false,
+      "types": [
+        {
+          "type": "identifier",
+          "named": true
+        },
+        {
+          "type": "mut_pattern",
+          "named": true
+        },
+        {
+          "type": "struct_pattern",
+          "named": true
+        },
+        {
+          "type": "tuple_pattern",
           "named": true
         }
       ]
@@ -1372,6 +1542,10 @@
   {
     "type": "int_literal",
     "named": true
+  },
+  {
+    "type": "let",
+    "named": false
   },
   {
     "type": "mod",

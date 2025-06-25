@@ -312,6 +312,7 @@ module.exports = grammar({
             $.break_statement,
             $.continue_statement,
             $.return_statement,
+            $.let_statement,
         ),
         // [[file:noir_grammar.org::break_statement]]
         break_statement: _ => 'break',
@@ -319,6 +320,14 @@ module.exports = grammar({
         continue_statement: _ => 'continue',
         // [[file:noir_grammar.org::return_statement]]
         return_statement: $ => seq('return', optional($._expression)),
+        // [[file:noir_grammar.org::let_statement]]
+        let_statement: $ => seq(
+            'let',
+            field('pattern', $._pattern),
+            // TODO: OptionalTypeAnnotation
+            '=',
+            field('value', $._expression),
+        ),
 
         // * * * * * * * * * * * * * * * * * * * * * * * * * EXPRESSIONS
         
@@ -498,8 +507,12 @@ module.exports = grammar({
         ),
         // [[file:noir_grammar.org::pattern]]
         _pattern: $ => choice(
+            alias(seq($.mut_bound, $._pattern), $.mut_pattern),
+            $._pattern_no_mut,
+        ),
+        // [[file:noir_grammar.org::pattern_no_mut]]
+        _pattern_no_mut: $ => choice(
             // TODO: InternedPattern? It looks like a compiler-only internal though and not discrete syntax.
-            optional($.mut_bound),
             $.tuple_pattern,
             $.struct_pattern,
             $.identifier, // Noirc: IdentifierPattern.

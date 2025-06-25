@@ -2418,13 +2418,10 @@ In all cases Pattern is further parsed by call to ~parse_pattern_after_modifiers
 :end:
 
 #+name: pattern
-#+begin_src js :rule _pattern :arg $ :ast PatternNoMut
+#+begin_src js :rule _pattern :arg $ :ast Pattern
 choice(
-    // TODO: InternedPattern? It looks like a compiler-only internal though and not discrete syntax.
-    optional($.mut_bound),
-    <<r("tuple_pattern")>>,
-    <<r("struct_pattern")>>,
-    $.identifier, // Noirc: IdentifierPattern.
+    alias(seq($.mut_bound, <<self()>>), $.mut_pattern),
+    <<r("pattern_no_mut")>>,
 )
 #+end_src
 
@@ -2450,6 +2447,16 @@ Update Noir in-code docs, mut is actually optional. i.e. literal in-code Noir do
 - [[#h:44A2D194-B244-4E4C-B53E-2FCF3F4165E2][StructPattern]]
 - [[#h:CE58024C-51AD-4A68-A57B-CE4E6D5C0552][IdentifierPattern]]
 :end:
+
+#+name: pattern_no_mut
+#+begin_src js :rule _pattern_no_mut :arg $ :ast PatternNoMut
+choice(
+    // TODO: InternedPattern? It looks like a compiler-only internal though and not discrete syntax.
+    <<r("tuple_pattern")>>,
+    <<r("struct_pattern")>>,
+    $.identifier, // Noirc: IdentifierPattern.
+)
+#+end_src
 
 Parser: [[file:noir/compiler/noirc_frontend/src/parser/parser/pattern.rs::fn parse_pattern_no_mut(&mut self)][parse_pattern_no_mut()]]
 #+transclude: [[file:noir/compiler/noirc_frontend/src/parser/parser/pattern.rs::112][PatternNoMut doc]] :lines 112-116 :src fundamental
@@ -2907,6 +2914,7 @@ choice(
     <<r("break_statement")>>,
     <<r("continue_statement")>>,
     <<r("return_statement")>>,
+    <<r("let_statement")>>,
 )
 #+end_src
 
@@ -3050,20 +3058,35 @@ Parser: [[file:noir/compiler/noirc_frontend/src/parser/parser/statement.rs::if s
 - State "TODO"       from              [2025-05-20 Tue 18:16]
 :END:
 :pgd:
-+ =let= (kw).
-+ pattern (TODO what).
-+ OptionalTypeAnnotation (TODO link).
-+ ===.
-+ Expression (TODO link).
++ =let= (kw)
++ [[#h:D349E307-F033-4D2A-A729-F2EE5B483065][Pattern]]
++ OptionalTypeAnnotation (TODO link)
++ ===
++ [[#h:167542CC-8CDE-49C1-9465-E5157C6A176F][Expression]]
 :end:
 
-Parser (sop): [[file:noir/compiler/noirc_frontend/src/parser/parser/statement.rs::if self.at_keyword(Keyword::Let) {][StatementKind::Let parse]].
-Parser: [[file:noir/compiler/noirc_frontend/src/parser/parser/statement.rs::fn parse_let_statement(&mut self, attributes: Vec<(Attribute, Span)>)][parse_let_statement()]].
+#+name: let_statement
+#+begin_src js :arg $ :ast LetStatement
+seq(
+    'let',
+    field('pattern', <<r("pattern")>>),
+    // TODO: OptionalTypeAnnotation
+    '=',
+    field('value', <<r("expression")>>),
+)
+#+end_src
 
-#+transclude: [[file:noir/compiler/noirc_frontend/src/parser/parser/statement.rs][LetStatement doc]] :lines 351-351 :src fundamental
+Parser: [[file:noir/compiler/noirc_frontend/src/parser/parser/statement.rs::if self.at_keyword(Keyword::Let) {][parse let statement parent callsite]], [[file:noir/compiler/noirc_frontend/src/parser/parser/statement.rs::fn parse_let_statement(&mut self, attributes: Vec<(Attribute, Span)>)][parse_let_statement()]]
 
+#+transclude: [[file:noir/compiler/noirc_frontend/src/parser/parser/statement.rs::351][LetStatement doc]] :lines 351-351 :src fundamental
+
+*************** TODO Change rendered rule name to let_declaration?
+This kind of ties into using Statements as a category in the final rendered grammar.js anyway, since all _things_ are going to be at least statements anyway (or really, expressions since a statement is an expression with no return value). Semantics.
+*************** END
 *************** TODO Validate secondary attributes stuff in the let statement parse.
 I don't think we need to do that these attributes come from Statement, so long as we have things set correctly on Statement in terms of parsing attributes we're fine here (for the purpose of tree-sitter) I think.
+*************** END
+*************** TODO Noirc doc for pattern needs to be capital P since it's a proper AST node?
 *************** END
 
 ***** TODO ConstrainStatement
@@ -4192,7 +4215,7 @@ function sepBy(rule, sep) {
 #+name: grp__statements
 #+begin_src js :noweb yes
 <<n("statement")>>
-<<c('("statement_kind" "break_statement" "continue_statement" "return_statement"))>>
+<<c('("statement_kind" "break_statement" "continue_statement" "return_statement" "let_statement"))>>
 #+end_src
 
 ** Expressions
@@ -4225,7 +4248,7 @@ function sepBy(rule, sep) {
 
 #+name: grp__patterns
 #+begin_src js :noweb yes
-<<c('("pattern_or_self" "pattern" "self_pattern"))>>
+<<c('("pattern_or_self" "pattern" "pattern_no_mut" "self_pattern"))>>
 <<n("tuple_pattern")>>
 <<c('("struct_pattern" "struct_pattern_field"))>>
 #+end_src
@@ -4260,8 +4283,9 @@ Inserts the name of the src-block it literally appears in.
 #+name: self
 #+begin_src emacs-lisp
 (when-let* ((block-src-info (org-babel-lob--src-info block_name))
-            (block (org-element-at-point (nth 5 block-src-info))))
-  (format "$.%s" (org-element-property :name block)))
+            (block-name (org-element-property :name (org-element-at-point (nth 5 block-src-info))))
+            (name (or (cdr (assoc :rule (nth 2 block-src-info))) block-name)))
+  (format "$.%s" name))
 #+end_src
 
 

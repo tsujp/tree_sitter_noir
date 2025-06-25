@@ -821,6 +821,50 @@ global foo2 = { return 123; };
       (int_literal))))
 #+end_test
 
+** Let
+*************** TODO Add let test for struct pattern also
+*************** END
+
+#+begin_test
+global f1 = { let x = 123; };
+global f2 = { let (x, y) = 1; };
+
+---
+
+(global_item
+  name: (identifier)
+  (block
+    (let_statement
+      pattern: (identifier)
+      value: (int_literal))))
+(global_item
+  name: (identifier)
+  (block
+    (let_statement
+      pattern: (tuple_pattern
+        (identifier)
+        (identifier))
+      value: (int_literal))))
+#+end_test
+
+*** Complex
+TODO: Rename this subheading better, maybe "nested expression" or something
+#+begin_test :skip
+global f2 = { let mut y = { 1 + 2 }; };
+
+---
+
+(global_item
+  name: (identifier)
+  (block
+    (let_statement
+      pattern: (identifier)
+      value: (block
+        (binary_expression
+          left: (int_literal)
+          right: (int_literal))))))
+#+end_test
+
 * Expressions
 :PROPERTIES:
 :export_file_name: expressions.txt

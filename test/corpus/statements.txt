@@ -50,3 +50,52 @@ global foo2 = { return 123; };
       (return_statement
         (int_literal))))
 )
+
+
+===
+Let
+===
+
+global f1 = { let x = 123; };
+global f2 = { let (x, y) = 1; };
+
+---
+
+(source_file
+  (global_item
+    name: (identifier)
+    (block
+      (let_statement
+        pattern: (identifier)
+        value: (int_literal))))
+  (global_item
+    name: (identifier)
+    (block
+      (let_statement
+        pattern: (tuple_pattern
+          (identifier)
+          (identifier))
+        value: (int_literal))))
+)
+
+
+=============
+Let / Complex
+:skip
+=============
+
+global f2 = { let mut y = { 1 + 2 }; };
+
+---
+
+(source_file
+  (global_item
+    name: (identifier)
+    (block
+      (let_statement
+        pattern: (identifier)
+        value: (block
+          (binary_expression
+            left: (int_literal)
+            right: (int_literal))))))
+)
