@@ -3050,11 +3050,13 @@ Parser: [[file:noir/compiler/noirc_frontend/src/parser/parser/statement.rs::if s
 *************** TODO Does the BNF doc have an error is is code missing that makes it actually optional?
 *************** END
 
-***** TODO LetStatement                                                :node:
+***** SPEC LetStatement                                                :node:
 :PROPERTIES:
 :CUSTOM_ID: h:FD70AFA1-5D45-434E-A9D0-7E8F6DD38058
 :END:
 :LOGBOOK:
+- State "SPEC"       from "TODO"       [2025-06-26 Thu 02:11] \\
+  Still needs more test coverage
 - State "TODO"       from              [2025-05-20 Tue 18:16]
 :END:
 :pgd:
