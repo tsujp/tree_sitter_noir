@@ -28,3 +28,25 @@ global foo1 = { continue; };
     (block
       (continue_statement)))
 )
+
+
+======
+Return
+======
+
+global foo1 = { return; };
+global foo2 = { return 123; };
+
+---
+
+(source_file
+  (global_item
+    name: (identifier)
+    (block
+      (return_statement)))
+  (global_item
+    name: (identifier)
+    (block
+      (return_statement
+        (int_literal))))
+)

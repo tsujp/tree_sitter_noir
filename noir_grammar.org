@@ -2906,6 +2906,7 @@ Loop parsing attributes and statement kind, each statement is delimited by a sem
 choice(
     <<r("break_statement")>>,
     <<r("continue_statement")>>,
+    <<r("return_statement")>>,
 )
 #+end_src
 
@@ -3014,23 +3015,31 @@ CLOSED: [2025-06-24 Tue 17:47]
 
 Parser: [[file:noir/compiler/noirc_frontend/src/parser/parser/statement.rs::if self.eat_keyword(Keyword::Continue) {][parse continue statement parent inline]]
 
-***** TODO ReturnStatement                                             :node:
+***** DONE ReturnStatement                                             :node:
+CLOSED: [2025-06-25 Wed 14:06]
 :PROPERTIES:
 :CUSTOM_ID: h:17935AE3-A964-49D1-927B-E67D035FD8D7
 :END:
 :LOGBOOK:
+- State "DONE"       from "TODO"       [2025-06-25 Wed 14:06]
 - State "TODO"       from              [2025-05-20 Tue 18:16]
 :END:
 :pgd:
-+ =return= (kw) by (opt) Expression (TODO link).
++ =return= (kw) by (opt) [[#h:167542CC-8CDE-49C1-9465-E5157C6A176F][Expression]]
 :end:
 
-Parser (sop): [[file:noir/compiler/noirc_frontend/src/parser/parser/statement.rs::if self.eat_keyword(Keyword::Return) {][StatementKind::Return parse]].
+#+name: return_statement
+#+begin_src js :arg $ :ast ReturnStatement
+seq('return', optional(<<r("expression")>>))
+#+end_src
 
-#+transclude: [[file:noir/compiler/noirc_frontend/src/parser/parser/statement.rs][ReturnStatement doc]] :lines 76-76 :src fundamental
+Parser: [[file:noir/compiler/noirc_frontend/src/parser/parser/statement.rs::if self.eat_keyword(Keyword::Return) {][parse return statement parent inline]]
 
-*************** TODO What is going on with Return
-I take it parse_expression() and everything further down eventually succeeds with a valid return statement and if push_error has an empty span or something its not an error.. idk..? What does a valid return statement look like in terms of parsed code what.
+#+transclude: [[file:noir/compiler/noirc_frontend/src/parser/parser/statement.rs::76][ReturnStatement doc]] :lines 76-76 :src fundamental
+
+*************** TODO I thought return statement is always an error in noir since no early returns
+*************** END
+*************** TODO Does the BNF doc have an error is is code missing that makes it actually optional?
 *************** END
 
 ***** TODO LetStatement                                                :node:
@@ -4183,7 +4192,7 @@ function sepBy(rule, sep) {
 #+name: grp__statements
 #+begin_src js :noweb yes
 <<n("statement")>>
-<<c('("statement_kind" "break_statement" "continue_statement"))>>
+<<c('("statement_kind" "break_statement" "continue_statement" "return_statement"))>>
 #+end_src
 
 ** Expressions

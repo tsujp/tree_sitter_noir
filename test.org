@@ -803,6 +803,24 @@ global foo1 = { continue; };
     (continue_statement)))
 #+end_test
 
+** Return
+#+begin_test
+global foo1 = { return; };
+global foo2 = { return 123; };
+
+---
+
+(global_item
+  name: (identifier)
+  (block
+    (return_statement)))
+(global_item
+  name: (identifier)
+  (block
+    (return_statement
+      (int_literal))))
+#+end_test
+
 * Expressions
 :PROPERTIES:
 :export_file_name: expressions.txt

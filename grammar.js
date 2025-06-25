@@ -311,11 +311,14 @@ module.exports = grammar({
         _statement_kind: $ => choice(
             $.break_statement,
             $.continue_statement,
+            $.return_statement,
         ),
         // [[file:noir_grammar.org::break_statement]]
         break_statement: _ => 'break',
         // [[file:noir_grammar.org::continue_statement]]
         continue_statement: _ => 'continue',
+        // [[file:noir_grammar.org::return_statement]]
+        return_statement: $ => seq('return', optional($._expression)),
 
         // * * * * * * * * * * * * * * * * * * * * * * * * * EXPRESSIONS
         
