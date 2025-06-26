@@ -313,6 +313,7 @@ module.exports = grammar({
             $.continue_statement,
             $.return_statement,
             $.let_statement,
+            $.constrain_statement,
         ),
         // [[file:noir_grammar.org::break_statement]]
         break_statement: _ => 'break',
@@ -327,6 +328,13 @@ module.exports = grammar({
             // TODO: OptionalTypeAnnotation
             '=',
             field('value', $._expression),
+        ),
+        // [[file:noir_grammar.org::constrain_statement]]
+        constrain_statement: $ => seq(
+            // XXX: Keyword 'constrain' is deprecated, we're not going to include it at all.
+            // 'assert' expects 1 or 2 parameters, 'assert_eq' expects 2 or 3. This is out of scope for tree-sitter grammar (at least for now), if it's a boon without huge complexity the rules can be augmented to enforce this later.
+            choice('assert', 'assert_eq'),
+            field('arguments', $.arguments),
         ),
 
         // * * * * * * * * * * * * * * * * * * * * * * * * * EXPRESSIONS
@@ -388,6 +396,19 @@ module.exports = grammar({
             '{',
             repeat($._statement_ast),
             '}',
+        ),
+        
+        // [[file:noir_grammar.org::arguments]]
+        arguments: $ => seq(
+            '(',
+            sepBy($._expression, ','), // Inlined Noirc: ArgumentsList
+            optional(','),
+            ')',
+        ),
+        // [[file:noir_grammar.org::call_arguments]]
+        call_arguments: $ => seq(
+            optional('!'),
+            $.arguments,
         ),
 
         // * * * * * * * * * * * * * * * * * * * * * * * * * TYPES

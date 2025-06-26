@@ -99,3 +99,75 @@ global f2 = { let mut y = { 1 + 2 }; };
             left: (int_literal)
             right: (int_literal))))))
 )
+
+
+=========
+Constrain
+:skip
+=========
+
+global f1 = { assert(true); };
+global f2 = { assert(true, 1, x); };
+
+global f3 = { assert_eq(true); };
+global f3 = { assert_eq("foo", "bar", "lorem"); };
+
+---
+
+(source_file
+  (global_item
+    name: (identifier)
+    (block
+      (constrain_statement
+        arguments: (arguments
+          (bool_literal)))))
+  (global_item
+    name: (identifier)
+    (block
+      (constrain_statement
+        arguments: (arguments
+          (bool_literal)
+          (int_literal)
+          (identifier)))))
+
+  (global_item
+    name: (identifier)
+    (block
+      (constrain_statement
+        arguments: (arguments
+          (bool_literal)))))
+  (global_item
+    name: (identifier)
+    (block
+      (constrain_statement
+        arguments: (arguments
+          (str_literal
+            (str_content))
+          (str_literal
+            (str_content))
+          (str_literal
+            (str_content))))))
+)
+
+
+======================
+Constrain / Degenerate
+======================
+
+global f1 = { assert(); };
+global f2 = { assert(,); };
+
+---
+
+(source_file
+  (global_item
+    name: (identifier)
+    (block
+      (constrain_statement
+        arguments: (arguments))))
+  (global_item
+    name: (identifier)
+    (block
+      (constrain_statement
+        arguments: (arguments))))
+)
