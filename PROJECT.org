@@ -134,6 +134,33 @@ https://en.wikipedia.org/wiki/Statement_(computer_science)
 https://en.wikipedia.org/wiki/Expression_(computer_science)
 https://en.wikipedia.org/wiki/Declaration_(computer_programming)
 
+*** EBNF Patterns
+
+EBNF descriptions and their best associated tree-sitter grammar DSL translations.
+
+**** Wrapped Optional-List with Delimiters
+
+Common pattern where an optional list is wrapped by some tokens (e.g. parentheses), and the list itself allows an optionally trailing delimiter (e.g. a comma).
+
+Two further variants where the list allows zero-or-more =*= delimit-repeated elements, or optionally one-more =?= delimited element.
+
+#+begin_example
+Foos = '(' FoosList? ')'
+FoosList = Lorem ( ',' Lorem )? ','?
+#+end_example
+
+This tree-sitter rule flattens EBNF =Foos= and =FoosList=. Since FoosList is optional in the Foos rule =sepBy= is used instead of =sepBy1=, the latter of which would require at least one occurrence. Finally =Lorem= is another rule unto itself.
+
+#+begin_src js
+seq(
+    '(',
+    sepBy($.lorem, ','),
+    optional(','),
+    ')',
+)
+#+end_src
+
+
 *** Coverage TODOs
 
 It's a bit hard (currently) to track general-coverage TODOs within =noir_grammar.org= itself, and I have yet to dive-deep into org-agenda which might be able to construct such a view. However there are a lot of other TODOs specific to each headline they are under. Here is a general "overview" of areas of the grammar that need to be done as a way to "save progress" for when future Jordan comes back to work on =noir_grammar.org=.
