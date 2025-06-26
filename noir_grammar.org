@@ -3124,11 +3124,13 @@ Parser: [[file:noir/compiler/noirc_frontend/src/parser/parser/statement.rs::if l
 
 #+transclude: [[file:noir/compiler/noirc_frontend/src/parser/parser/statement.rs::370][ConstrainStatement doc]] :lines 370-373 :src fundamental
 
-***** SPEC ComptimeStatement                                           :node:
+***** DONE ComptimeStatement                                           :node:
+CLOSED: [2025-06-26 Thu 17:51]
 :PROPERTIES:
 :CUSTOM_ID: h:A0796B1B-462F-4DC6-BE7D-F1D87112AFD4
 :END:
 :LOGBOOK:
+- State "DONE"       from "SPEC"       [2025-06-26 Thu 17:51]
 - State "SPEC"       from "TODO"       [2025-06-26 Thu 16:29] \\
   Doing ForStatement before tests since it depends on that
 - State "TODO"       from              [2025-05-20 Tue 18:16]
