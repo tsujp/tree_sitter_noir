@@ -2419,8 +2419,9 @@ In all cases Pattern is further parsed by call to ~parse_pattern_after_modifiers
 
 #+name: pattern
 #+begin_src js :rule _pattern :arg $ :ast Pattern
-choice(
-    alias(seq($.mut_bound, <<self()>>), $.mut_pattern),
+seq(
+    // alias(seq($.mut_bound, <<r("pattern_no_mut")>>), $.mut_pattern),
+    // optional($.mut_bound),
     <<r("pattern_no_mut")>>,
 )
 #+end_src
@@ -2916,6 +2917,8 @@ choice(
     <<r("return_statement")>>,
     <<r("let_statement")>>,
     <<r("constrain_statement")>>,
+    <<r("comptime_statement")>>,
+    <<r("for_statement")>>,
 )
 #+end_src
 
@@ -3072,6 +3075,7 @@ Parser: [[file:noir/compiler/noirc_frontend/src/parser/parser/statement.rs::if s
 #+begin_src js :arg $ :ast LetStatement
 seq(
     'let',
+    optional($.mut_bound),
     field('pattern', <<r("pattern")>>),
     // TODO: OptionalTypeAnnotation
     '=',
@@ -3120,25 +3124,133 @@ Parser: [[file:noir/compiler/noirc_frontend/src/parser/parser/statement.rs::if l
 
 #+transclude: [[file:noir/compiler/noirc_frontend/src/parser/parser/statement.rs::370][ConstrainStatement doc]] :lines 370-373 :src fundamental
 
-***** TODO ComptimeStatement
+***** SPEC ComptimeStatement                                           :node:
 :PROPERTIES:
 :CUSTOM_ID: h:A0796B1B-462F-4DC6-BE7D-F1D87112AFD4
 :END:
 :LOGBOOK:
+- State "SPEC"       from "TODO"       [2025-06-26 Thu 16:29] \\
+  Doing ForStatement before tests since it depends on that
 - State "TODO"       from              [2025-05-20 Tue 18:16]
 :END:
+:pgd:
++ [[#h:5092AC79-344E-465F-973E-70DC2ECF38FB][ComptimeBlock]] OR [[#h:46D5DE09-D9EB-4227-BB31-BA77B8B0063D][ComptimeLet]] OR [[#h:B0F78DC8-11C8-4D7E-A72C-7C3498574225][ComptimeFor]]
+:end:
 
-***** TODO ForStatement
+#+name: comptime_statement
+#+begin_src js :arg $ :ast ComptimeStatement
+seq(
+    'comptime',
+    choice(
+        <<r("block_expression")>>, // Noirc: ComptimeBlock
+        <<r("let_statement")>>, // Noirc: ComptimeLet
+        <<r("for_statement")>>, // Noirc: ComptimeFor
+    ),
+)
+#+end_src
+
+Parser: [[file:noir/compiler/noirc_frontend/src/parser/parser/statement.rs::if self.at_keyword(Keyword::Comptime) {][parse comptime statement parent callsite]], [[file:noir/compiler/noirc_frontend/src/parser/parser/statement.rs::fn parse_comptime_statement(][parse_comptime_statement()]], [[file:noir/compiler/noirc_frontend/src/parser/parser/statement.rs::fn parse_comptime_statement_kind(][parse_comptime_statement_kind()]]
+
+#+transclude: [[file:noir/compiler/noirc_frontend/src/parser/parser/statement.rs::291][ComptimeStatement ComptimeBlock ComptimeLet ComptimeFor doc]] :lines 291-300 :src fundamental
+
+****** ComptimeBlock                                                   :node:
+:PROPERTIES:
+:CUSTOM_ID: h:5092AC79-344E-465F-973E-70DC2ECF38FB
+:END:
+:pgd:
++ =comptime= (kw) by [[#h:B34CADE5-71B4-41F2-AB54-00483EE593A6][BlockExpression]]
+:end:
+
+**Inlined unless something else references it in a way that requires otherwise**.
+
+****** ComptimeLet                                                     :node:
+:PROPERTIES:
+:CUSTOM_ID: h:46D5DE09-D9EB-4227-BB31-BA77B8B0063D
+:END:
+:pgd:
++ =comptime= (kw) by [[#h:FD70AFA1-5D45-434E-A9D0-7E8F6DD38058][LetStatement]]
+:end:
+
+**Inlined unless something else references it in a way that requires otherwise**.
+
+****** ComptimeFor                                                     :node:
+:PROPERTIES:
+:CUSTOM_ID: h:B0F78DC8-11C8-4D7E-A72C-7C3498574225
+:END:
+:pgd:
++ =comptime= (kw) by [[#h:F444339D-00F1-4553-ACF6-DE0B5E2EE35E][ForStatement]]
+:end:
+
+**Inlined unless something else references it in a way that requires otherwise**.
+
+***** SPEC ForStatement                                                :node:
 :PROPERTIES:
 :CUSTOM_ID: h:F444339D-00F1-4553-ACF6-DE0B5E2EE35E
 :END:
 :LOGBOOK:
+- State "SPEC"       from "TODO"       [2025-06-26 Thu 17:47] \\
+  Still needs more test coverage
 - State "TODO"       from              [2025-05-20 Tue 18:16]
 :END:
+:pgd:
++ =for= (kw) by [[#h:65B0176B-B46F-4679-8535-C504870AC048][ident]] (token) by =in= (kw) by [[#h:C859B697-6DDD-4F6D-B70B-BF0A9FBA6E80][ForRange]] by [[#h:B34CADE5-71B4-41F2-AB54-00483EE593A6][BlockExpression]]
+:end:
 
-#+begin_src js :treesit t
-for_statement: ($) => 'FOR_STATEMENT___TODO'
+#+name: for_statement
+#+begin_src js :arg $ :ast ForStatement
+seq(
+    'for',
+    field('value', $.identifier),
+    'in',
+    field('range', choice(
+        <<r("expression")>>,
+        <<r("for_range")>>,
+    )),
+    field('body', <<r("block_expression")>>),
+)
 #+end_src
+
+Parser: [[file:noir/compiler/noirc_frontend/src/parser/parser/statement.rs::if let Some(for_loop) = self.parse_for() {][parse for parent callsite]], [[file:noir/compiler/noirc_frontend/src/parser/parser/statement.rs::fn parse_for(&mut self)][parse_for()]]
+Types: [[file:noir/compiler/noirc_frontend/src/ast/statement.rs::pub struct ForLoopStatement {][ForLoopStatement struct]]
+
+#+transclude: [[file:noir/compiler/noirc_frontend/src/parser/parser/statement.rs::227][ForStatement doc]] :lines 227-227 :src fundamental
+
+****** DONE ForRange                                                   :node:
+CLOSED: [2025-06-26 Thu 17:47]
+:PROPERTIES:
+:CUSTOM_ID: h:C859B697-6DDD-4F6D-B70B-BF0A9FBA6E80
+:END:
+:LOGBOOK:
+- State "DONE"       from "TODO"       [2025-06-26 Thu 17:47]
+- State "TODO"       from              [2025-06-26 Thu 16:42] \\
+  ExpressionExceptConstructor look into this 'constructor'
+:END:
+:pgd:
++ [[#h:167542CC-8CDE-49C1-9465-E5157C6A176F][Expression]] by (opt grp)
+  - =..= by [[#h:167542CC-8CDE-49C1-9465-E5157C6A176F][Expression]]
+  - =..== by [[#h:167542CC-8CDE-49C1-9465-E5157C6A176F][Expression]]
+:end:
+
+#+name: for_range
+#+begin_src js :rule range_expression :arg $ :ast ForRange
+seq(
+    <<r("expression")>>,
+    '..',
+    optional(token.immediate('=')),
+    <<r("expression")>>,
+)
+#+end_src
+
+Parser: [[file:noir/compiler/noirc_frontend/src/parser/parser/statement.rs::fn parse_for_range(&mut self)][parse_for_range()]]
+Types: [[file:noir/compiler/noirc_frontend/src/ast/statement.rs::pub enum ForRange {][ForRange enum]]
+
+#+transclude: [[file:noir/compiler/noirc_frontend/src/parser/parser/statement.rs::262][ForRange doc]] :lines 262-264 :src fundamental
+
+*************** TODO Is this the general range expression/statement for noir? Assuming it is for now and have aliased rule name as such
+*************** END
+*************** TODO ExpressionExceptConstructor
+Quick glance looks like no constructors means no paths or a function call, look into if we can reasonably support this in the ts grammar since it feels like it would duplicate the entire expression tree for a variant which has paths but without function/method calls.
+*************** END
 
 ***** TODO IfStatement
 :PROPERTIES:
@@ -3203,7 +3315,7 @@ CLOSED: [2025-06-26 Thu 16:15]
 #+begin_src js :arg $ :ast Arguments
 seq(
     '(',
-    sepBy(<<r("expression")>>, ','), // Inlined Noirc: ArgumentsList
+    sepBy(<<r("expression")>>, ','), // Inlined Noirc: ArgumentsList.
     optional(','),
     ')',
 )
@@ -4311,7 +4423,7 @@ function sepBy(rule, sep) {
 #+name: grp__statements
 #+begin_src js :noweb yes
 <<n("statement")>>
-<<c('("statement_kind" "break_statement" "continue_statement" "return_statement" "let_statement" "constrain_statement"))>>
+<<c('("statement_kind" "break_statement" "continue_statement" "return_statement" "let_statement" "constrain_statement" "comptime_statement" "for_statement"))>>
 #+end_src
 
 ** Expressions
@@ -4325,6 +4437,7 @@ function sepBy(rule, sep) {
 <<n("slice_expression")>>
 <<n("block_expression")>>
 <<c('("arguments" "call_arguments"))>>
+<<n("for_range")>>
 #+end_src
 
 ** Types

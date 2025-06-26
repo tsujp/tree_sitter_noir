@@ -850,7 +850,7 @@ global f2 = { let (x, y) = 1; };
 *** Complex
 TODO: Rename this subheading better, maybe "nested expression" or something
 #+begin_test :skip
-global f2 = { let mut y = { 1 + 2 }; };
+global f1 = { let mut y = { 1 + 2; }; };
 
 ---
 
@@ -858,6 +858,7 @@ global f2 = { let mut y = { 1 + 2 }; };
   name: (identifier)
   (block
     (let_statement
+      (mut_bound)
       pattern: (identifier)
       value: (block
         (binary_expression
@@ -866,15 +867,12 @@ global f2 = { let mut y = { 1 + 2 }; };
 #+end_test
 
 ** Constrain
-
-Tests pass, only skipped as identifiers in Expression haven't been reached yet but I am 99% sure they are valid, unskip when those are added.
-
-#+begin_test :skip
+#+begin_test
 global f1 = { assert(true); };
-global f2 = { assert(true, 1, x); };
+global f2 = { assert(true, 1, false); };
 
-global f3 = { assert_eq(true); };
-global f3 = { assert_eq("foo", "bar", "lorem"); };
+global b1 = { assert_eq(true); };
+global b2 = { assert_eq("foo", "bar", "lorem"); };
 
 ---
 
@@ -891,7 +889,7 @@ global f3 = { assert_eq("foo", "bar", "lorem"); };
       arguments: (arguments
         (bool_literal)
         (int_literal)
-        (identifier)))))
+        (bool_literal)))))
 
 (global_item
   name: (identifier)
@@ -910,6 +908,20 @@ global f3 = { assert_eq("foo", "bar", "lorem"); };
           (str_content))
         (str_literal
           (str_content))))))
+#+end_test
+
+*** Argument identifiers
+#+begin_test :skip
+global f1 = { assert(true, 1, x); };
+
+(global_item
+  name: (identifier)
+  (block
+    (constrain_statement
+      arguments: (arguments
+        (bool_literal)
+        (int_literal)
+        (identifier)))))
 #+end_test
 
 *** Degenerate
@@ -932,10 +944,102 @@ global f2 = { assert(,); };
 #+end_test
 
 ** Comptime
-x
+#+begin_test
+global f1 = { comptime { }; };
+global f2 = { comptime let x = "foo"; };
+global f3 = { comptime let mut y = true; };
+global f3 = { comptime for i in 0..10 { }; };
+
+---
+
+(global_item
+  name: (identifier)
+  (block
+    (comptime_statement
+      (block))))
+(global_item
+  name: (identifier)
+  (block
+    (comptime_statement
+      (let_statement
+        pattern: (identifier)
+        value: (str_literal
+          (str_content))))))
+(global_item
+  name: (identifier)
+  (block
+    (comptime_statement
+      (let_statement
+        (mut_bound)
+        pattern: (identifier)
+        value: (bool_literal)))))
+(global_item
+  name: (identifier)
+  (block
+    (comptime_statement
+      (for_statement
+        value: (identifier)
+        range: (range_expression
+          (int_literal)
+          (int_literal))
+        body: (block)))))
+#+end_test
 
 ** For
-x
+#+begin_test
+global f1 = { for i in 0..10 { }; };
+global f2 = { for i in 0..9+1 { }; };
+global f3 = { for i in 0..=5 { }; };
+
+
+---
+
+(global_item
+  name: (identifier)
+  (block
+    (for_statement
+      value: (identifier)
+      range: (range_expression
+        (int_literal)
+        (int_literal))
+      body: (block))))
+(global_item
+  name: (identifier)
+  (block
+    (for_statement
+      value: (identifier)
+      range: (range_expression
+        (int_literal)
+        (binary_expression
+          left: (int_literal)
+          right: (int_literal)))
+      body: (block))))
+(global_item
+  name: (identifier)
+  (block
+    (for_statement
+      value: (identifier)
+      range: (range_expression
+        (int_literal)
+        (int_literal))
+      body: (block))))
+#+end_test
+
+*** Range identifiers
+#+begin_test :skip
+global f1 = { for i in x { } };
+global f2 = { for foo in 0 .. std::array::len(bar) { } };
+
+---
+
+(global_item
+  name: (identifier)
+  (block
+    (for_statement
+      value: (identifier)
+      range: (identifier)
+      body: (block))))
+#+end_test
 
 ** If
 x

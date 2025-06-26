@@ -314,6 +314,8 @@ module.exports = grammar({
             $.return_statement,
             $.let_statement,
             $.constrain_statement,
+            $.comptime_statement,
+            $.for_statement,
         ),
         // [[file:noir_grammar.org::break_statement]]
         break_statement: _ => 'break',
@@ -324,6 +326,7 @@ module.exports = grammar({
         // [[file:noir_grammar.org::let_statement]]
         let_statement: $ => seq(
             'let',
+            optional($.mut_bound),
             field('pattern', $._pattern),
             // TODO: OptionalTypeAnnotation
             '=',
@@ -335,6 +338,26 @@ module.exports = grammar({
             // 'assert' expects 1 or 2 parameters, 'assert_eq' expects 2 or 3. This is out of scope for tree-sitter grammar (at least for now), if it's a boon without huge complexity the rules can be augmented to enforce this later.
             choice('assert', 'assert_eq'),
             field('arguments', $.arguments),
+        ),
+        // [[file:noir_grammar.org::comptime_statement]]
+        comptime_statement: $ => seq(
+            'comptime',
+            choice(
+                $.block, // Noirc: ComptimeBlock
+                $.let_statement, // Noirc: ComptimeLet
+                $.for_statement, // Noirc: ComptimeFor
+            ),
+        ),
+        // [[file:noir_grammar.org::for_statement]]
+        for_statement: $ => seq(
+            'for',
+            field('value', $.identifier),
+            'in',
+            field('range', choice(
+                $._expression,
+                $.range_expression,
+            )),
+            field('body', $.block),
         ),
 
         // * * * * * * * * * * * * * * * * * * * * * * * * * EXPRESSIONS
@@ -401,7 +424,7 @@ module.exports = grammar({
         // [[file:noir_grammar.org::arguments]]
         arguments: $ => seq(
             '(',
-            sepBy($._expression, ','), // Inlined Noirc: ArgumentsList
+            sepBy($._expression, ','), // Inlined Noirc: ArgumentsList.
             optional(','),
             ')',
         ),
@@ -409,6 +432,14 @@ module.exports = grammar({
         call_arguments: $ => seq(
             optional('!'),
             $.arguments,
+        ),
+        
+        // [[file:noir_grammar.org::for_range]]
+        range_expression: $ => seq(
+            $._expression,
+            '..',
+            optional(token.immediate('=')),
+            $._expression,
         ),
 
         // * * * * * * * * * * * * * * * * * * * * * * * * * TYPES
@@ -527,8 +558,9 @@ module.exports = grammar({
             $.self_pattern,
         ),
         // [[file:noir_grammar.org::pattern]]
-        _pattern: $ => choice(
-            alias(seq($.mut_bound, $._pattern), $.mut_pattern),
+        _pattern: $ => seq(
+            // alias(seq($.mut_bound, $._pattern_no_mut), $.mut_pattern),
+            // optional($.mut_bound),
             $._pattern_no_mut,
         ),
         // [[file:noir_grammar.org::pattern_no_mut]]

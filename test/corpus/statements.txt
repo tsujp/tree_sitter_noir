@@ -84,7 +84,7 @@ Let / Complex
 :skip
 =============
 
-global f2 = { let mut y = { 1 + 2 }; };
+global f1 = { let mut y = { 1 + 2; }; };
 
 ---
 
@@ -93,6 +93,7 @@ global f2 = { let mut y = { 1 + 2 }; };
     name: (identifier)
     (block
       (let_statement
+        (mut_bound)
         pattern: (identifier)
         value: (block
           (binary_expression
@@ -103,14 +104,13 @@ global f2 = { let mut y = { 1 + 2 }; };
 
 =========
 Constrain
-:skip
 =========
 
 global f1 = { assert(true); };
-global f2 = { assert(true, 1, x); };
+global f2 = { assert(true, 1, false); };
 
-global f3 = { assert_eq(true); };
-global f3 = { assert_eq("foo", "bar", "lorem"); };
+global b1 = { assert_eq(true); };
+global b2 = { assert_eq("foo", "bar", "lorem"); };
 
 ---
 
@@ -128,7 +128,7 @@ global f3 = { assert_eq("foo", "bar", "lorem"); };
         arguments: (arguments
           (bool_literal)
           (int_literal)
-          (identifier)))))
+          (bool_literal)))))
 
   (global_item
     name: (identifier)
@@ -147,6 +147,29 @@ global f3 = { assert_eq("foo", "bar", "lorem"); };
             (str_content))
           (str_literal
             (str_content))))))
+)
+
+
+================================
+Constrain / Argument identifiers
+:skip
+================================
+
+global f1 = { assert(true, 1, x); };
+
+(global_item
+  name: (identifier)
+  (block
+    (constrain_statement
+      arguments: (arguments
+        (bool_literal)
+        (int_literal)
+        (identifier)))))
+
+---
+
+(source_file
+
 )
 
 
@@ -170,4 +193,114 @@ global f2 = { assert(,); };
     (block
       (constrain_statement
         arguments: (arguments))))
+)
+
+
+========
+Comptime
+========
+
+global f1 = { comptime { }; };
+global f2 = { comptime let x = "foo"; };
+global f3 = { comptime let mut y = true; };
+global f3 = { comptime for i in 0..10 { }; };
+
+---
+
+(source_file
+  (global_item
+    name: (identifier)
+    (block
+      (comptime_statement
+        (block))))
+  (global_item
+    name: (identifier)
+    (block
+      (comptime_statement
+        (let_statement
+          pattern: (identifier)
+          value: (str_literal
+            (str_content))))))
+  (global_item
+    name: (identifier)
+    (block
+      (comptime_statement
+        (let_statement
+          (mut_bound)
+          pattern: (identifier)
+          value: (bool_literal)))))
+  (global_item
+    name: (identifier)
+    (block
+      (comptime_statement
+        (for_statement
+          value: (identifier)
+          range: (range_expression
+            (int_literal)
+            (int_literal))
+          body: (block)))))
+)
+
+
+===
+For
+===
+
+global f1 = { for i in 0..10 { }; };
+global f2 = { for i in 0..9+1 { }; };
+global f3 = { for i in 0..=5 { }; };
+
+---
+
+(source_file
+  (global_item
+    name: (identifier)
+    (block
+      (for_statement
+        value: (identifier)
+        range: (range_expression
+          (int_literal)
+          (int_literal))
+        body: (block))))
+  (global_item
+    name: (identifier)
+    (block
+      (for_statement
+        value: (identifier)
+        range: (range_expression
+          (int_literal)
+          (binary_expression
+            left: (int_literal)
+            right: (int_literal)))
+        body: (block))))
+  (global_item
+    name: (identifier)
+    (block
+      (for_statement
+        value: (identifier)
+        range: (range_expression
+          (int_literal)
+          (int_literal))
+        body: (block))))
+)
+
+
+=======================
+For / Range identifiers
+:skip
+=======================
+
+global f1 = { for i in x { } };
+global f2 = { for foo in 0 .. std::array::len(bar) { } };
+
+---
+
+(source_file
+  (global_item
+    name: (identifier)
+    (block
+      (for_statement
+        value: (identifier)
+        range: (identifier)
+        body: (block))))
 )
