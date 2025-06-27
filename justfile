@@ -61,19 +61,28 @@ ts *args: sanity-check-ts-lib-cache
     {{ts_cmd}} {{args}}
 
 # Generate, compile, and run all tests.
-build: generate compile test
+build _dbg='': (compile _dbg) (test _dbg)
 
+
+@__ts_generate_cmd _with_debug='' _with_build='':
+    @-mkdir {{gen_dir}}
+    @cp -vpRP external_scanner.c {{gen_dir}}/scanner.c
+    # The two if expressions respectively:
+    #   (1) Add `--debug-build` flag if recipe received `--debug` as a parameter.
+    #   (2) Add `--build` flag if receipe received `--build` as a parameter
+    @{{ts_cmd}} generate --abi {{ts_abi}} --js-runtime {{js_bin}} \
+        {{ if _with_debug == '--debug' { \
+            '--debug-build --report-states-for-rule -' \
+        } else { '' } }} \
+        {{ if _with_build == '--build' { '--build' } else { '' } }}
 
 # Generate (not compile) parser source from grammar DSL.
 [group: 'build']
-generate: sanity-check-ts-lib-cache
-    {{ts_cmd}} generate --abi {{ts_abi}} --js-runtime {{js_bin}}
-    cp -vpRP external_scanner.c {{gen_dir}}/scanner.c
+generate _dbg: sanity-check-ts-lib-cache && (__ts_generate_cmd _dbg)
 
 # Compile generated parser to shared library.
 [group: 'build']
-compile: sanity-check-ts-lib-cache
-    {{ts_cmd}} generate --abi {{ts_abi}} --js-runtime {{js_bin}} --build
+compile _dbg: sanity-check-ts-lib-cache && (__ts_generate_cmd _dbg '--build')
 
 # Delete all (non-binding) auto-generated files.
 [group: 'build']
@@ -91,10 +100,27 @@ compile: sanity-check-ts-lib-cache
 @clean-all: clean purge
 
 
+# lib.c and friends:  node_modules/tree-sitter/vendor/tree-sitter/lib/src
+# api.h header:       node_modules/tree-sitter/vendor/tree-sitter/lib/include/tree_sitter
+mk_ts_lib_base := join(node_modules_dir, 'tree-sitter' / 'vendor' / 'tree-sitter' / 'lib')
+
+# Debug parser execution using the gdb command-line debugger.
+[group: 'debug']
+debug: (generate '--debug')
+    echo 'bingbong'
+
+# Debug parser execution using the tree-sitter-cli's debug logging flags.
+[group: 'debug']
+debug-log:
+    echo 'foo'
+
+
 # Test all parser functionality: parse, tags, highlight.
 [group: 'test']
-test: sanity-check-ts-lib-cache
-    {{ts_cmd}} test --stat=all --show-fields
+test _dbg='' *args: sanity-check-ts-lib-cache
+    {{ts_cmd}} test --stat=all --show-fields \
+        {{ if _dbg == '--debug' { '--debug' } else { '' } }} \
+        {{args}}
 
 [group: 'test']
 fuzz: sanity-check-ts-lib-cache
