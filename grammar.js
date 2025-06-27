@@ -316,6 +316,7 @@ module.exports = grammar({
             $.constrain_statement,
             $.comptime_statement,
             $.for_statement,
+            $.if_expression,
         ),
         // [[file:noir_grammar.org::break_statement]]
         break_statement: _ => 'break',
@@ -440,6 +441,19 @@ module.exports = grammar({
             '..',
             optional(token.immediate('=')),
             $._expression,
+        ),
+        
+        // TODO: Order these as makes sense
+        
+        // [[file:noir_grammar.org::if_expression]]
+        if_expression: $ => seq(
+            'if',
+            field('condition', $._expression),
+            field('consequence', $.block),
+            optional(seq(
+                'else',
+                field('alternative', choice($.block, $.if_expression)),
+            )),
         ),
 
         // * * * * * * * * * * * * * * * * * * * * * * * * * TYPES

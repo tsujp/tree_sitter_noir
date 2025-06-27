@@ -2863,6 +2863,41 @@ Struct ~BlockExpression~ ([[file:noir/compiler/noirc_frontend/src/ast/expression
 But the pseudo-grammar says it is, so what is it really?
 *************** END
 
+**** TODO IfExpression                                                 :node:
+:PROPERTIES:
+:CUSTOM_ID: h:16951F18-730F-4A1F-84C9-3A1F78F67DF0
+:END:
+:LOGBOOK:
+- State "TODO"       from              [2025-06-26 Thu 17:58]
+:END:
+:pgd:
++ =if= (kw) by [[#h:167542CC-8CDE-49C1-9465-E5157C6A176F][Expression]] by [[#h:B34CADE5-71B4-41F2-AB54-00483EE593A6][BlockExpression]]
++ (opt grp) =else= (kw) by
+  - [[#h:B34CADE5-71B4-41F2-AB54-00483EE593A6][BlockExpression]]
+  - [[#h:16951F18-730F-4A1F-84C9-3A1F78F67DF0][IfExpression]]
+:end:
+
+#+name: if_expression
+#+begin_src js :arg $ :ast "IfStatement, IfExpression"
+seq(
+    'if',
+    field('condition', <<r("expression")>>),
+    field('consequence', <<r("block_expression")>>),
+    optional(seq(
+        'else',
+        field('alternative', choice(<<r("block_expression")>>, <<self()>>)),
+    )),
+)
+#+end_src
+
+Parser: [[file:noir/compiler/noirc_frontend/src/parser/parser/statement.rs::if let Some(kind) = self.parse_if_expr() {][parse_if_expr() parent callsite]], [[file:noir/compiler/noirc_frontend/src/parser/parser/expression.rs::pub(super) fn parse_if_expr(&mut self)][parse_if_expr()]]
+
+#+transclude: [[file:noir/compiler/noirc_frontend/src/parser/parser/expression.rs::442][IfExpression doc]] :lines 442-442 :src fundamental
+
+*************** TODO This has ExpressionExceptConstructor stuff similar to ForRange
+Refactor accordingly, if appropriate.
+*************** END
+
 *** TODO Statement                                                     :node:
 :PROPERTIES:
 :CUSTOM_ID: h:788ECB8C-0A48-4255-B35E-F5850902AA32
@@ -2919,6 +2954,7 @@ choice(
     <<r("constrain_statement")>>,
     <<r("comptime_statement")>>,
     <<r("for_statement")>>,
+    <<r("if_expression")>>,
 )
 #+end_src
 
@@ -3252,15 +3288,24 @@ Types: [[file:noir/compiler/noirc_frontend/src/ast/statement.rs::pub enum ForRan
 *************** END
 *************** TODO ExpressionExceptConstructor
 Quick glance looks like no constructors means no paths or a function call, look into if we can reasonably support this in the ts grammar since it feels like it would duplicate the entire expression tree for a variant which has paths but without function/method calls.
+
+UPDATE: Constructor pattern here looks to be like =Foo {}= i.e. the braces, which I guess makes sense. So the parsing rule is expression except something that looks like it has braces and is for a Struct which would .'. be a constructor, HOWEVER block-scoped expressions should be fine, like ={1 + 1 }=, because they don't have a leading identifier =Foo { 1 + 1 }= making them NOT constructors.
 *************** END
 
-***** TODO IfStatement
+***** DONE IfStatement                                                 :node:
+CLOSED: [2025-06-26 Thu 17:58]
 :PROPERTIES:
 :CUSTOM_ID: h:BB36CCC8-4FE6-4529-A365-69F0011CEC2A
 :END:
 :LOGBOOK:
+- State "DONE"       from "TODO"       [2025-06-26 Thu 17:58]
 - State "TODO"       from              [2025-05-20 Tue 18:16]
 :END:
+:pgd:
++ [[#h:16951F18-730F-4A1F-84C9-3A1F78F67DF0][IfExpression]]
+:end:
+
+**Just an alias for IfExpression**.
 
 ***** TODO BlockStatement                                              :node:
 :PROPERTIES:
@@ -4440,6 +4485,9 @@ function sepBy(rule, sep) {
 <<n("block_expression")>>
 <<c('("arguments" "call_arguments"))>>
 <<n("for_range")>>
+
+// TODO: Order these as makes sense
+<<n("if_expression")>>
 #+end_src
 
 ** Types

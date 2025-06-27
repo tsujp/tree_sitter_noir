@@ -111,7 +111,6 @@ static inline bool scan_block_comment(TSLexer *lexer, const bool *valid_symbols)
   }
   
   unsigned depth = 1;
-  bool has_content = false;
 
   // Handling the case of an empty inner block comment: /*!*/
   // Such a comment is still marked with the inner docstyle however it has no content, so there should be no content field on the node (requiring us to return false). This also requires us to include that docstyle marker as a token type otherwise it wouldn't be possible to tell if we've been called after /* or /*!
@@ -144,7 +143,6 @@ static inline bool scan_block_comment(TSLexer *lexer, const bool *valid_symbols)
 
     default:
       if (is_ascii(lexer) == false) return false;
-      has_content = true;
     }
 
     lexer->mark_end(lexer);
