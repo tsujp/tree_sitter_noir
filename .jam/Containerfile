@@ -1,0 +1,68 @@
+# -*- mode: dockerfile-ts -*-
+
+ARG VERSION=42
+FROM fedora:$VERSION AS fedora-baseline:$VERSION
+
+# Base dependencies.
+RUN dnf update -y && dnf install -y \
+	git \
+	ripgrep \
+	rsync \
+	htop \
+	curl \
+	minisign \
+	man \
+	which \
+	lsof \
+	acl \
+	diffutils \
+	just \
+	\
+	&& dnf clean all
+
+ARG VERSION=42
+FROM fedora-baseline:$VERSION
+
+# gdb, and tree-sitter development files to be able to debug parser sanely (see treesitter Discord chats on 2025/05/29).
+run dnf install -y \
+    gdb \
+    gcc \
+    tree-sitter-cli \
+    libtree-sitter-devel
+
+# Unless specified will inherit value as set at top of file.
+ARG VERSION
+
+ARG PROJECT_NAME=tree_sitter_noir
+
+LABEL sh.jam.name="$PROJECT_NAME" \
+	  sh.jam.summary="Image with $PROJECT_NAME project dependencies" \
+	  sh.jam.box="true"
+
+ENV JAM_PROJECT="$PROJECT_NAME"
+
+# -------------------------------------------- Namespace mapping.
+# Without the following magic adduser namespace mapping will break horribly. If you do NOT want to use it one alternative is that the Containerfile must specify no USER at all, and when calling `run` on podman-machine as user `core` `--userns keep-id:uid=501` must be passed.
+
+# UID for this account must match macOS UID that is running podman-machine (vm) as by default Podman will set up namespace mapping to said UID which is also (from macOS) default: 501.
+ARG USERNAME=jammy
+RUN adduser \
+	--groups wheel \
+	--home-dir /home/"$USERNAME" \
+	--password '' \
+	--shell /bin/bash \
+	--uid 501 \
+	--user-group \
+	"$USERNAME"
+# -------------------------------------------- /
+
+WORKDIR /home/$USERNAME/project
+
+USER $USERNAME
+
+# CMD ["/bin/bash", "-l"]
+
+# ls -lan
+# ls -la@
+# podman top -l capeff
+# podman top -l user uid huser group hgroups
