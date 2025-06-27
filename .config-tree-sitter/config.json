@@ -1,63 +1,63 @@
 {
   "parser-directories": [
-      "./src"
+    "."
   ],
   "theme": {
-    "attribute": {
-      "color": 124,
-      "italic": true
-    },
-    "constant": 94,
-    "keyword": 56,
-    "number": {
-      "bold": true,
-      "color": 94
-    },
-    "function": 26,
-    "operator": {
-      "bold": true,
-      "color": 239
-    },
-    "comment": {
-      "color": 245,
-      "italic": true
-    },
-    "punctuation": 239,
-    "string": 28,
-    "string.special": 30,
-    "type.builtin": {
-      "bold": true,
-      "color": 23
-    },
-    "constructor": 136,
-    "punctuation.bracket": 239,
     "variable": 252,
-    "module": 136,
-    "type": 23,
-    "constant.builtin": {
-      "color": 94,
-      "bold": true
+    "constant": 94,
+    "variable.parameter": {
+      "color": 252,
+      "underline": true
     },
-    "embedded": null,
-    "tag": 18,
-    "variable.builtin": {
-      "bold": true,
-      "color": 252
-    },
-    "property.builtin": {
-      "color": 124,
-      "bold": true
-    },
-    "property": 124,
-    "punctuation.special": 239,
-    "punctuation.delimiter": 239,
+    "string.special": 30,
+    "punctuation": 239,
     "function.builtin": {
       "color": 26,
       "bold": true
     },
-    "variable.parameter": {
+    "embedded": null,
+    "function": 26,
+    "keyword": 56,
+    "comment": {
+      "color": 245,
+      "italic": true
+    },
+    "punctuation.delimiter": 239,
+    "punctuation.special": 239,
+    "operator": {
+      "bold": true,
+      "color": 239
+    },
+    "tag": 18,
+    "module": 136,
+    "number": {
+      "bold": true,
+      "color": 94
+    },
+    "constant.builtin": {
+      "color": 94,
+      "bold": true
+    },
+    "string": 28,
+    "type": 23,
+    "variable.builtin": {
       "color": 252,
-      "underline": true
+      "bold": true
+    },
+    "property": 124,
+    "property.builtin": {
+      "color": 124,
+      "bold": true
+    },
+    "attribute": {
+      "color": 124,
+      "italic": true
+    },
+    "punctuation.bracket": 239,
+    "constructor": 136,
+    "type.builtin": {
+      "color": 23,
+      "bold": true
     }
   }
 }

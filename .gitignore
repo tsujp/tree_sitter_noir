@@ -45,3 +45,20 @@ zig-out/
 *.tar.gz
 *.tgz
 *.zip
+
+# Tree-sitter auto-generated language binding files/folders.
+bindings/
+build.zig
+build.zig.zon
+Makefile
+CMakeLists.txt
+go.mod
+binding.gyp
+pyproject.toml
+setup.py
+Cargo.toml
+Cargo.lock
+Package.swift
+
+# Build artefacts.
+out

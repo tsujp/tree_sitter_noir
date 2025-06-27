@@ -7,3 +7,6 @@ src/tree_sitter/* linguist-generated
 # Zig bindings
 build.zig linguist-generated
 build.zig.zon linguist-generated
+
+# Lie and tell GitHub src/scanner.c is linguist-generated due to how we setup our repo.
+src/scanner.c

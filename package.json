@@ -4,8 +4,11 @@
   "author": "Jordan Ellis 'tsujp' Coppard <$(printf 'amMrZ2l0QHd6Lmh0Cg==' | base64 -d)>",
   "license": "BSD-3-Clause",
   "scripts": {
-    "ts-parse": "tree-sitter parse --config-path ./tree-sitter.json"
+    "prestart": "tree-sitter build --wasm",
+    "start": "tree-sitter playground",
   },
+  "main": "bindings/node",
+  "types": "bindings/node",
   "repository": {
     "type": "git"
   },
@@ -16,6 +19,27 @@
     "src/**"
   ],
   "dependencies": {
-    "tree-sitter-cli": "^0.25.3"
-  }
+    "tree-sitter-cli": "^0.25.6"
+  },
+  "devDependencies": {
+    "prebuildify": "^6.0.1",
+    "node-gyp-build": "^4.8.4"
+  },
+  "peerDependencies": {
+    "tree-sitter": "^0.25.0"
+  },
+  "peerDependenciesMeta": {
+    "tree_sitter": {
+      "optional": true
+    }
+  },
+  "trustedDependencies": [
+    "tree-sitter-cli"
+  ],
+  "tree-sitter": [
+    {
+      "scope": "source.noir",
+      "injection-regex": "^noir$"
+    }
+  ]
 }
