@@ -2957,6 +2957,7 @@ choice(
     <<r("comptime_statement")>>,
     <<r("for_statement")>>,
     <<r("if_expression")>>,
+    <<r("block_expression")>>,
 )
 #+end_src
 
@@ -3307,29 +3308,30 @@ CLOSED: [2025-06-26 Thu 17:58]
 + [[#h:16951F18-730F-4A1F-84C9-3A1F78F67DF0][IfExpression]]
 :end:
 
-**Just an alias for IfExpression**.
+**Just an alias for IfExpression**. Wraps IfExpression in ~StatementKind::Expression~.
 
-***** TODO BlockStatement                                              :node:
+Parser: [[file:noir/compiler/noirc_frontend/src/parser/parser/statement.rs::if let Some(kind) = self.parse_if_expr() {][parse_if_expr() parent callsite]]
+
+#+transclude: [[file:noir/compiler/noirc_frontend/src/parser/parser/statement.rs::78][IfStatement doc]] :lines 78-78 :src fundamental
+
+***** DONE BlockStatement                                              :node:
+CLOSED: [2025-06-29 Sun 20:16]
 :PROPERTIES:
 :CUSTOM_ID: h:B305BFF3-A865-4292-A8E5-5448D38CE872
 :END:
 :LOGBOOK:
+- State "DONE"       from "TODO"       [2025-06-29 Sun 20:16]
 - State "TODO"       from              [2025-05-20 Tue 18:16]
 :END:
 :pgd:
-+ [[#h:B34CADE5-71B4-41F2-AB54-00483EE593A6][Block]].
++ [[#h:B34CADE5-71B4-41F2-AB54-00483EE593A6][Block]]
 :end:
 
-#+begin_src js :treesit t
-// Noirc: BlockStatement.
-block_statement: ($) => choice(
-    // TODO
-)
-#+end_src
+**Just an alias for Block**. Wraps Block in ~StatementKind::Expression~.
 
-Parser (sop): [[file:noir/compiler/noirc_frontend/src/parser/parser/statement.rs::if let Some(block) = self.parse_block() {][StatementKind::Expression (for Block) parse]].
+Parser: [[file:noir/compiler/noirc_frontend/src/parser/parser/statement.rs::if let Some(block) = self.parse_block() {][parse_block() parent callsite]]
 
-#+transclude: [[file:noir/compiler/noirc_frontend/src/parser/parser/statement.rs][BlockStatement doc]] :lines 80-80 :src fundamental
+#+transclude: [[file:noir/compiler/noirc_frontend/src/parser/parser/statement.rs::80][BlockStatement doc]] :lines 80-80 :src fundamental
 
 ***** TODO AssignStatement
 :PROPERTIES:
@@ -3338,6 +3340,8 @@ Parser (sop): [[file:noir/compiler/noirc_frontend/src/parser/parser/statement.rs
 :LOGBOOK:
 - State "TODO"       from              [2025-05-20 Tue 18:16]
 :END:
+
+2025/06/29 8:25 pm: JORDAN CONTINUE FROM HERE XXX42069XXX
 
 ***** TODO ExpressionStatement
 :PROPERTIES:

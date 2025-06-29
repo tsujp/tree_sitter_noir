@@ -1041,12 +1041,13 @@ global f2 = { for foo in 0 .. std::array::len(bar) { } };
       body: (block))))
 #+end_test
 
-** If
+** If                                                                  :stub:
 
-IfStatement is effectively just an alias for IfExpression, so look there for associated tests.
+AST =IfStatement= /is/ =IfExpression= so look to [[#h:9289816C-EFC5-4F57-ABC6-94FC4CF11A21][If (Expression)]] tests instead.
 
-** Block
-x
+** Block                                                               :stub:
+
+AST =BlockStatement= /is/ =Block= (an expression) so look to [[#h:26192D97-5D6A-47B9-A598-98A41B83BD47][Block (Expression)]] tests instead.
 
 ** Assign
 x
@@ -1432,7 +1433,11 @@ global foo2 = &       [1; 2];
 #+end_test
 
 *** Block expression
-TODO (after statements)
+:PROPERTIES:
+:CUSTOM_ID: h:26192D97-5D6A-47B9-A598-98A41B83BD47
+:END:
+*************** TODO Tests, BlockStatement _is_ just BlockExpression i.e. this
+*************** END
 
 ** Binary
 
@@ -1628,6 +1633,9 @@ TODO
 TODO
 
 ** If
+:PROPERTIES:
+:CUSTOM_ID: h:9289816C-EFC5-4F57-ABC6-94FC4CF11A21
+:END:
 
 *************** TODO Blocks are empty because not at ExpressionStatement yet
 So having ={ 1 }= in a test is currently an error and I don't want to have let bindings in the blocks etc since it complicates the checked CST, once I add ExpressionStatements can augment these. Similarly elsewhere with Literals and Expressions e.g. in for statements I believe.
