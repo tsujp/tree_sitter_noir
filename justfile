@@ -61,7 +61,7 @@ ts *args: sanity-check-ts-lib-cache
     {{ts_cmd}} {{args}}
 
 # Generate, compile, and run all tests.
-build _dbg='': (compile _dbg) (test _dbg)
+build _dbg='' *args: (compile _dbg) (test _dbg args)
 
 
 @__ts_generate_cmd _with_debug='' _with_build='':
@@ -78,11 +78,11 @@ build _dbg='': (compile _dbg) (test _dbg)
 
 # Generate (not compile) parser source from grammar DSL.
 [group: 'build']
-generate _dbg: sanity-check-ts-lib-cache && (__ts_generate_cmd _dbg)
+generate _dbg='': sanity-check-ts-lib-cache && (__ts_generate_cmd _dbg)
 
 # Compile generated parser to shared library.
 [group: 'build']
-compile _dbg: sanity-check-ts-lib-cache && (__ts_generate_cmd _dbg '--build')
+compile _dbg='': sanity-check-ts-lib-cache && (__ts_generate_cmd _dbg '--build')
 
 # Delete all (non-binding) auto-generated files.
 [group: 'build']
@@ -150,6 +150,7 @@ fuzz: sanity-check-ts-lib-cache
 
 
 # Delete all auto-generated tree-sitter bindings, and installed dependencies.
+[group: 'build']
 [group: 'binding']
 @purge:
     echo '{{BOLD + MAGENTA}}Removing auto-generated bindings, and installed dependencies...{{NORMAL}}'
