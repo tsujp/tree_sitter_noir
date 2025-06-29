@@ -261,7 +261,7 @@ Test text comprised of test title with any test attributes (e.g. :error)
 all wrapped in = (equals sign); followed by test syntax, a delimiter
 of --- and (if appropriate) a tree-sitter parse-tree for assertion."
   (let* ((test-name (org-element-property :test-name test-block))
-         (test-name-width (string-width test-name))
+         (test-name-width (max 3 (string-width test-name)))
          (test-name-wrap (make-string test-name-width ?=)))
     (concat test-name-wrap "\n"
             test-name "\n"

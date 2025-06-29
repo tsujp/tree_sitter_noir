@@ -2863,11 +2863,13 @@ Struct ~BlockExpression~ ([[file:noir/compiler/noirc_frontend/src/ast/expression
 But the pseudo-grammar says it is, so what is it really?
 *************** END
 
-**** TODO IfExpression                                                 :node:
+**** DONE IfExpression                                                 :node:
+CLOSED: [2025-06-29 Sun 20:01]
 :PROPERTIES:
 :CUSTOM_ID: h:16951F18-730F-4A1F-84C9-3A1F78F67DF0
 :END:
 :LOGBOOK:
+- State "DONE"       from "TODO"       [2025-06-29 Sun 20:01]
 - State "TODO"       from              [2025-06-26 Thu 17:58]
 :END:
 :pgd:

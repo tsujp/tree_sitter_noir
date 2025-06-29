@@ -614,3 +614,72 @@ global foo = false * 2 / 3 % true  +  false / 5   -   10 * true;
     left: (int_literal)
     right: (bool_literal))))
 )
+
+
+===
+If
+===
+
+global f1 = { if 1 { }; };
+
+global b1 = { if true { } else { }; };
+global b2 = { if 1 { } else if false { }; };
+global b3 = { if 3 == 3 { } else if false { } else { }; };
+
+---
+
+(source_file
+  (global_item
+    name: (identifier)
+    (block
+      (if_expression
+        condition: (int_literal)
+        consequence: (block))))
+
+  (global_item
+    name: (identifier)
+    (block
+      (if_expression
+        condition: (bool_literal)
+        consequence: (block)
+        alternative: (block))))
+  (global_item
+    name: (identifier)
+    (block
+      (if_expression
+        condition: (int_literal)
+        consequence: (block)
+        alternative: (if_expression
+          condition: (bool_literal)
+          consequence: (block)))))
+  (global_item
+    name: (identifier)
+    (block
+      (if_expression
+        condition: (binary_expression
+          left: (int_literal)
+          right: (int_literal))
+        consequence: (block)
+        alternative: (if_expression
+          condition: (bool_literal)
+          consequence: (block)
+          alternative: (block)))))
+)
+
+
+===========================
+If / Alternative order (e1)
+:error
+===========================
+
+global f1 = { if 1 { } else { } else if 3 { }; };
+---
+
+
+=========================================
+If / Alternative else with condition (e1)
+:error
+=========================================
+
+global f1 = { if 1 { } else 2 { }; };
+---
