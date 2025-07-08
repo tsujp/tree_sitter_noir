@@ -85,6 +85,8 @@ CLOSED: [2025-05-25 Sun 17:51]
 :end:
 
 Parser: [[file:noir/compiler/noirc_frontend/src/parser/parser.rs::pub(crate) fn parse_program(&mut self)][parse_program()]]
+
+#+name: ,ebnf_program
 #+transclude: [[file:noir/compiler/noirc_frontend/src/parser/parser.rs::115][Program doc]] :lines 115-115 :src fundamental
 
 *** SPEC Module                                                        :node:
@@ -106,6 +108,8 @@ Go back to transclusion if/when appropriate.
 This /is/ ~ParsedModule~ (see: [[#h:DB42728E-09AF-4189-B2BE-E48853E5C1D9][Parsing]]). So a Module represents one parsed source-file, but they may appear inline (see: [[#h:9204514E-E5FC-488B-8066-66F0D9AF0C85][ModOrContract]]).
 
 Parser: [[file:noir/compiler/noirc_frontend/src/parser/parser.rs::pub(crate) fn parse_module(&mut self, nested: bool)][parse_module()]]
+
+#+name: ,ebnf_module
 #+transclude: [[file:noir/compiler/noirc_frontend/src/parser/parser.rs::122][Module doc]] :lines 122-122 :src fundamental
 
 *** DONE DocComments
@@ -135,6 +139,8 @@ CLOSED: [2025-06-05 Thu 16:57]
 :end:
 
 Parser: [[file:noir/compiler/noirc_frontend/src/parser/parser/doc_comments.rs::pub(super) fn parse_inner_doc_comments(&mut self)][parse_inner_doc_comments()]], [[file:noir/compiler/noirc_frontend/src/parser/parser/doc_comments.rs::fn parse_inner_doc_comment(&mut self)][parse_inner_doc_comment()]]
+
+#+name: ,ebnf_inner_doc_comments
 #+transclude: [[file:noir/compiler/noirc_frontend/src/parser/parser/doc_comments.rs::6][InnerDocComments doc]] :lines 6-6 :src fundamental
 
 *************** TODO Look at BorrowedToken
@@ -154,6 +160,8 @@ CLOSED: [2025-06-05 Thu 16:57]
 :end:
 
 Parser: [[file:noir/compiler/noirc_frontend/src/parser/parser/doc_comments.rs::pub(super) fn parse_outer_doc_comments(&mut self)][parse_outer_doc_comments()]], [[file:noir/compiler/noirc_frontend/src/parser/parser/doc_comments.rs::fn parse_outer_doc_comment(&mut self)][parse_outer_doc_comment()]]
+
+#+name: ,ebnf_outer_doc_comments
 #+transclude: [[file:noir/compiler/noirc_frontend/src/parser/parser/doc_comments.rs::19][OuterDocComments doc]] :lines 19-19 :src fundamental
 
 *** TODO Item                                                          :node:
@@ -166,6 +174,8 @@ Parser: [[file:noir/compiler/noirc_frontend/src/parser/parser/doc_comments.rs::p
 :end:
 
 Parser: [[file:noir/compiler/noirc_frontend/src/parser/parser/item.rs::pub(crate) fn parse_module_items(&mut self, nested: bool)][parse_module_items()]], [[file:noir/compiler/noirc_frontend/src/parser/parser/item.rs::fn parse_module_item_in_list(&mut self, nested: bool)][parse_module_item_in_list()]], [[file:noir/compiler/noirc_frontend/src/parser/parser/item.rs::fn parse_item(&mut self)][parse_item()]]
+
+#+name: ,ebnf_item
 #+transclude: [[file:noir/compiler/noirc_frontend/src/parser/parser/item.rs::87][Item doc]] :lines 87-87 :src fundamental
 
 - Parsed without separator (~Parser::parse_module_items~).
@@ -194,6 +204,7 @@ Parser: [[file:noir/compiler/noirc_frontend/src/parser/parser/item.rs::fn parse_
 TODO: Does this mean that in a list of attributes #[foo] #[bar] #![bing] #[bong] that foo and bar are grouped as attributes, the inner attribute bing breaks that group, and then bong is itself in another group later on? Given that inner attribute makes parse_item_kind return early.
 *************** END
 
+#+name: ,ebnf_item_kind
 #+transclude: [[file:noir/compiler/noirc_frontend/src/parser/parser/item.rs::97][ItemKind doc]] :lines 97-108 :src fundamental
 
 ***** DONE Attributes
@@ -332,7 +343,12 @@ Parser: [[file:noir/compiler/noirc_frontend/src/parser/parser/item_visibility.rs
 
 Missing text (NIL) is a type of visibility in the sense that the default visibility is private if unspecified. Missing text won't affect tree-sitter unless/until qualifying item visibility becomes part of the CST.
 
-#+transclude: [[file:noir/compiler/noirc_frontend/src/parser/parser/item_visibility.rs][Parser::parse_item_visibility()]] :lines 9-12 :src rust
+#+name: ,ebnf_item_visibility
+#+begin_src fundamental
+ItemVisibility = ( 'pub' | 'pub' '(' 'crate' ')' )?
+#+end_src
+
+Original EBNF: [[file:noir/compiler/noirc_frontend/src/parser/parser/item_visibility.rs::9][ItemVisibility doc]]
 
 ***** DONE Use                                                 :cluster:node:
 CLOSED: [2025-06-08 Sun 17:35]
@@ -362,6 +378,8 @@ seq(
 
 Parser (sop): [[file:noir/compiler/noirc_frontend/src/parser/parser/item.rs::if self.eat_keyword(Keyword::Use) {][parse_use_tree() parent callsite]], [[file:noir/compiler/noirc_frontend/src/parser/parser/use_tree.rs::pub(super) fn parse_use_tree(&mut self)][parse_use_tree()]]
 Types: [[file:noir/compiler/noirc_frontend/src/ast/statement.rs::pub struct UseTree {][UseTree struct]]
+
+#+name: ,ebnf_use
 #+transclude: [[file:noir/compiler/noirc_frontend/src/parser/parser/use_tree.rs::12][Use doc, UseTree doc, UseTreeList doc]] :lines 12-16 :src fundamental
 
 [[#h:96FCF9AD-3B89-451B-B84D-90A7A625B56D][PathKind]] is only valid at parse_use_tree and since [[#h:A051D0D5-7007-4DF8-83B7-FB4EFF9C383E][PathNoTurbofish]] already includes attempts to parse PathKind in it. So the doc comment for =Use= is wrong and should be =Use = 'use' PathKind UseTree=.
@@ -523,6 +541,9 @@ seq(
 #+end_src
 
 Parser: [[file:noir/compiler/noirc_frontend/src/parser/parser/item.rs::if let Some(is_contract) = self.eat_mod_or_contract() {][parse_mod_or_contract() parent callsite]], [[file:noir/compiler/noirc_frontend/src/parser/parser/module.rs::pub(super) fn parse_mod_or_contract(][parse_mod_or_contract()]]
+
+#+name: ,ebnf_mod_or_contract
+#+transclude: [[file:noir/compiler/noirc_frontend/src/parser/parser/module.rs::12][ModOrContract doc]] :lines 12-13 :src fundamental
 
 Only the [[#h:F5A79701-65C9-4FEA-83D8-2413C585A5FA][ItemVisibility]] modifier is applicable, all other [[#h:2A9D09A5-2E52-4B8C-ABA1-0B3B953F093C][Modifiers]] are parse errors. Eat =mod= or =contract= keywords, ~validate_secondary_attributes~. If the brace group is not hit it's a ~ItemKind::ModuleDecl~ (declaration), otherwise a real submodule.
 
@@ -829,6 +850,9 @@ seq(
 #+end_src
 
 Parser (sop): [[file:noir/compiler/noirc_frontend/src/parser/parser/item.rs::if self.eat_keyword(Keyword::Global) {][parse_global() parent callsite]], [[file:noir/compiler/noirc_frontend/src/parser/parser/global.rs::pub(crate) fn parse_global(][parse_global()]]
+
+#+name: ,ebnf_global
+#+transclude: [[file:noir/compiler/noirc_frontend/src/parser/parser/global.rs::15][Global doc]] :lines 15-15 :src fundamental
 
 2025/06/12: document (as appropriate) ~parse_global~.
 
@@ -1869,7 +1893,8 @@ repeat1(choice(MODIFIERS.Unconstrained, MODIFIERS.Comptime))
 
 Parser: [[file:noir/compiler/noirc_frontend/src/parser/parser/item.rs::if self.eat_keyword(Keyword::Fn) {][parse_function() parent callsite]], [[file:noir/compiler/noirc_frontend/src/parser/parser/function.rs::fn parse_function(][parse_function()]]
 Types: [[file:noir/compiler/noirc_frontend/src/ast/function.rs::pub struct NoirFunction {][NoirFunction struct]], [[file:noir/compiler/noirc_frontend/src/ast/expression.rs::pub struct FunctionDefinition {][FunctionDefinition struct]]
-Mutable modifier =mut= not applicable; presence raises parse error.
+
+Mutable modifier =mut= **not applicable**; presence raises parse error.
 Function parameter =self= **not allowed** when called via ItemKind.
 
 :callstack:
@@ -1890,7 +1915,8 @@ Check status here refers to how these functions are called at their callsite, no
       - [X] [[file:noir/compiler/noirc_frontend/src/parser/parser/expression.rs::fn parse_block(&mut self)][parse_block()]] (is: [[#h:B34CADE5-71B4-41F2-AB54-00483EE593A6][Block]])
 :end:
 
-#+transclude: [[file:noir/compiler/noirc_frontend/src/parser/parser/function.rs::34][Parser::parse_function()]] :lines 34-34 :src rust
+#+name: ,ebnf_function
+#+transclude: [[file:noir/compiler/noirc_frontend/src/parser/parser/function.rs::34][Parser::parse_function()]] :lines 34-34 :src fundamental
 
 *************** TODO Look at the call to validate_attributes and document it if required
 Said call is within the parse_function_definition function, first expression.
@@ -1923,6 +1949,8 @@ seq(
 #+end_src
 
 Parser: [[file:noir/compiler/noirc_frontend/src/parser/parser/function.rs::fn parse_function_parameters(&mut self, allow_self: bool)][parse_function_parameters()]]
+
+#+name: ,ebnf_function_parameters
 #+transclude: [[file:noir/compiler/noirc_frontend/src/parser/parser/function.rs::134][FunctionParameters doc]] :lines 129-133 :src fundamental
 
 ****** FunctionParametersList                                          :node:
@@ -2735,6 +2763,9 @@ choice(
 #+end_src
 
 Parser: [[file:noir/compiler/noirc_frontend/src/parser/parser/expression.rs::fn parse_literal(&mut self)][parse_literal()]]
+
+#+name: ,ebnf_literal
+#+transclude: [[file:noir/compiler/noirc_frontend/src/parser/parser/expression.rs::564][Literal, QuoteExpression, ArrayExpression, BlockExpression EBNF]] :lines 564-579 :src fundamental
 
 **** TODO QuoteExpression                                              :node:
 :PROPERTIES:
@@ -3757,6 +3788,13 @@ Noir does not support Unicode Identifiers (UAX#31) so XID_Start/XID_Continue. On
 /[a-zA-Z_][a-zA-Z0-9_]*/
 #+end_src
 
+[[#h:65B0176B-B46F-4679-8535-C504870AC048][ident]]
+
+#+name: ,ebnf_identifier
+#+begin_src fundamental
+identifier = [a-zA-Z_][a-zA-Z0-9_]*
+#+end_src
+
 **** AttributeKeywords
 :PROPERTIES:
 :CUSTOM_ID: h:0845FBC0-576F-4E44-B2A8-B7D7B17FBC84
@@ -3884,6 +3922,11 @@ Via [[file:noir/compiler/noirc_frontend/src/parser/parser.rs::fn eat_bool(&mut s
 #+name: bool
 #+begin_src js :rule bool_literal :ast bool
 choice('true', 'false')
+#+end_src
+
+#+name: ,ebnf_bool
+#+begin_src fundamental
+bool = 'true' | 'false'
 #+end_src
 
 *************** TODO Put lookup_keyword into Internal alongside parse_many and friends if it keeps being called in other places we document (like it is here).
@@ -4462,4 +4505,71 @@ Executes =n= for each element of given list of src-block =block_name=\s.
 #+name: lit
 #+begin_src emacs-lisp :var literal=""
 (format "\"%s\"" literal)
+#+end_src
+
+
+#+name: ebnf
+#+begin_src emacs-lisp :var block_name=""
+(when-let* ((block-src-info (org-babel-lob--src-info (concat ",ebnf_" block_name)))
+            (block-src (org-babel-expand-noweb-references block-src-info)))
+  (concat block-src "\n"))
+#+end_src
+
+
+#+name: ebnf_preformat
+#+begin_src emacs-lisp :var block_name=""
+(when-let* ((block-src-info (org-babel-lob--src-info block_name))
+            (block-src (org-babel-expand-noweb-references block-src-info)))
+  (with-temp-buffer
+    (insert block-src)
+
+    ;; Remove leading ///
+    (goto-char (point-min))
+    (while (re-search-forward "^///\s?" nil t)
+      (replace-match ""))
+
+    ;; Replace rule assignment = with ::=
+    (goto-char (point-min))
+    (while (re-search-forward "\s=\s" nil t)
+      (replace-match " ::= "))
+
+    (buffer-string)))
+#+end_src
+
+* Railroad
+
+Noirc EBNF grammar documentation gathered and tangled for construction of a railroad diagram.
+
+#+begin_src fundamental :tangle noir_railroad.ebnf :noweb yes
+<<ebnf_preformat("railroad_collect")>>
+#+end_src
+
+Collect them all here so we can process (do a bunch of regex replacements) just once. Also we use a nasty prefix on the named code blocks so we can still jump to them with =C-c C-v g= even though using noweb-ref would be simpler we wouldn't be able to do the jumping as easily.
+
+#+name: railroad_collect
+#+begin_src fundamental :noweb yes
+<<ebnf("program")>>
+<<ebnf("module")>>
+
+<<ebnf("inner_doc_comments")>>
+<<ebnf("outer_doc_comments")>>
+
+<<ebnf("item")>>
+<<ebnf("item_visibility")>>
+<<ebnf("item_kind")>>
+// TODO: InnerAttribute, Attributes, Modifiers
+<<ebnf("use")>>
+<<ebnf("mod_or_contract")>>
+// TODO: Struct
+<<ebnf("global")>>
+// TODO: Impl, Trait
+// TODO: TypeAlias
+<<ebnf("function")>>
+
+<<ebnf("function_parameters")>>
+
+<<ebnf("literal")>>
+
+<<ebnf("identifier")>>
+<<ebnf("bool")>>
 #+end_src

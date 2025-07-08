@@ -102,6 +102,10 @@ Patterns are used to match values against structures and to, optionally, bind va
 2025/06/12 6:17pm
 Trying to depth-first for Function has resulted in A LOT of stuff, so.. a lot of moving parts. Looks like Global is simpler (in terms of apparent nesting) so going to change tack to that for now.
 
+2025/07/08 10:27pm
+A lot added since last entry, Global 'called' from ItemKind so let's continue from there. Looking back at Function again now.
+
+
 *** Grammar Areas
 
 Areas to tackle to construct the tree-sitter grammar.
@@ -208,6 +212,11 @@ Finish converting the various forms that are in the literal =grammar.js= to tang
   - [X] Modifiers
   - [ ] Numeric types
 
+**** TODO Contribute EBNF grammar changes and new additions to upstream Noirc
+
+- [ ] [[file:noir_grammar.org::#h:65B0176B-B46F-4679-8535-C504870AC048][ident]] :: identifier regex (but might need to convert into EBNFs weird xD or whatever stuff)
+- [ ] [[file:noir_grammar.org::#h:54ACA91F-70A8-4121-A799-F872DDCAF240][bool]]
+- [ ] [[file:noir_grammar.org::#h:F5A79701-65C9-4FEA-83D8-2413C585A5FA][ItemVisibility]] :: don't need to specify 'nothing'
 
 *** Debugging
 
