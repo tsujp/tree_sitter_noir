@@ -301,7 +301,15 @@ module.exports = grammar({
         // TODO: Consider all Noirc 'statements' except we enforce trailing semicolon where required? Or just have a statements section idk yet.
         
         // [[file:noir_grammar.org::statement]]
-        _statement_ast: $ => seq(
+        _statement_ast: $ => // seq(
+        //     choice(
+        //         // TODO: Attributes.
+        //         $._statement_kind,
+        //         // TODO: Could have as an alias to expression instead, would still result in a node.
+        //         $.expression_statement,
+        //     ),
+        //     ';',
+        seq(
             // TODO: Attributes.
             $._statement_kind,
             ';',
@@ -317,6 +325,9 @@ module.exports = grammar({
             $.comptime_statement,
             $.for_statement,
             $.if_expression,
+            $.block,
+            $.assign_statement,
+            // Expression statement is handled at parent node for better CST.
         ),
         // [[file:noir_grammar.org::break_statement]]
         break_statement: _ => 'break',
@@ -360,6 +371,19 @@ module.exports = grammar({
             )),
             field('body', $.block),
         ),
+        // [[file:noir_grammar.org::assign_statement]]
+        assign_statement: $ => seq(
+            field('left', $._expression),
+            choice(
+                // Deseguared (and limited) binary expression assignment, see: next_is_op_assign.
+                '+=', '-=', '*=', '/=', '%=', '&=', '^=', '=',
+                // Simple assignment.
+                '=',
+            ),
+            field('right', $._expression),
+        ),
+        // [[file:noir_grammar.org::expression_statement]]
+        expression_statement: $ => $._expression,
 
         // * * * * * * * * * * * * * * * * * * * * * * * * * EXPRESSIONS
         

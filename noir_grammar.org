@@ -2910,6 +2910,14 @@ Refactor accordingly, if appropriate.
 
 #+name: statement
 #+begin_src js :rule _statement_ast :arg $ :ast Statement
+// seq(
+//     choice(
+//         // TODO: Attributes.
+//         <<r("statement_kind")>>,
+//         // TODO: Could have as an alias to expression instead, would still result in a node.
+//         <<r("expression_statement")>>,
+//     ),
+//     ';',
 seq(
     // TODO: Attributes.
     <<r("statement_kind")>>,
@@ -2958,6 +2966,8 @@ choice(
     <<r("for_statement")>>,
     <<r("if_expression")>>,
     <<r("block_expression")>>,
+    <<r("assign_statement")>>,
+    // Expression statement is handled at parent node for better CST.
 )
 #+end_src
 
@@ -3333,23 +3343,86 @@ Parser: [[file:noir/compiler/noirc_frontend/src/parser/parser/statement.rs::if l
 
 #+transclude: [[file:noir/compiler/noirc_frontend/src/parser/parser/statement.rs::80][BlockStatement doc]] :lines 80-80 :src fundamental
 
-***** TODO AssignStatement
+***** SPEC AssignStatement                                             :node:
 :PROPERTIES:
 :CUSTOM_ID: h:D8D0BBE8-6152-479B-8C19-282B2B56C4A9
 :END:
 :LOGBOOK:
+- State "SPEC"       from "TODO"       [2025-07-07 Mon 15:27]
 - State "TODO"       from              [2025-05-20 Tue 18:16]
 :END:
+:pgd:
++ [[#h:167542CC-8CDE-49C1-9465-E5157C6A176F][Expression]]
++ (grp):
+  - === (token)
+  - any of the token combinations valid in [[#h:0AD7B3FC-EF8B-4DE5-85E9-19AFBC8CB257][next_is_op_assign]]
++ [[#h:167542CC-8CDE-49C1-9465-E5157C6A176F][Expression]]
+:end:
 
-2025/06/29 8:25 pm: JORDAN CONTINUE FROM HERE XXX42069XXX
+#+name: assign_statement
+#+begin_src js :arg $ :ast AssignStatement
+seq(
+    field('left', <<r("expression")>>),
+    choice(
+        // Deseguared (and limited) binary expression assignment, see: next_is_op_assign.
+        '+=', '-=', '*=', '/=', '%=', '&=', '^=', '<<=', '|=', '>>=',
+        // Simple assignment.
+        '=',
+    ),
+    field('right', <<r("expression")>>),
+)
+#+end_src
 
-***** TODO ExpressionStatement
+Parser: defer to [[#h:37FF07C0-5DAA-467E-9DBA-8EBAC79F7DE4][AssignOrExpression]] as **multiple parse locations after BlockStatement**
+
+For the AssignStatement struct, field =lvalue= is the thing which field =expression= is being assigned to.
+
+*************** TODO keep left/right field name or use value/expression
+left/right appears to be convention, but value/expression is more accurate to parser source.
+*************** END
+
+***** SPEC ExpressionStatement                                         :node:
 :PROPERTIES:
 :CUSTOM_ID: h:12F5ADF9-E496-4D5B-896E-5CE97D44BE3D
 :END:
 :LOGBOOK:
+- State "SPEC"       from "TODO"       [2025-07-07 Mon 15:27]
 - State "TODO"       from              [2025-05-20 Tue 18:16]
 :END:
+:pgd:
++ [[#h:167542CC-8CDE-49C1-9465-E5157C6A176F][Expression]]
+:end:
+
+#+name: expression_statement
+#+begin_src js :arg $ :ast ExpressionStatement
+<<r("expression")>>
+#+end_src
+
+Parser: defer to [[#h:37FF07C0-5DAA-467E-9DBA-8EBAC79F7DE4][AssignOrExpression]] as **multiple parse locations after BlockStatement**
+
+Expression statements will appear alongside statements in the tree-sitter grammar instead of nested within them as is depicted in the parser frontend. Implemented at [[#h:788ECB8C-0A48-4255-B35E-F5850902AA32][Statement]].
+
+***** AssignOrExpression
+:PROPERTIES:
+:CUSTOM_ID: h:37FF07C0-5DAA-467E-9DBA-8EBAC79F7DE4
+:END:
+
+Types: [[file:noir/compiler/noirc_frontend/src/ast/statement.rs::pub struct AssignStatement {][AssignStatement struct]], [[#h:BF579445-9EE4-4F65-B928-8E22987DFDBD][LValue]], [[file:noir/compiler/noirc_frontend/src/ast/statement.rs::pub enum StatementKind {][StatementKind enum]]
+
+
+After [[#h:B305BFF3-A865-4292-A8E5-5448D38CE872][BlockStatement]]'s parent callsite the rest of =parse_statement_kind= mixes attempts to parse either an [[#h:D8D0BBE8-6152-479B-8C19-282B2B56C4A9][AssignStatement]] or an [[#h:12F5ADF9-E496-4D5B-896E-5CE97D44BE3D][ExpressionStatement]] in 3 major blocks, each block guarded by a condition and causes the parser enter an error-state if it's condition succeeds but parsing fails.
+
+
+**Block 1**: If [[file:noir/compiler/noirc_frontend/src/parser/parser/statement.rs::if let Some(token) = self.eat_kind(TokenKind::InternedLValue) {][eat_kind(TokenKind::InternedLValue)]] then: eat an assign token ===, an [[#h:167542CC-8CDE-49C1-9465-E5157C6A176F][Expression]], and finally return a ~StatementKind::Assign(AssignStatement)~.
+
+Between Block 1 and Block 2 an [[#h:167542CC-8CDE-49C1-9465-E5157C6A176F][Expression]] is optionally parsed. Remember since these blocks are guarded and set an error-state in failure if Block 1 was not triggered this is the first time we're parsing an Expression, if Block 1 was triggered and suceeded we never reach this line, if Block 1 was triggered but didn't parse the parser is at an error-state.
+
+**Block 2**: If [[file:noir/compiler/noirc_frontend/src/parser/parser/statement.rs::if self.eat_assign() {][eat_assign()]] then: reify an [[#h:BF579445-9EE4-4F65-B928-8E22987DFDBD][LValue]] from the in-between parsed Expression (via [[file:noir/compiler/noirc_frontend/src/ast/statement.rs::pub fn from_expression(expr: Expression) -> Option<LValue> {][LValue::from_expression()]]), parse another [[#h:167542CC-8CDE-49C1-9465-E5157C6A176F][Expression]], and finally return a ~StatementKind::Assign(AssignStatement)~. If the reification failed a parse-error is pushed since the left-side of this attempted assignment must be invalid.
+
+**Block 3**: if [[file:noir/compiler/noirc_frontend/src/parser/parser/statement.rs::if let Some(operator) = self.next_is_op_assign() {][next_is_op_assign()]] (see: [[#h:0AD7B3FC-EF8B-4DE5-85E9-19AFBC8CB257][next_is_op_assign]]) then: reify an [[#h:BF579445-9EE4-4F65-B928-8E22987DFDBD][LValue]] from the in-between parsed Expression (via [[file:noir/compiler/noirc_frontend/src/ast/statement.rs::pub fn from_expression(expr: Expression) -> Option<LValue> {][LValue::from_expression()]]), create an [[#h:ACCBF119-4052-4C4E-87CE-F7B233FF4AA1][Expression Infix]] where the left-hand side is the in-between expression, and the right-hand side is just-now another parsed Expression. This Infix expression is wrapped, and finally a ~StatementKind::Assign(AssignStatement)~ is returned. If the reification failed a parse-error is pushed since the left-side of this attempted assignment must be invalid.
+
+
+If none of the blocks' guards are triggered an [[file:PROJECT.org::#h:9255C4E4-03B0-4A3B-B3AE-454FF2A53D57][expression statement]] (~StatementKind::Expression~) of the in-between parsed Expression is returned.
 
 *** DONE Arguments                                                     :node:
 CLOSED: [2025-06-26 Thu 16:15]
@@ -4032,6 +4105,29 @@ For all the expression AST nodes in the selfsame file ~parse_infix~ is in they p
 *************** TODO My understanding of the precedence here is correct yeah?
 *************** END
 
+*** [[file:noir/compiler/noirc_frontend/src/parser/parser/statement.rs::fn next_is_op_assign(&mut self)][Parser.next_is_op_assign()]]
+:PROPERTIES:
+:CUSTOM_ID: h:0AD7B3FC-EF8B-4DE5-85E9-19AFBC8CB257
+:END:
+
+Optionally parses sugared binary operations (also see: [[#h:ACCBF119-4052-4C4E-87CE-F7B233FF4AA1][Infix]]), so ~a <OP>= b~ becomes ~a = a <OP> b~.
+
+Valid sugared combinations:
+
+#+begin_example
++=
+-=
+*=
+/=
+%=
+&=
+^=
+<<=
+|=
+
+>>=
+#+end_example
+
 *** [[file:noir/compiler/noirc_frontend/src/lexer/lexer.rs::fn next_token(&mut self)][Lexer.next_token()]]
 :PROPERTIES:
 :CUSTOM_ID: h:2AE110C8-8650-4F3B-AAA0-FFE5E79C8C81
@@ -4045,6 +4141,15 @@ Major fork where ~Token~\s are created. After a series of whitespace is ignored:
 :END:
 
 From (and including) parameter =initial_char= eat characters which are ascii alphabetic (Rust stdlib), or numeric (Rust stdlib) or =_= and return the start/end positions of the eaten characters and said characters.
+
+*** [[file:noir/compiler/noirc_frontend/src/ast/statement.rs::pub enum LValue {][LValue enum]]
+:PROPERTIES:
+:CUSTOM_ID: h:BF579445-9EE4-4F65-B928-8E22987DFDBD
+:END:
+
+An AST form which can be assigned to.
+
+#+transclude: [[file:noir/compiler/noirc_frontend/src/ast/statement.rs::571][LValue enum]] :lines 571-577 :src fundamental
 
 * Template
 
@@ -4199,7 +4304,7 @@ function sepBy(rule, sep) {
 #+name: grp__statements
 #+begin_src js :noweb yes
 <<n("statement")>>
-<<c('("statement_kind" "break_statement" "continue_statement" "return_statement" "let_statement" "constrain_statement" "comptime_statement" "for_statement"))>>
+<<c('("statement_kind" "break_statement" "continue_statement" "return_statement" "let_statement" "constrain_statement" "comptime_statement" "for_statement" "assign_statement" "expression_statement"))>>
 #+end_src
 
 ** Expressions

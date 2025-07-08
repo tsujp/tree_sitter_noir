@@ -113,6 +113,9 @@ General top-level items need doing (macro) so micro-level structures can be test
 Program contains Module which contains InnerDocComments and Item. Comments can appear anywhere, so Item is effectively our top-level.
 
 *** Classification Semantics
+:PROPERTIES:
+:CUSTOM_ID: h:9255C4E4-03B0-4A3B-B3AE-454FF2A53D57
+:END:
 
 =statement=: an action which has no return value. More precisely it's /execution/ does /something/. May be comprised of other semantic components (like an expression). Can further be discriminated into definitions and declarations.
   - =compound=: can contain other statements.
@@ -164,6 +167,12 @@ seq(
 *** Coverage TODOs
 
 It's a bit hard (currently) to track general-coverage TODOs within =noir_grammar.org= itself, and I have yet to dive-deep into org-agenda which might be able to construct such a view. However there are a lot of other TODOs specific to each headline they are under. Here is a general "overview" of areas of the grammar that need to be done as a way to "save progress" for when future Jordan comes back to work on =noir_grammar.org=.
+
+**** TODO ExpressionStatement requires some grammar re-structuring
+
+The addition of ExpressionStatement as-is results in rule conflicts, and while those conflicts could be solved with some precedence settings they shouldn't really be happening in the first place I feel. Let's table ExpressionStatement for now and continue with other things and once all the known places Statement is elucidated appropriate action can be taken.
+
+If it is only as seen now then we probably inline each =;= for each StatementKind and have Statements within a Block have the final Statement mark =;= optional.
 
 **** TODO UseTree grammar refinement
 
