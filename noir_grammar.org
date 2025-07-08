@@ -806,7 +806,7 @@ Foo
 
 Only the [[#h:F5A79701-65C9-4FEA-83D8-2413C585A5FA][ItemVisibility]] modifier is applicable, all other [[#h:2A9D09A5-2E52-4B8C-ABA1-0B3B953F093C][Modifiers]] are parse errors.
 
-***** TODO Global                                              :cluster:node:
+***** TODO Global                                                      :node:
 :PROPERTIES:
 :CUSTOM_ID: h:C21A19F9-DC0C-4F17-9739-B92412D0C4FF
 :END:
@@ -825,22 +825,6 @@ seq(
     <<r("expression")>>,
     // prec.left(1, $._expression),
     ';',
-)
-#+end_src
-
-// TODO: Put this elsewhere. ExpressionKind::Literal see ast/expression.rs
-#+name: literal
-#+begin_src js :rule __literal :arg $ :ast Literal
-choice(
-    <<r("bool")>>,
-    <<r("int")>>,
-    <<r("str")>>,
-    <<r("raw_str")>>,
-    <<r("fmt_str")>>,
-    // $.quote_expression, // TODO: Broken for now.
-    <<r("array_expression")>>,
-    <<r("slice_expression")>>,
-    <<r("block_expression")>>,
 )
 #+end_src
 
@@ -1532,6 +1516,9 @@ A special kind of type intended for narrow usage. Limited to constant integers, 
 Further context (code has diverged however) on implementing PR: [[https://github.com/noir-lang/noir/pull/620/commits/adb969d178fd9f50be91229505138e53bdc4a6f8#diff-ad71a918cf63410fc5be767b6f3ad78a213b22cff60ddd0549c9f5e083a5d6c2][found here]].
 
 ****** Infix
+:PROPERTIES:
+:ID:       7A38952D-D669-4DD6-AF3A-065CB546CB21
+:END:
 
 The entire call-tree from AddOrSubtractTypeExpression's parser [[file:noir/compiler/noirc_frontend/src/parser/parser/type_expression.rs::fn parse_add_or_subtract_type_expression(&mut self)][parse_add_or_subtract_type_expression()]] forms the same (subset) binary expressions as in [[#h:ACCBF119-4052-4C4E-87CE-F7B233FF4AA1][Expression Infix]] thus similarly to there, it has been flattened here.
 
@@ -2667,6 +2654,10 @@ Guaranteed to NOT have a colon =:= following it.
 :LOGBOOK:
 - State "TODO"       from              [2025-06-12 Thu 18:48]
 :END:
+:pgd:
+- [[id:7A38952D-D669-4DD6-AF3A-065CB546CB21][Infix]] (BinaryExpression)
+- [[#h:24F065BB-8AC3-48EE-8C8E-64E188E2AE16][Literal]]
+:end:
 
 #+name: expression
 #+begin_src js :rule _expression :arg $
@@ -2717,7 +2708,38 @@ Currently lots of confusing names, got lexing at the top, literal at the bottom 
 
 All the expression nodes in [[file:noir/compiler/noirc_frontend/src/parser/parser/infix.rs][infix.rs]] constitute binary expressions and their call hierarchy via [[#h:CE180901-F6F2-4A65-878D-6C9154971376][parse_infix]] denotes the reverse of their precedence. Note that the deepest call (in that file) [[file:noir/compiler/noirc_frontend/src/parser/parser/infix.rs::pub(super) fn parse_multiply_or_divide_or_modulo(][parse_multiply_or_divide_or_modulo()]] further calls [[file:noir/compiler/noirc_frontend/src/parser/parser/expression.rs::pub(super) fn parse_term(&mut self, allow_constructors: bool)][parse_term()]] meaning all of Term's (TODO: link) expressions are higher priority still.
 
+**** TODO Literal                                                      :node:
+:PROPERTIES:
+:CUSTOM_ID: h:24F065BB-8AC3-48EE-8C8E-64E188E2AE16
+:END:
+:pgd:
+- [[id:CF0A439A-EFBB-466E-8F5F-7A8827EB703E][QuoteExpression]]
+- [[#h:48EA91F0-AB43-4FEF-94F1-3837C634CF38][ArrayExpression]]
+- [[#h:C6FDB5DB-21D9-46A2-A4E8-DEE2AFFD1F6F][SliceExpression]]
+- [[#h:B34CADE5-71B4-41F2-AB54-00483EE593A6][BlockExpression]]
+:end:
+
+#+name: literal
+#+begin_src js :rule __literal :arg $ :ast Literal
+choice(
+    <<r("bool")>>,
+    <<r("int")>>,
+    <<r("str")>>,
+    <<r("raw_str")>>,
+    <<r("fmt_str")>>,
+    // $.quote_expression, // TODO: Broken for now.
+    <<r("array_expression")>>,
+    <<r("slice_expression")>>,
+    <<r("block_expression")>>,
+)
+#+end_src
+
+Parser: [[file:noir/compiler/noirc_frontend/src/parser/parser/expression.rs::fn parse_literal(&mut self)][parse_literal()]]
+
 **** TODO QuoteExpression                                              :node:
+:PROPERTIES:
+:ID:       CF0A439A-EFBB-466E-8F5F-7A8827EB703E
+:END:
 :LOGBOOK:
 - State "TODO"       from              [2025-06-17 Tue 18:15] \\
   Top-level recursion, see quote literal, deferring ultimately.
@@ -2933,11 +2955,13 @@ Parser: [[file:noir/compiler/noirc_frontend/src/parser/parser/statement.rs::fn p
 
 Loop parsing attributes and statement kind, each statement is delimited by a semicolon.
 
-**** TODO StatementKind                                        :node:cluster:
+**** BLOCK StatementKind                                       :node:cluster:
 :PROPERTIES:
 :CUSTOM_ID: h:7BCA6405-C905-45AB-A3C7-1B7F6064454A
 :END:
 :LOGBOOK:
+- State "BLOCK"      from "TODO"       [2025-07-08 Tue 22:20] \\
+  Finish breadth-first grammar exploration, when StatementKind callsites known can continue.
 - State "TODO"       from              [2025-05-20 Tue 18:16]
 :END:
 :pgd:
@@ -3343,11 +3367,13 @@ Parser: [[file:noir/compiler/noirc_frontend/src/parser/parser/statement.rs::if l
 
 #+transclude: [[file:noir/compiler/noirc_frontend/src/parser/parser/statement.rs::80][BlockStatement doc]] :lines 80-80 :src fundamental
 
-***** SPEC AssignStatement                                             :node:
+***** BLOCK AssignStatement                                            :node:
 :PROPERTIES:
 :CUSTOM_ID: h:D8D0BBE8-6152-479B-8C19-282B2B56C4A9
 :END:
 :LOGBOOK:
+- State "BLOCK"      from "SPEC"       [2025-07-08 Tue 22:21] \\
+  See entry at this time for StatementKind.
 - State "SPEC"       from "TODO"       [2025-07-07 Mon 15:27]
 - State "TODO"       from              [2025-05-20 Tue 18:16]
 :END:
@@ -3355,7 +3381,7 @@ Parser: [[file:noir/compiler/noirc_frontend/src/parser/parser/statement.rs::if l
 + [[#h:167542CC-8CDE-49C1-9465-E5157C6A176F][Expression]]
 + (grp):
   - === (token)
-  - any of the token combinations valid in [[#h:0AD7B3FC-EF8B-4DE5-85E9-19AFBC8CB257][next_is_op_assign]]
+  - any of the token combinations valid in ~next_is_op_assign~
 + [[#h:167542CC-8CDE-49C1-9465-E5157C6A176F][Expression]]
 :end:
 
@@ -3381,11 +3407,13 @@ For the AssignStatement struct, field =lvalue= is the thing which field =express
 left/right appears to be convention, but value/expression is more accurate to parser source.
 *************** END
 
-***** SPEC ExpressionStatement                                         :node:
+***** BLOCK ExpressionStatement                                        :node:
 :PROPERTIES:
 :CUSTOM_ID: h:12F5ADF9-E496-4D5B-896E-5CE97D44BE3D
 :END:
 :LOGBOOK:
+- State "BLOCK"      from "SPEC"       [2025-07-08 Tue 22:21] \\
+  See entry at this time for StatementKind.
 - State "SPEC"       from "TODO"       [2025-07-07 Mon 15:27]
 - State "TODO"       from              [2025-05-20 Tue 18:16]
 :END:
