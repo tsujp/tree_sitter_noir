@@ -358,12 +358,6 @@ CLOSED: [2025-06-08 Sun 17:35]
 :LOGBOOK:
 - State "DONE"       from "TODO"       [2025-06-08 Sun 17:35]
 :END:
-:pgd:
-+ =use= (kw)
-+ (opt) [[#h:96FCF9AD-3B89-451B-B84D-90A7A625B56D][PathKind]]
-+ [[#h:19EAD845-0134-41CA-85BA-2E09E10D479B][UseTree]]
-+ =;=
-:end:
 
 #+name: use
 #+begin_src js :rule use_declaration :arg $ :ast Use
@@ -376,7 +370,7 @@ seq(
 )
 #+end_src
 
-Parser (sop): [[file:noir/compiler/noirc_frontend/src/parser/parser/item.rs::if self.eat_keyword(Keyword::Use) {][parse_use_tree() parent callsite]], [[file:noir/compiler/noirc_frontend/src/parser/parser/use_tree.rs::pub(super) fn parse_use_tree(&mut self)][parse_use_tree()]]
+Parser: [[file:noir/compiler/noirc_frontend/src/parser/parser/item.rs::if self.eat_keyword(Keyword::Use) {][parse_use_tree() parent callsite]], [[file:noir/compiler/noirc_frontend/src/parser/parser/use_tree.rs::pub(super) fn parse_use_tree(&mut self)][parse_use_tree()]]
 Types: [[file:noir/compiler/noirc_frontend/src/ast/statement.rs::pub struct UseTree {][UseTree struct]]
 
 #+name: ,ebnf_use
@@ -391,13 +385,18 @@ Only the [[#h:F5A79701-65C9-4FEA-83D8-2413C585A5FA][ItemVisibility]] modifier is
 
 Parsed [[file:noir/compiler/noirc_frontend/src/ast/statement.rs::pub struct UseTree {][UseTree struct]] is returned as ~ItemKind::Import~ which is [[file:noir/compiler/noirc_frontend/src/ast/statement.rs::pub fn desugar(self, root: Option<Path>, visibility: ItemVisibility)][considered a statement]] however we will narrow and use the declaration sub-category of a statement and name this rule as such.
 
-*************** TODO Redo the pgd for these, the treesit grammar is right but pgd is a bit wonky
-Due to how usetree is parsed its a bit hard to represent in pgd right now, but the tree sitter logic is correct (via all tests so far).
-*************** END
 *************** TODO ItemKind docs as appropriate
 *************** END
 *************** TODO Upstream commit to fix the doc comment for Use as mentioned in this subheading
+    /// Use = 'use' PathKind PathNoTurbofish UseTree
+
+    should be:
+
+        /// Use = 'use' PathKind PathNoTurbofish UseTree ';'
+
+   i.e. it's missing a semicolon
 *************** END
+
 
 ****** DONE UseTree                                                    :node:
 CLOSED: [2025-06-08 Sun 17:35]
@@ -822,10 +821,184 @@ Cos I am lazy while going through Impl for ts grammar
 + [[#h:B3C4609F-307A-42A1-B420-DBBAB6CDE6E5][Function]]
 :end:
 
-***** TODO Trait
-Foo
+***** TOIMPL Trait                                                     :node:
+:PROPERTIES:
+:CUSTOM_ID: h:6C38714F-76B7-4472-A776-36023EB84873
+:END:
+:LOGBOOK:
+- State "TOIMPL"     from "TODO"       [2025-07-10 Thu 15:34] \\
+  parse_trait() examined
+:END:
 
-Only the [[#h:F5A79701-65C9-4FEA-83D8-2413C585A5FA][ItemVisibility]] modifier is applicable, all other [[#h:2A9D09A5-2E52-4B8C-ABA1-0B3B953F093C][Modifiers]] are parse errors.
+#+name: trait
+#+begin_src js :arg $ :ast Trait
+seq(
+    'trait',
+    field('name', <<r("identifier")>>),
+    // TODO: Generics
+    // TODO: Name below optional into a field called 'bounds'
+    optional(<<r("trait_bounds")>>),
+    // optional(seq(
+    //     ':',
+    //     <<r("trait_bounds")>>,
+    // )),
+    optional(<<r("where")>>),
+    field('body', <<r("trait_body")>>),
+)
+#+end_src
+
+Parser: [[file:noir/compiler/noirc_frontend/src/parser/parser/item.rs::if self.eat_keyword(Keyword::Trait) {][parse_trait() parent callsite]], [[file:noir/compiler/noirc_frontend/src/parser/parser/traits.rs::pub(crate) fn parse_trait(][parse_trait()]]
+Types: [[file:noir/compiler/noirc_frontend/src/ast/traits.rs::pub struct NoirTrait {][NoirTrait struct]]
+Only [[#h:F5A79701-65C9-4FEA-83D8-2413C585A5FA][ItemVisibility]] modifier applicable, all other [[#h:2A9D09A5-2E52-4B8C-ABA1-0B3B953F093C][Modifiers]] are parse errors ([[#h:14698757-D7C8-4966-B84E-5DA1CAE3011E][see more]])
+
+#+name: ,ebnf_trait
+#+transclude: [[file:noir/compiler/noirc_frontend/src/parser/parser/traits.rs::14][Trait doc]] :lines 14-14 :src fundamental
+
+*************** TODO Any accomodations for validate_secondary_attributes which is called in Trait's parser?
+*************** END
+*************** TODO Test scenarios
+If =:= is present and there's no following trait bound: that's an error
+*************** END
+
+****** TOIMPL TraitBody                                                :node:
+:PROPERTIES:
+:CUSTOM_ID: h:EE2A95CB-6562-465A-A80F-4D2DB57E91DA
+:END:
+:LOGBOOK:
+- State "TOIMPL"     from "TODO"       [2025-07-10 Thu 15:47] \\
+  Parser functions examined
+- State "TODO"       from              [2025-07-10 Thu 15:37]
+:END:
+
+#+name: trait_body
+#+begin_src js :arg $ :ast TraitBody
+seq(
+    '{',
+    // OuterDocComments are extras.
+    repeat(<<r("trait_item")>>),
+    '}',
+)
+#+end_src
+
+Parser: [[file:noir/compiler/noirc_frontend/src/parser/parser/traits.rs::fn parse_trait_body(&mut self)][parse_trait_body()]], [[file:noir/compiler/noirc_frontend/src/parser/parser/traits.rs::fn parse_trait_item_in_list(&mut self)][parse_trait_item_in_list()]]
+
+Via [[#h:8E0DC05B-1ED6-47BE-9589-64DC06FAECCA][parse_many]] split without separator until =}=: calls [[file:noir/compiler/noirc_frontend/src/parser/parser/traits.rs::fn parse_trait_item_in_list(&mut self)][parse_trait_item_in_list()]].
+
+#+name: ,ebnf_trait_body
+#+transclude: [[file:noir/compiler/noirc_frontend/src/parser/parser/traits.rs::45][TraitBody doc]] :lines 45-45 :src fundamental
+
+****** TOIMPL TraitItem                                                :node:
+:PROPERTIES:
+:CUSTOM_ID: h:7D8A8173-EDB3-4E00-8483-DC25607F69E7
+:END:
+:LOGBOOK:
+- State "TOIMPL"     from "TODO"       [2025-07-10 Thu 15:51] \\
+  Parser examined
+- State "TODO"       from              [2025-07-10 Thu 15:47]
+:END:
+
+#+name: trait_item
+#+begin_src js :_rule __trait_item :arg $ :ast TraitItem
+choice(
+    <<r("trait_type")>>,
+    <<r("trait_constant")>>,
+    <<r("trait_function")>>,
+)
+#+end_src
+
+Parser: [[file:noir/compiler/noirc_frontend/src/parser/parser/traits.rs::fn parse_trait_item(&mut self)][parse_trait_item()]]
+Types: [[file:noir/compiler/noirc_frontend/src/ast/traits.rs::pub enum TraitItem {][TraitItem enum]]
+
+Simple wrapper to the parsers of it's three AST types. For the three child AST types tree-sitter grammar fields for CST nodes can be inspired by enum member field names of ~TraitItem~.
+
+#+name: ,ebnf_trait_item
+#+transclude: [[file:noir/compiler/noirc_frontend/src/parser/parser/traits.rs::66][TraitItem doc]] :lines 66-69 :src fundamental
+
+****** SPEC TraitType                                                  :node:
+:PROPERTIES:
+:CUSTOM_ID: h:A05394C2-0FFE-431B-8686-AA12F4876025
+:END:
+:LOGBOOK:
+- State "SPEC"       from "TODO"       [2025-07-10 Thu 15:57] \\
+  Parser examined, ts grammar written
+- State "TODO"       from              [2025-07-10 Thu 15:55]
+:END:
+
+#+name: trait_type
+#+begin_src js :arg $ :ast TraitType
+seq(
+    'type',
+    field('name', <<r("identifier")>>),
+    ';',
+)
+#+end_src
+
+Parser: [[file:noir/compiler/noirc_frontend/src/parser/parser/traits.rs::fn parse_trait_type(&mut self)][parse_trait_type()]]
+
+#+name: ,ebnf_trait_type
+#+transclude: [[file:noir/compiler/noirc_frontend/src/parser/parser/traits.rs::86][TraitType doc]] :lines 86-86 :src fundamental
+
+****** SPEC TraitConstant                                              :node:
+:PROPERTIES:
+:CUSTOM_ID: h:02355489-DDCD-4E67-BB39-5DF3F0BC0A8A
+:END:
+:LOGBOOK:
+- State "SPEC"       from "TOIMPL"     [2025-07-10 Thu 16:17] \\
+  Parser examined, ts grammar written
+- State "TODO"       from              [2025-07-10 Thu 16:03]
+:END:
+
+#+name: trait_constant
+#+begin_src js :arg $ :ast TraitConstant
+seq(
+    'let',
+    field('name', <<r("identifier")>>),
+    field('type', <<r("type")>>),
+    optional(seq(
+        '=', // We don't want '=' part of the CST node for the (default) value.
+        field('value', <<r("expression")>>),
+    )),
+    ';',
+)
+#+end_src
+
+Parser: [[file:noir/compiler/noirc_frontend/src/parser/parser/traits.rs::fn parse_trait_constant(&mut self)][parse_trait_constant()]]
+Based-on: Rust's [[https://doc.rust-lang.org/reference/items/constant-items.html#grammar-ConstantItem][ConstantItem]]
+
+#+name: ,ebnf_trait_constant
+#+transclude: [[file:noir/compiler/noirc_frontend/src/parser/parser/traits.rs::105][TraitConstant doc]] :lines 105-105 :src fundamental
+
+*************** TODO Correct upstream EBNF comment
+Looks like it should be:
+    /// TraitConstant = 'let' identifier ':' Type ( '=' Expression )? ';'
+
+=?= added after the group since default_value in parser function can be None (which is valid) if no === is parsed. See [[file:noir/compiler/noirc_frontend/src/parser/parser/traits.rs::if self.eat_assign() { Some(self.parse_expression_or_error()) } else { None };][here]]
+*************** END
+
+****** BLOCK TraitFunction                                             :node:
+:LOGBOOK:
+- State "BLOCK"      from "TODO"       [2025-07-10 Thu 16:28] \\
+  Parser examined, is it similar to Function so we can share rules? Once Function done implement this ts rule
+- State "TODO"       from              [2025-07-10 Thu 16:19]
+:END:
+
+#+name: trait_function
+#+begin_src js :ast TraitFunction
+'TODO____TRAIT_FUNCTION__TEMP_COMMENT_IS_IT_SIMILAR_TO_NORMAL_FUNCTION'
+#+end_src
+
+Parser: [[file:noir/compiler/noirc_frontend/src/parser/parser/traits.rs::fn parse_trait_function(&mut self)][parse_trait_function()]]
+
+Optional body, allows =self=. Only ~Pattern::Identifier~ allowed in parameters, any other pattern is a parse error.
+
+#+name: ,ebnf_trait_function
+#+transclude: [[file:noir/compiler/noirc_frontend/src/parser/parser/traits.rs::134][TraitFunction doc]] :lines 134-134 :src fundamental
+
+*************** TODO This can almost DEFINITELY be de-duplicated with Function when Function is more complete.
+TraitFunction = Modifiers Function
+
+results in the same behaviour for normal Function (as understood currently) except this allows optional body (unsure if normal function does, but we need to split those up into definition/declaration etc anyway). So FOR NOW its got it's entirely own ts rule (TraitFunction) but once Function is done I expect we can just de-duplicate this entirely and use a simple alias to have the CST be named ~trait_function~ or something.
+*************** END
 
 ***** TODO Global                                                      :node:
 :PROPERTIES:
@@ -886,7 +1059,7 @@ choice(
 )
 #+end_src
 
-Parser: [[file:noir/compiler/noirc_frontend/src/parser/parser/types.rs::fn parse_type(&mut self)][parse_type()]]
+Parser: [[file:noir/compiler/noirc_frontend/src/parser/parser/types.rs::fn parse_type(&mut self)][parse_type()]], [[file:noir/compiler/noirc_frontend/src/parser/parser/types.rs::fn parse_type_or_error(&mut self)][parse_type_or_error()]]
 
 TODO: Look at enum ~UnresolvedTypeData~, read the doc string and look at it's elements. Good stuff.
 #+transclude: [[file:noir/compiler/noirc_frontend/src/ast/mod.rs][foobar]] :lines 104-106 :src foo
@@ -1810,6 +1983,20 @@ Parser: [[file:noir/compiler/noirc_frontend/src/parser/parser/path.rs::pub(super
 
 If there is no path kind, i.e. NIL, this is internally represented via ~PathKind::Plain~.
 
+#+name: ,ebnf_path_kind
+#+begin_src fundamental
+/// PathKind = (
+///     'crate' '::'
+///     | 'dep' '::'
+///     | 'super' '::'
+/// )?
+#+end_src
+Original EBNF: [[file:noir/compiler/noirc_frontend/src/parser/parser/path.rs::174][PathKind doc]]
+
+*************** TODO EBNF grammar upstream fix
+Remove the =| nothing= and instead wrap everything in =( ... )?= to properly mark it as optional. Also missing assignment equals sign.
+*************** END
+
 ****** TOIMPL PathGenerics                                             :node:
 :PROPERTIES:
 :CUSTOM_ID: h:F8EF693C-A6E2-4D57-BE08-103479D4270D
@@ -2037,7 +2224,7 @@ Types: [[file:noir/compiler/noirc_frontend/src/ast/expression.rs::pub enum Expre
 :CUSTOM_ID: h:BA1422E4-AB97-4099-8346-5845CA9223A1
 :END:
  * (opt grp) =<= by (opt) GenericsList by =>=.
-
+ 
 **Note** Generics itself is optional, so anywhere it's referenced it implies optionality.
 
 Parser: [[file:noir/compiler/noirc_frontend/src/parser/parser/generics.rs::pub(super) fn parse_generics(&mut self)][parse_generics()]]
@@ -2294,8 +2481,9 @@ Does this mean =impl Bar for Foo where {}= is valid in noir then? (there's no co
 #+begin_src js :rule where_clause_item :arg $
 seq(
         $._type,
-        ':',
         $.trait_bounds,
+        // ':',
+        // $.trait_bounds,
 )
 #+end_src
 
@@ -2334,10 +2522,17 @@ If Type returns ~None~ then parser early returns ~None~ also.
 #+name: trait_bounds
 #+begin_src js :arg $ :ast TraitBounds
 seq(
+    ':', // Common prefix reduction.
     sepBy1(<<r("trait_bound")>>, '+'),
     optional('+'),
 )
 #+end_src
+
+Even though the literal Noirc parser has already checked =:= before it's called we place that token in our tree-sitter rule to simplify the grammar a little. There are only two possible combinations of this rule appearing (according to Noirc comments).
+
+#+begin_example
+ugrep -r "':' TraitBounds" -t rust noir -n
+#+end_example
 
 Parser: [[file:noir/compiler/noirc_frontend/src/parser/parser/where_clause.rs::pub(super) fn parse_trait_bounds(&mut self)][parse_trait_bounds()]]
 #+transclude: [[file:noir/compiler/noirc_frontend/src/parser/parser/where_clause.rs::51][TraitBounds doc]] :lines 50-50 :src rust
@@ -4199,6 +4394,15 @@ Valid sugared combinations:
 >>=
 #+end_example
 
+*** [[file:noir/compiler/noirc_frontend/src/parser/parser.rs::fn comptime_mutable_and_unconstrained_not_applicable(&mut self, modifiers: Modifiers)][Parser.comptime_mutable_and_unconstrained_not_applicable(modifiers)]]
+:PROPERTIES:
+:CUSTOM_ID: h:14698757-D7C8-4966-B84E-5DA1CAE3011E
+:END:
+
+Param ~modifiers~ is a previously parsed [[file:noir/compiler/noirc_frontend/src/parser/parser/modifiers.rs::struct Modifiers][Modifiers struct]], this function checks if any of the mutable, comptime, or unconstrained modifiers are set and if they are a parse error is raised.
+
+This effectively means only the visibility modifier (which is ~ItemVisibility~) is valid where this function is called for ~modifiers~.
+
 *** [[file:noir/compiler/noirc_frontend/src/lexer/lexer.rs::fn next_token(&mut self)][Lexer.next_token()]]
 :PROPERTIES:
 :CUSTOM_ID: h:2AE110C8-8650-4F3B-AAA0-FFE5E79C8C81
@@ -4304,6 +4508,7 @@ module.exports = grammar({
             <<r("mod_or_contract")>>,
             <<r("struct")>>,
             <<r("impl")>>,
+            <<r("trait")>>,
             <<r("global")>>,
         ),
 
@@ -4313,7 +4518,7 @@ module.exports = grammar({
             '}',
         ),
 
-        // * * * * * * * * * * * * * * * * * * * * * * * * * DECLARATIONS / ITEMS
+        // * * * * * * * * * * * * * * * * * * * * * * * * * DECLARATIONS / DEFINITIONS / ITEMS
         <<grp__declarations>>
 
         // * * * * * * * * * * * * * * * * * * * * * * * * * STATEMENT KINDS (AST)
@@ -4363,7 +4568,7 @@ function sepBy(rule, sep) {
 <<n("mod_or_contract")>>
 <<c('("struct" "struct_field" "struct_field_list"))>>
 <<c('("impl" "trait_impl"))>>
-// TODO: Trait
+<<c('("trait" "trait_body" "trait_item" "trait_type" "trait_constant" "trait_function"))>>
 <<n("global")>>
 // TODO: TypeAlias
 <<c('("function_parameters" "function_parameter" "function" "function_modifiers"))>>
@@ -4560,9 +4765,10 @@ Collect them all here so we can process (do a bunch of regex replacements) just 
 // TODO: InnerAttribute, Attributes, Modifiers
 <<ebnf("use")>>
 <<ebnf("mod_or_contract")>>
-// TODO: Struct
+// TODO: Struct, Impl
+<<ebnf("trait")>>
+<<ebnf("trait_body")>>
 <<ebnf("global")>>
-// TODO: Impl, Trait
 // TODO: TypeAlias
 <<ebnf("function")>>
 
