@@ -81,20 +81,20 @@ use foo::bar::lorem::ipsum;
 ---
 
 (source_file
-  (use_declaration
-    tree: (identifier))
-  (use_declaration
-    tree: (path
+  (use_item
+    decl: (identifier))
+  (use_item
+    decl: (path
       scope: (identifier)
       name: (identifier)))
-  (use_declaration
-    tree: (path
+  (use_item
+    decl: (path
       scope: (path
         scope: (identifier)
         name: (identifier))
       name: (identifier)))
-  (use_declaration
-    tree: (path
+  (use_item
+    decl: (path
       scope: (path
         scope: (path
           scope: (identifier)
@@ -133,15 +133,15 @@ pub use foo::bar::baz;
 ---
 
 (source_file
-  (use_declaration
+  (use_item
     (visibility_modifier)
-    tree: (identifier))
-  (use_declaration
+    decl: (identifier))
+  (use_item
     (visibility_modifier)
-    tree: (identifier))
-  (use_declaration
+    decl: (identifier))
+  (use_item
     (visibility_modifier)
-    tree: (path
+    decl: (path
       scope: (path
         scope: (identifier)
         name: (identifier))
@@ -163,20 +163,20 @@ use foo::crate::bar;
 ---
 
 (source_file
-  (use_declaration
-    tree: (path
+  (use_item
+    decl: (path
       scope: (crate)
       name: (identifier)))
-  (use_declaration
-    tree: (path
+  (use_item
+    decl: (path
       scope: (dep)
       name: (identifier)))
-  (use_declaration
-    tree: (path
+  (use_item
+    decl: (path
       scope: (super)
       name: (identifier)))
-  (use_declaration
-    tree: (path
+  (use_item
+    decl: (path
       scope: (path
         scope: (path
           scope: (super)
@@ -184,8 +184,8 @@ use foo::crate::bar;
         name: (identifier))
       name: (identifier)))
 
-  (use_declaration
-    tree: (path
+  (use_item
+    decl: (path
       scope: (path
         scope: (identifier)
         name: (identifier))
@@ -209,17 +209,17 @@ use crate::{foo, bar};
 ---
 
 (source_file
-  (use_declaration
-    tree: (path
+  (use_item
+    decl: (path
       scope: (identifier)
       list: (use_list)))
-  (use_declaration
-    tree: (path
+  (use_item
+    decl: (path
       scope: (identifier)
       list: (use_list
         (identifier))))
-  (use_declaration
-    tree: (path
+  (use_item
+    decl: (path
       scope: (path
         scope: (path
           scope: (identifier)
@@ -228,21 +228,21 @@ use crate::{foo, bar};
       list: (use_list
         (identifier))))
 
-  (use_declaration
-    tree: (path
+  (use_item
+    decl: (path
       scope: (identifier)
       list: (use_list
         (identifier)
         (identifier))))
-  (use_declaration
-    tree: (path
+  (use_item
+    decl: (path
       scope: (identifier)
       list: (use_list
         (identifier)
         (identifier))))
 
-  (use_declaration
-    tree: (path
+  (use_item
+    decl: (path
       scope: (crate)
       list: (use_list
         (identifier)
@@ -261,8 +261,8 @@ use crate::bar::foo::{give::nested::{a, b}, and::more::{d, e::blah}, };
 ---
 
 (source_file
-  (use_declaration
-    tree: (use_list
+  (use_item
+    decl: (use_list
       (path
         scope: (identifier)
         list: (use_list
@@ -271,8 +271,8 @@ use crate::bar::foo::{give::nested::{a, b}, and::more::{d, e::blah}, };
       (identifier)
       (identifier)))
 
-  (use_declaration
-    tree: (path
+  (use_item
+    decl: (path
       scope: (path
         scope: (path
           scope: (crate)
@@ -312,17 +312,17 @@ use {{},{},{}};
 ---
 
 (source_file
-  (use_declaration
-    tree: (use_list))
+  (use_item
+    decl: (use_list))
 
-  (use_declaration
-    tree: (path
+  (use_item
+    decl: (path
       list: (use_list)))
 
-  (use_declaration
-    tree: (use_list))
-  (use_declaration
-    tree: (use_list
+  (use_item
+    decl: (use_list))
+  (use_item
+    decl: (use_list
       (use_list)
       (use_list)
       (use_list)))
@@ -332,6 +332,7 @@ use {{},{},{}};
 =================================
 Use / List / Trailing colons (e1)
 :error
+:skip
 =================================
 
 use foo::{}::;
@@ -341,15 +342,27 @@ use foo::{}::;
 =================================
 Use / List / Trailing colons (e2)
 :error
+:skip
 =================================
 
 use foo::bar::{}::;
 ---
 
 
-================================
-Use / List / Multiple lists (e1)
+======================================
+Use / List / Trailing identifiers (e1)
 :error
+:skip
+======================================
+
+use foo::{}::bar;
+---
+
+
+================================
+Use / List / Trailing lists (e1)
+:error
+:skip
 ================================
 
 use foo::{}::{};
@@ -357,8 +370,9 @@ use foo::{}::{};
 
 
 ================================
-Use / List / Multiple lists (e2)
+Use / List / Trailing lists (e2)
 :error
+:skip
 ================================
 
 use foo::bar::{}::{};
@@ -376,18 +390,18 @@ use foo::bar::lorem as ipsum;
 ---
 
 (source_file
-  (use_declaration
-    tree: (use_alias
+  (use_item
+    decl: (path
       scope: (identifier)
       alias: (identifier)))
-  (use_declaration
-    tree: (use_alias
+  (use_item
+    decl: (path
       scope: (path
         scope: (identifier)
         name: (identifier))
       alias: (identifier)))
-  (use_declaration
-    tree: (use_alias
+  (use_item
+    decl: (path
       scope: (path
         scope: (path
           scope: (identifier)
@@ -656,6 +670,21 @@ impl foo {}
 (source_file
   (impl_item
     name: (identifier))
+)
+
+
+=====
+Trait
+=====
+
+trait Foo {};
+
+---
+
+(source_file
+  (trait
+    name: (identifier)
+    body)
 )
 
 

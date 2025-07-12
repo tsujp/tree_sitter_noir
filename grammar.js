@@ -97,10 +97,11 @@ module.exports = grammar({
         // Noirc: Module -- Since doc comments can appear anywhere, Module is Item which is ItemKind.
         __item: ($) => choice(
             $.attribute_item,
-            $.use_declaration,
+            $.use_item,
             $.module_or_contract_item,
             $.struct_item,
             $.impl_item,
+            $.trait_item,
             $.global_item,
         ),
 
@@ -110,7 +111,7 @@ module.exports = grammar({
             '}',
         ),
 
-        // * * * * * * * * * * * * * * * * * * * * * * * * * DECLARATIONS / ITEMS
+        // * * * * * * * * * * * * * * * * * * * * * * * * * DECLARATIONS / DEFINITIONS / ITEMS
         
         // [[file:noir_grammar.org::item_visibility]]
         visibility_modifier: $ => seq('pub', optional('(crate)')),
@@ -135,45 +136,47 @@ module.exports = grammar({
         attribute_content: _ => seq(repeat1(choice(' ', REG_ALPHABETIC, REG_NUMERIC, REG_ASCII_PUNCTUATION))),
         
         // [[file:noir_grammar.org::use]]
-        use_declaration: $ => seq(
+        use_item: $ => seq(
             optional($.visibility_modifier),
             'use',
-            // field('tree', $.__use_tree_variants),
-            field('tree', $.__use_tree_variants),
+            field('decl', $.__use_variants),
             ';',
         ),
-        // [[file:noir_grammar.org::use_tree]]
-        __use_tree_variants: $ => choice(
-            $.__path_no_kind_no_turbofish,
-            // $.use_list,
+        // [[file:noir_grammar.org::use_variants]]
+        __use_variants: $ => choice(
+            $.identifier,
             $.use_list,
-            // XXX: Alias name here needs to match that in __path_no_kind_no_turbofish.
-            // alias($.__use_list_path_prefix, $.path),
-            alias($.__use_list_path_prefix, $.path),
-            // TODO: The structure of how use alias appears in the CST isn't really cognate to use_list.. but can refine this later once the entire grammar is done.
-            // $.use_alias,
-            $.use_alias,
+            alias($.__use_variants_scoped, $.path),
         ),
-        // [[file:noir_grammar.org::use_tree_list__path]]
-        __use_list_path_prefix: $ => seq(
-            optional(field('scope', optional($.__path_no_kind_no_turbofish))),
-            '::',
-            // field('list', $.use_list),
-            field('list', $.use_list),
+        // [[file:noir_grammar.org::use_variants_scoped]]
+        __use_variants_scoped: $ => seq(
+            optional(
+                field('scope', choice(
+                    $.__use_variants,
+                    $.__path_kind,
+                ),
+            )),
+            choice(
+                seq(
+                    '::',
+                    choice(
+                        field('name', $.identifier),
+                        field('list', $.use_list),
+                    ),
+                ),
+                // Inlined Noirc UseTreeAs.
+                seq(
+                    'as',
+                    field('alias', $.identifier),
+                ),
+            ),
         ),
-        // [[file:noir_grammar.org::use_tree_list__nopath]]
+        // [[file:noir_grammar.org::use_list]]
         use_list: $ => seq(
             '{',
-            // sepBy($.__use_tree_variants, ','),
-            sepBy($.__use_tree_variants, ','),
+            sepBy($.__use_variants, ','),
             optional(','),
             '}',
-        ),
-        // [[file:noir_grammar.org::use_alias]]
-        use_alias: $ => seq(
-            field('scope', $.__path_no_kind_no_turbofish),
-            'as',
-            field('alias', $.identifier),
         ),
         
         // [[file:noir_grammar.org::mod_or_contract]]
@@ -231,7 +234,53 @@ module.exports = grammar({
             $._type,
             // optional($.where_clause), // Temp commented for now due to prec error.
         ),
-        // TODO: Trait
+        
+        // [[file:noir_grammar.org::trait]]
+        trait_item: $ => seq(
+            'trait',
+            field('name', $.identifier),
+            // TODO: Generics
+            // TODO: Name below optional into a field called 'bounds'
+            optional($.trait_bounds),
+            // optional(seq(
+            //     ':',
+            //     $.trait_bounds,
+            // )),
+            optional($.where_clause),
+            field('body', $.trait_body),
+        ),
+        // [[file:noir_grammar.org::trait_body]]
+        trait_body: $ => seq(
+            '{',
+            // OuterDocComments are extras.
+            repeat($.trait_item),
+            '}',
+        ),
+        // [[file:noir_grammar.org::trait_item]]
+        trait_item: $ => choice(
+            $.trait_type,
+            $.trait_constant,
+            $.trait_function,
+        ),
+        // [[file:noir_grammar.org::trait_type]]
+        trait_type: $ => seq(
+            'type',
+            field('name', $.identifier),
+            ';',
+        ),
+        // [[file:noir_grammar.org::trait_constant]]
+        trait_constant: $ => seq(
+            'let',
+            field('name', $.identifier),
+            field('type', $._type),
+            optional(seq(
+                '=', // We don't want '=' part of the CST node for the (default) value.
+                field('value', $._expression),
+            )),
+            ';',
+        ),
+        // [[file:noir_grammar.org::trait_function]]
+        trait_function: _ => 'TODO____TRAIT_FUNCTION__TEMP_COMMENT_IS_IT_SIMILAR_TO_NORMAL_FUNCTION',
         
         // [[file:noir_grammar.org::global]]
         global_item: $ => seq(
@@ -283,11 +332,13 @@ module.exports = grammar({
         // [[file:noir_grammar.org::where_clause]]
         where_clause_item: $ => seq(
                 $._type,
-                ':',
                 $.trait_bounds,
+                // ':',
+                // $.trait_bounds,
         ),
         // [[file:noir_grammar.org::trait_bounds]]
         trait_bounds: $ => seq(
+            ':', // Common prefix reduction.
             sepBy1($.trait_bound, '+'),
             optional('+'),
         ),
@@ -768,29 +819,17 @@ module.exports = grammar({
         ),
         // [[file:noir_grammar.org::path_no_turbofish]]
         __path_no_turbofish: $ => seq(
-            optional($.path_kind),
-            $.__path_no_kind_no_turbofish,
-        ),
-        // [[file:noir_grammar.org::path_no_turbofish__nested_scopes]]
-        __nested_scopes_in_path_no_turbofish: $ => seq(
-            field('scope', $.__path_no_kind_no_turbofish),
+            optional(field('scope', choice(
+                alias($.__path_no_turbofish, $.path),
+                $.identifier,
+                $.__path_kind,
+            ))),
             '::',
             field('name', $.identifier),
         ),
-        // [[file:noir_grammar.org::path_no_kind_no_turbofish]]
-        __path_no_kind_no_turbofish: $ => seq(
-            choice(
-                choice($.crate, $.dep, $.super, $.identifier),
-                // $.identifier,
-                alias($.__nested_scopes_in_path_no_turbofish, $.path),
-            ),
-        ),
         
         // [[file:noir_grammar.org::path_kind]]
-        path_kind: $ => seq(
-            choice($.crate, $.dep, $.super),
-            '::',
-        ),
+        __path_kind: $ => choice($.crate, $.dep, $.super),
         
         // [[file:noir_grammar.org::identifier]]
         identifier: _ => /[a-zA-Z_][a-zA-Z0-9_]*/,

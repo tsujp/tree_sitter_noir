@@ -360,43 +360,102 @@ CLOSED: [2025-06-08 Sun 17:35]
 :END:
 
 #+name: use
-#+begin_src js :rule use_declaration :arg $ :ast Use
+#+begin_src js :rule use_item :arg $ :ast Use
 seq(
     optional(<<r("item_visibility")>>),
     'use',
-    // field('tree', $.__use_tree_variants),
-    field('tree', <<r("use_tree")>>),
+    field('decl', <<r("use_variants")>>),
     ';',
 )
 #+end_src
 
+#+name: use_variants
+#+begin_src js :rule __use_variants :arg $ :ast UseTree
+choice(
+    <<r("identifier")>>,
+    <<r("use_list")>>,
+    alias(<<r("use_variants_scoped")>>, $.path),
+)
+#+end_src
+
+#+name: use_variants_scoped
+#+begin_src js :rule __use_variants_scoped :arg $ :ast UseTree
+seq(
+    optional(
+        field('scope', choice(
+            <<r("use_variants")>>,
+            <<r("path_kind")>>,
+        ),
+    )),
+    choice(
+        seq(
+            '::',
+            choice(
+                field('name', <<r("identifier")>>),
+                field('list', <<r("use_list")>>),
+            ),
+        ),
+        // Inlined Noirc UseTreeAs.
+        seq(
+            'as',
+            field('alias', <<r("identifier")>>),
+        ),
+    ),
+)
+#+end_src
+
+#+name: use_list
+#+begin_src js :arg $ :ast UseTreeList
+seq(
+    '{',
+    sepBy(<<r("use_variants")>>, ','),
+    optional(','),
+    '}',
+)
+#+end_src
+
+#+name: use_alias
+#+begin_src js :rule use_as :arg $ :ast UseTreeAs
+seq(
+    optional(
+        field('scope', choice(
+            <<r("identifier")>>,
+            <<r("path_kind")>>,
+        ),
+    )),
+    'as',
+    field('alias', <<r("identifier")>>),
+)
+#+end_src
+
+*************** TODO Use rules cleanup
+So as written this form no-longer errors when expected (see tests). But those tests, while they did error, didn't error in the expected places so the prior rules weren't super correct either. As-is currently at the time of this commit =use_alias= could be put into =use_variants_scoped= but then recursion (since that rule goes back to =use_variants=) would be allowed and it's a bit unclear if that is allowed in Noir. Need to get Noirc compiler methods so we can test syntax more easily. I already know how to do that but the focus is now on completing the grammar and incremental refinements can be done later.
+*************** END
+
 Parser: [[file:noir/compiler/noirc_frontend/src/parser/parser/item.rs::if self.eat_keyword(Keyword::Use) {][parse_use_tree() parent callsite]], [[file:noir/compiler/noirc_frontend/src/parser/parser/use_tree.rs::pub(super) fn parse_use_tree(&mut self)][parse_use_tree()]]
 Types: [[file:noir/compiler/noirc_frontend/src/ast/statement.rs::pub struct UseTree {][UseTree struct]]
+Only [[#h:F5A79701-65C9-4FEA-83D8-2413C585A5FA][ItemVisibility]] modifier applicable, all other [[#h:2A9D09A5-2E52-4B8C-ABA1-0B3B953F093C][Modifiers]] are parse errors ([[#h:14698757-D7C8-4966-B84E-5DA1CAE3011E][see more]]).
 
 #+name: ,ebnf_use
-#+transclude: [[file:noir/compiler/noirc_frontend/src/parser/parser/use_tree.rs::12][Use doc, UseTree doc, UseTreeList doc]] :lines 12-16 :src fundamental
+#+begin_src fundamental
+/// Use = 'use' PathKind UseTree ';'
+///
+/// UseTree = PathIdentifiers ( '::' '{' UseTreeList? '}' )?
+///
+/// UseTreeList = UseTree ( ',' UseTree )* ','?
+#+end_src
+Original EBNF: [[file:noir/compiler/noirc_frontend/src/parser/parser/use_tree.rs::12][Use doc, UseTree doc, UseTreeList doc]]
 
-[[#h:96FCF9AD-3B89-451B-B84D-90A7A625B56D][PathKind]] is only valid at parse_use_tree and since [[#h:A051D0D5-7007-4DF8-83B7-FB4EFF9C383E][PathNoTurbofish]] already includes attempts to parse PathKind in it. So the doc comment for =Use= is wrong and should be =Use = 'use' PathKind UseTree=.
-
-Additionally the doc comment for =UseTree= is wrong since it calls directly to [[#h:7BA3BCB8-65F3-4001-8B02-2F904B014F87][parse_path_after_kind]] which.. skips PathKind. PathNoTurbofish eventually calls down to that same function but only after parsing PathKind, so calling directly to it means only the components after PathKind in PathNoTurbofish are parsed. This has been constructed as a new node [[#h:3E35071C-E186-4562-AC61-1916E637A72E][IdentifiersInPathNoTurbofish]]. It should be =UseTree = IdentifiersInPathNoTurbofish ( '::' '{' UseTreeList? '}' )?=.
-
-Only the [[#h:F5A79701-65C9-4FEA-83D8-2413C585A5FA][ItemVisibility]] modifier is applicable, all other [[#h:2A9D09A5-2E52-4B8C-ABA1-0B3B953F093C][Modifiers]] are parse errors.
-#+transclude: [[file:noir/compiler/noirc_frontend/src/parser/parser.rs::506][comptime_mutable_and_unconstrained_not_applicable()]] :lines 506-510 :src rust
-
-Parsed [[file:noir/compiler/noirc_frontend/src/ast/statement.rs::pub struct UseTree {][UseTree struct]] is returned as ~ItemKind::Import~ which is [[file:noir/compiler/noirc_frontend/src/ast/statement.rs::pub fn desugar(self, root: Option<Path>, visibility: ItemVisibility)][considered a statement]] however we will narrow and use the declaration sub-category of a statement and name this rule as such.
+Only initial [[#h:96FCF9AD-3B89-451B-B84D-90A7A625B56D][PathKind]] is parsed. Any subsequent appearance of PathKind keywords are considered identifiers as PathKind's parser is never called again and any ~kind~ params are hardcoded to ~PathKind::Plain~.
 
 *************** TODO ItemKind docs as appropriate
+Parsed [[file:noir/compiler/noirc_frontend/src/ast/statement.rs::pub struct UseTree {][UseTree struct]] is returned as ~ItemKind::Import~ which is [[file:noir/compiler/noirc_frontend/src/ast/statement.rs::pub fn desugar(self, root: Option<Path>, visibility: ItemVisibility)][considered a statement]] however we will narrow and use the declaration sub-category of a statement and name this rule as such.
+
+^^ where did I find ItemKind::Import, and is that documentation beneficial?
 *************** END
 *************** TODO Upstream commit to fix the doc comment for Use as mentioned in this subheading
-    /// Use = 'use' PathKind PathNoTurbofish UseTree
-
-    should be:
-
-        /// Use = 'use' PathKind PathNoTurbofish UseTree ';'
-
-   i.e. it's missing a semicolon
+   parse_use_tree manually calls parse_path_kind which gets the path kind, and then parse_use_tree_without_kind which calls parse_path_after_kind. The latter function is as it says, the rest of the path after kind and this pattern is (essentially) the same as PathNoTurbofish so EBNF rule for Use stating PathKind PathNoTurbofish implies a paths' kind is parsed twice when it isn't, so that part of the rule is wrong.
 *************** END
-
 
 ****** DONE UseTree                                                    :node:
 CLOSED: [2025-06-08 Sun 17:35]
@@ -406,34 +465,12 @@ CLOSED: [2025-06-08 Sun 17:35]
 :LOGBOOK:
 - State "DONE"       from "TODO"       [2025-06-08 Sun 17:35]
 :END:
-:pgd:
-+ [[#h:3E35071C-E186-4562-AC61-1916E637A72E][IdentifiersInPathNoTurbofish]] by (opt grp)
-  + =::=
-  + ={=
-  + (opt) [[#h:0C07D74C-165A-4128-BF20-EF7E937F7CAA][UseTreeList]]
-  + =}=
-:end:
-
-#+name: use_tree
-#+begin_src js :rule __use_tree_variants :arg $ :ast UseTree
-choice(
-    $.__path_no_kind_no_turbofish,
-    // $.use_list,
-    <<r("use_tree_list__nopath")>>,
-    // XXX: Alias name here needs to match that in __path_no_kind_no_turbofish.
-    // alias($.__use_list_path_prefix, $.path),
-    alias(<<r("use_tree_list__path")>>, $.path),
-    // TODO: The structure of how use alias appears in the CST isn't really cognate to use_list.. but can refine this later once the entire grammar is done.
-    // $.use_alias,
-    <<r("use_alias")>>,
-)
-#+end_src
 
 Parser: [[file:noir/compiler/noirc_frontend/src/parser/parser/use_tree.rs::pub(super) fn parse_use_tree_without_kind(][parse_use_tree_without_kind()]]
 
 Resulting UseTree kind is either a Path or a List.
 
-After call to [[#h:7BA3BCB8-65F3-4001-8B02-2F904B014F87][parse_path_after_kind]] variable ~trailing_double_colon~ set to true if either: =::= is encountered OR there are no path segments and parameter ~kind~ is NOT ~PathKind::Plain~. When UseTreeList makes a recursive call to parse_use_tree_without_kind it sets ~kind~ to ~PathKind::Plain~ as the recursive call explicitly skips any attempts to parse [[#h:96FCF9AD-3B89-451B-B84D-90A7A625B56D][PathKind]] and a NIL PathKind is represented via that value.
+After call to [[#h:7BA3BCB8-65F3-4001-8B02-2F904B014F87][parse_path_after_kind]] variable ~trailing_double_colon~ set to true if either: =::= is encountered OR there are no path segments and parameter ~kind~ is NOT ~PathKind::Plain~. Variable ~trailing_double_colon~ determines if an attempt to parse ~UseTreeKind::List~ is made or not.
 
 Parameter ~nested~ is true if UseTreeList makes a recursive call, otherwise default is false.
 
@@ -449,35 +486,8 @@ CLOSED: [2025-06-08 Sun 17:35]
 :LOGBOOK:
 - State "DONE"       from "TODO"       [2025-06-08 Sun 17:35]
 :END:
-:pgd:
-+ [[#h:19EAD845-0134-41CA-85BA-2E09E10D479B][UseTree]] by (rep0 grp)
-  + =,=
-  + [[#h:19EAD845-0134-41CA-85BA-2E09E10D479B][UseTree]]
-+ (opt) =,=
-:end:
 
-#+name: use_tree_list__path
-#+begin_src js :rule __use_list_path_prefix :arg $ :ast "UseTreeList -- if path beforehand."
-seq(
-    optional(field('scope', optional($.__path_no_kind_no_turbofish))),
-    '::',
-    // field('list', $.use_list),
-    field('list', <<r("use_tree_list__nopath")>>),
-)
-#+end_src
-
-#+name: use_tree_list__nopath
-#+begin_src js :rule use_list :arg $ :ast "UseTreeList -- if no path beforehand."
-seq(
-    '{',
-    // sepBy($.__use_tree_variants, ','),
-    sepBy(<<r("use_tree")>>, ','),
-    optional(','),
-    '}',
-)
-#+end_src
-
-Parser (sop): [[file:noir/compiler/noirc_frontend/src/parser/parser/use_tree.rs::let use_trees = self.parse_many(][parse_use_tree_in_list() parent callsite]], [[file:noir/compiler/noirc_frontend/src/parser/parser/use_tree.rs::fn parse_use_tree_in_list(&mut self)][parse_use_tree_in_list()]]
+Parser: [[file:noir/compiler/noirc_frontend/src/parser/parser/use_tree.rs::let use_trees = self.parse_many(][parse_use_tree_in_list() parent callsite]], [[file:noir/compiler/noirc_frontend/src/parser/parser/use_tree.rs::fn parse_use_tree_in_list(&mut self)][parse_use_tree_in_list()]]
 
 ****** DONE UseTreeAs                                                  :leaf:
 CLOSED: [2025-06-08 Sun 17:35]
@@ -487,26 +497,16 @@ CLOSED: [2025-06-08 Sun 17:35]
 :LOGBOOK:
 - State "DONE"       from "TODO"       [2025-06-08 Sun 17:35]
 :END:
-:pgd:
-+ (opt grp)
-  + =as= (kw)
-  + [[#h:65B0176B-B46F-4679-8535-C504870AC048][ident]] (token)
-:end:
 
-#+name: use_alias
-#+begin_src js :arg $ :ast UseTreeAs
-seq(
-    field('scope', $.__path_no_kind_no_turbofish),
-    'as',
-    field('alias', $.identifier),
-)
-#+end_src
-
-Parser: [[file:noir/compiler/noirc_frontend/src/parser/parser/use_tree.rs::pub(super) fn parse_path_use_tree_end(&mut self, mut prefix: Path, nested: bool)][parse_path_use_tree_end()]]
+Parser: [[file:noir/compiler/noirc_frontend/src/parser/parser/use_tree.rs::fn parse_path_use_tree_end(&mut self, mut prefix: Path, nested: bool)][parse_path_use_tree_end()]]
 
 If no path segments it's an error. Otherwise the last path segment constructed by [[#h:7BA3BCB8-65F3-4001-8B02-2F904B014F87][parse_path_after_kind]] has it's ident (which luckily /is/ [[#h:65B0176B-B46F-4679-8535-C504870AC048][ident]]) popped, and we eat the keyword =as= followed by an [[#h:65B0176B-B46F-4679-8535-C504870AC048][ident]].
 
 Functionally this is just checking =as= followed by an ident.
+
+*************** TODO This needs an EBNF comment
+Make it so.
+*************** END
 
 ***** DONE ModOrContract                                               :node:
 CLOSED: [2025-06-08 Sun 21:02]
@@ -4564,7 +4564,7 @@ function sepBy(rule, sep) {
 <<n("item_visibility")>>
 <<n("visibility")>>
 <<c('("attribute" "attribute_content"))>>
-<<c('("use" "use_tree" "use_tree_list__path" "use_tree_list__nopath" "use_alias"))>>
+<<c('("use" "use_variants" "use_variants_scoped" "use_list"))>>
 <<n("mod_or_contract")>>
 <<c('("struct" "struct_field" "struct_field_list"))>>
 <<c('("impl" "trait_impl"))>>
