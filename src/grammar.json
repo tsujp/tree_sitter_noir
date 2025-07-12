@@ -624,23 +624,115 @@
       ]
     },
     "trait_item": {
-      "type": "CHOICE",
+      "type": "SEQ",
       "members": [
         {
-          "type": "SYMBOL",
-          "name": "trait_type"
+          "type": "CHOICE",
+          "members": [
+            {
+              "type": "SYMBOL",
+              "name": "visibility_modifier"
+            },
+            {
+              "type": "BLANK"
+            }
+          ]
         },
         {
-          "type": "SYMBOL",
-          "name": "trait_constant"
+          "type": "STRING",
+          "value": "trait"
         },
         {
-          "type": "SYMBOL",
-          "name": "trait_function"
+          "type": "FIELD",
+          "name": "name",
+          "content": {
+            "type": "SYMBOL",
+            "name": "identifier"
+          }
+        },
+        {
+          "type": "FIELD",
+          "name": "bounds",
+          "content": {
+            "type": "CHOICE",
+            "members": [
+              {
+                "type": "SYMBOL",
+                "name": "trait_bounds"
+              },
+              {
+                "type": "BLANK"
+              }
+            ]
+          }
+        },
+        {
+          "type": "FIELD",
+          "name": "body",
+          "content": {
+            "type": "ALIAS",
+            "content": {
+              "type": "SYMBOL",
+              "name": "__trait_declaration_list"
+            },
+            "named": true,
+            "value": "declaration_list"
+          }
         }
       ]
     },
-    "trait_body": {
+    "trait_bounds": {
+      "type": "SEQ",
+      "members": [
+        {
+          "type": "STRING",
+          "value": ":"
+        },
+        {
+          "type": "CHOICE",
+          "members": [
+            {
+              "type": "SEQ",
+              "members": [
+                {
+                  "type": "SYMBOL",
+                  "name": "__trait_bound"
+                },
+                {
+                  "type": "REPEAT",
+                  "content": {
+                    "type": "SEQ",
+                    "members": [
+                      {
+                        "type": "STRING",
+                        "value": "+"
+                      },
+                      {
+                        "type": "SYMBOL",
+                        "name": "__trait_bound"
+                      }
+                    ]
+                  }
+                }
+              ]
+            },
+            {
+              "type": "BLANK"
+            }
+          ]
+        }
+      ]
+    },
+    "__trait_bound": {
+      "type": "SEQ",
+      "members": [
+        {
+          "type": "SYMBOL",
+          "name": "identifier_or_path_no_turbofish"
+        }
+      ]
+    },
+    "__trait_declaration_list": {
       "type": "SEQ",
       "members": [
         {
@@ -650,8 +742,21 @@
         {
           "type": "REPEAT",
           "content": {
-            "type": "SYMBOL",
-            "name": "trait_item"
+            "type": "CHOICE",
+            "members": [
+              {
+                "type": "SYMBOL",
+                "name": "trait_type"
+              },
+              {
+                "type": "SYMBOL",
+                "name": "trait_constant"
+              },
+              {
+                "type": "SYMBOL",
+                "name": "trait_function"
+              }
+            ]
           }
         },
         {
@@ -695,6 +800,10 @@
             "type": "SYMBOL",
             "name": "identifier"
           }
+        },
+        {
+          "type": "STRING",
+          "value": ":"
         },
         {
           "type": "FIELD",
@@ -1034,73 +1143,6 @@
         {
           "type": "SYMBOL",
           "name": "trait_bounds"
-        }
-      ]
-    },
-    "trait_bounds": {
-      "type": "SEQ",
-      "members": [
-        {
-          "type": "STRING",
-          "value": ":"
-        },
-        {
-          "type": "SEQ",
-          "members": [
-            {
-              "type": "SYMBOL",
-              "name": "trait_bound"
-            },
-            {
-              "type": "REPEAT",
-              "content": {
-                "type": "SEQ",
-                "members": [
-                  {
-                    "type": "STRING",
-                    "value": "+"
-                  },
-                  {
-                    "type": "SYMBOL",
-                    "name": "trait_bound"
-                  }
-                ]
-              }
-            }
-          ]
-        },
-        {
-          "type": "CHOICE",
-          "members": [
-            {
-              "type": "STRING",
-              "value": "+"
-            },
-            {
-              "type": "BLANK"
-            }
-          ]
-        }
-      ]
-    },
-    "trait_bound": {
-      "type": "SEQ",
-      "members": [
-        {
-          "type": "CHOICE",
-          "members": [
-            {
-              "type": "SYMBOL",
-              "name": "__path_no_turbofish"
-            },
-            {
-              "type": "BLANK"
-            }
-          ]
-        },
-        {
-          "type": "SYMBOL",
-          "name": "generic_type_args"
         }
       ]
     },
@@ -3206,6 +3248,24 @@
         }
       ]
     },
+    "identifier_or_path_no_turbofish": {
+      "type": "CHOICE",
+      "members": [
+        {
+          "type": "SYMBOL",
+          "name": "identifier"
+        },
+        {
+          "type": "ALIAS",
+          "content": {
+            "type": "SYMBOL",
+            "name": "__path_no_turbofish"
+          },
+          "named": true,
+          "value": "path"
+        }
+      ]
+    },
     "__path_kind": {
       "type": "CHOICE",
       "members": [
@@ -3290,7 +3350,9 @@
       "name": "__outer_block_comment_doc_style"
     }
   ],
-  "inline": [],
+  "inline": [
+    "identifier_or_path_no_turbofish"
+  ],
   "supertypes": [],
   "reserved": {}
 }

@@ -831,25 +831,21 @@ Cos I am lazy while going through Impl for ts grammar
 :END:
 
 #+name: trait
-#+begin_src js :arg $ :ast Trait
+#+begin_src js :rule trait_item :arg $ :ast Trait
 seq(
+    optional(<<r("item_visibility")>>),
     'trait',
     field('name', <<r("identifier")>>),
     // TODO: Generics
-    // TODO: Name below optional into a field called 'bounds'
-    optional(<<r("trait_bounds")>>),
-    // optional(seq(
-    //     ':',
-    //     <<r("trait_bounds")>>,
-    // )),
-    optional(<<r("where")>>),
-    field('body', <<r("trait_body")>>),
+    field('bounds', optional(<<r("trait_bounds")>>)),
+    // optional(r("where")),
+    field('body', alias(<<r("trait_body")>>, $.declaration_list)),
 )
 #+end_src
 
 Parser: [[file:noir/compiler/noirc_frontend/src/parser/parser/item.rs::if self.eat_keyword(Keyword::Trait) {][parse_trait() parent callsite]], [[file:noir/compiler/noirc_frontend/src/parser/parser/traits.rs::pub(crate) fn parse_trait(][parse_trait()]]
 Types: [[file:noir/compiler/noirc_frontend/src/ast/traits.rs::pub struct NoirTrait {][NoirTrait struct]]
-Only [[#h:F5A79701-65C9-4FEA-83D8-2413C585A5FA][ItemVisibility]] modifier applicable, all other [[#h:2A9D09A5-2E52-4B8C-ABA1-0B3B953F093C][Modifiers]] are parse errors ([[#h:14698757-D7C8-4966-B84E-5DA1CAE3011E][see more]])
+Only [[#h:F5A79701-65C9-4FEA-83D8-2413C585A5FA][ItemVisibility]] modifier applicable, all other [[#h:2A9D09A5-2E52-4B8C-ABA1-0B3B953F093C][Modifiers]] are parse errors ([[#h:14698757-D7C8-4966-B84E-5DA1CAE3011E][see more]]).
 
 #+name: ,ebnf_trait
 #+transclude: [[file:noir/compiler/noirc_frontend/src/parser/parser/traits.rs::14][Trait doc]] :lines 14-14 :src fundamental
@@ -860,22 +856,31 @@ Only [[#h:F5A79701-65C9-4FEA-83D8-2413C585A5FA][ItemVisibility]] modifier applic
 If =:= is present and there's no following trait bound: that's an error
 *************** END
 
-****** TOIMPL TraitBody                                                :node:
+****** BLOCK TraitBody                                                 :node:
 :PROPERTIES:
 :CUSTOM_ID: h:EE2A95CB-6562-465A-A80F-4D2DB57E91DA
 :END:
 :LOGBOOK:
+- State "BLOCK"      from "TOIMPL"     [2025-07-12 Sat 20:37] \\
+  Blocked on TraitFunction, the rest is done
 - State "TOIMPL"     from "TODO"       [2025-07-10 Thu 15:47] \\
   Parser functions examined
 - State "TODO"       from              [2025-07-10 Thu 15:37]
 :END:
 
 #+name: trait_body
-#+begin_src js :arg $ :ast TraitBody
+#+begin_src js :rule __trait_declaration_list :arg $ :ast TraitBody
 seq(
     '{',
     // OuterDocComments are extras.
-    repeat(<<r("trait_item")>>),
+    repeat(
+        // Inlined Noirc: TraitItem.
+        choice(
+            <<r("trait_type")>>,
+            <<r("trait_constant")>>,
+            <<r("trait_function")>>,
+        ),
+    ),
     '}',
 )
 #+end_src
@@ -887,24 +892,17 @@ Via [[#h:8E0DC05B-1ED6-47BE-9589-64DC06FAECCA][parse_many]] split without separa
 #+name: ,ebnf_trait_body
 #+transclude: [[file:noir/compiler/noirc_frontend/src/parser/parser/traits.rs::45][TraitBody doc]] :lines 45-45 :src fundamental
 
-****** TOIMPL TraitItem                                                :node:
+****** DONE TraitItem                                                  :node:
+CLOSED: [2025-07-12 Sat 20:17]
 :PROPERTIES:
 :CUSTOM_ID: h:7D8A8173-EDB3-4E00-8483-DC25607F69E7
 :END:
 :LOGBOOK:
+- State "DONE"       from "TOIMPL"     [2025-07-12 Sat 20:17]
 - State "TOIMPL"     from "TODO"       [2025-07-10 Thu 15:51] \\
   Parser examined
 - State "TODO"       from              [2025-07-10 Thu 15:47]
 :END:
-
-#+name: trait_item
-#+begin_src js :_rule __trait_item :arg $ :ast TraitItem
-choice(
-    <<r("trait_type")>>,
-    <<r("trait_constant")>>,
-    <<r("trait_function")>>,
-)
-#+end_src
 
 Parser: [[file:noir/compiler/noirc_frontend/src/parser/parser/traits.rs::fn parse_trait_item(&mut self)][parse_trait_item()]]
 Types: [[file:noir/compiler/noirc_frontend/src/ast/traits.rs::pub enum TraitItem {][TraitItem enum]]
@@ -914,11 +912,13 @@ Simple wrapper to the parsers of it's three AST types. For the three child AST t
 #+name: ,ebnf_trait_item
 #+transclude: [[file:noir/compiler/noirc_frontend/src/parser/parser/traits.rs::66][TraitItem doc]] :lines 66-69 :src fundamental
 
-****** SPEC TraitType                                                  :node:
+****** DONE TraitType                                                  :node:
+CLOSED: [2025-07-12 Sat 20:22]
 :PROPERTIES:
 :CUSTOM_ID: h:A05394C2-0FFE-431B-8686-AA12F4876025
 :END:
 :LOGBOOK:
+- State "DONE"       from "SPEC"       [2025-07-12 Sat 20:22]
 - State "SPEC"       from "TODO"       [2025-07-10 Thu 15:57] \\
   Parser examined, ts grammar written
 - State "TODO"       from              [2025-07-10 Thu 15:55]
@@ -938,11 +938,13 @@ Parser: [[file:noir/compiler/noirc_frontend/src/parser/parser/traits.rs::fn pars
 #+name: ,ebnf_trait_type
 #+transclude: [[file:noir/compiler/noirc_frontend/src/parser/parser/traits.rs::86][TraitType doc]] :lines 86-86 :src fundamental
 
-****** SPEC TraitConstant                                              :node:
+****** DONE TraitConstant                                              :node:
+CLOSED: [2025-07-12 Sat 20:22]
 :PROPERTIES:
 :CUSTOM_ID: h:02355489-DDCD-4E67-BB39-5DF3F0BC0A8A
 :END:
 :LOGBOOK:
+- State "DONE"       from "SPEC"       [2025-07-12 Sat 20:22]
 - State "SPEC"       from "TOIMPL"     [2025-07-10 Thu 16:17] \\
   Parser examined, ts grammar written
 - State "TODO"       from              [2025-07-10 Thu 16:03]
@@ -953,6 +955,7 @@ Parser: [[file:noir/compiler/noirc_frontend/src/parser/parser/traits.rs::fn pars
 seq(
     'let',
     field('name', <<r("identifier")>>),
+    ':',
     field('type', <<r("type")>>),
     optional(seq(
         '=', // We don't want '=' part of the CST node for the (default) value.
@@ -1815,6 +1818,9 @@ In all cases where Path is parsed via mentioned parsers if there are no path seg
 Parser: [[file:noir/compiler/noirc_frontend/src/parser/parser/path.rs::pub(super) fn parse_path_impl(][parse_path_impl()]], [[file:noir/compiler/noirc_frontend/src/parser/parser/path.rs::pub(crate) fn parse_path(&mut self)][parse_path()]]
 #+transclude: [[file:noir/compiler/noirc_frontend/src/parser/parser/path.rs::29][Path doc]] :lines 29-33 :src fundamental
 
+#+name: ,ebnf_path
+#+transclude: [[file:noir/compiler/noirc_frontend/src/parser/parser/path.rs::31][Path doc]] :lines 31-31 :src fundamental
+
 :callstack:
 - [-] [[file:noir/compiler/noirc_frontend/src/parser/parser/path.rs::fn parse_path_impl(][parse_path_impl()]]
   - [X] [[file:noir/compiler/noirc_frontend/src/parser/parser/path.rs::fn parse_path_kind(&mut self)][parse_path_kind()]] (is: [[#h:96FCF9AD-3B89-451B-B84D-90A7A625B56D][PathKind]])
@@ -1842,39 +1848,69 @@ If they are can reduce nesting complexity.
 + [[#h:F8EF693C-A6E2-4D57-BE08-103479D4270D][PathGenerics]]
 :end:
 
-****** SPEC PathNoTurbofish                                            :node:
+#+name: ,ebnf_turbofish
+#+transclude: [[file:noir/compiler/noirc_frontend/src/parser/parser/path.rs::33][Turbofish doc]] :lines 33-33 :src fundamental
+
+A /turbofish/ is syntax of the form ~::<Type>~ (i.e. generics).
+
+****** TOIMPL PathNoTurbofish                                          :node:
 :PROPERTIES:
 :CUSTOM_ID: h:A051D0D5-7007-4DF8-83B7-FB4EFF9C383E
 :END:
 :LOGBOOK:
+- State "TOIMPL"     from "SPEC"       [2025-07-10 Thu 18:51] \\
+  Revising ts grammar rule since Use/Path and children feel brittle
 - State "SPEC"       from "TODO"       [2025-06-07 Sat 16:15]
 :END:
-:pgd:
-+ [[#h:96FCF9AD-3B89-451B-B84D-90A7A625B56D][PathKind]]
-+ [[#h:3E35071C-E186-4562-AC61-1916E637A72E][IdentifiersInPathNoTurbofish]]
-:end:
 
 #+name: path_no_turbofish
 #+begin_src js :rule __path_no_turbofish :arg $
 seq(
-    optional(<<r("path_kind")>>),
-    <<r("path_no_kind_no_turbofish")>>,
+    optional(field('scope', choice(
+        alias(<<self()>>, $.path),
+        <<r("identifier")>>,
+        <<r("path_kind")>>,
+    ))),
+    '::',
+    field('name', <<r("identifier")>>),
+)
+#+end_src
+
+#+name: identifier_or_path_no_turbofish
+#+begin_src js :arg $
+choice(
+    <<r("identifier")>>,
+    alias(<<r("path_no_turbofish")>>, $.path),
+)
+#+end_src
+
+#+name: path_no_turbofish_no_kind
+#+begin_src js :rule __path_no_turbofish_no_kind :arg $
+seq(
+    field('scope', <<r("path_kind")>>),
+    field('name', <<r("path_identifiers")>>),
 )
 #+end_src
 
 Is implicitly optional everywhere it is used unless the callsite checks for ~None~ return.
 
-Parser: [[file:noir/compiler/noirc_frontend/src/parser/parser/path.rs::pub fn parse_path_no_turbofish(&mut self)][parse_path_no_turbofish()]], [[file:noir/compiler/noirc_frontend/src/parser/parser/path.rs::pub(super) fn parse_path_impl(][parse_path_impl()]], (see: [[#h:7BA3BCB8-65F3-4001-8B02-2F904B014F87][parse_path_after_kind]])
-#+transclude: [[file:noir/compiler/noirc_frontend/src/parser/parser/path.rs::55][PathNoTurbofish doc]] :lines 55-55 :src fundamental
+Parser: [[file:noir/compiler/noirc_frontend/src/parser/parser/path.rs::pub fn parse_path_no_turbofish(&mut self)][parse_path_no_turbofish()]], [[#h:3DFE0B54-1BEB-41CE-B486-4CA40058C092][parse_path_impl]] called with ~allow_turbofish~ =false= and ~allow_trailing_double_colon~ =true=.
 
-A /turbofish/ is syntax of the form ~::<Type>~ (i.e. generics).
+Both of those parameters are passed as-is down to eventual call to [[#h:7BA3BCB8-65F3-4001-8B02-2F904B014F87][parse_path_after_kind]].
 
-Function parse_path_impl called such that **trailing double colons are allowed**.
+#+name: ,ebnf_path_no_turbofish
+#+begin_src fundamental
+/// PathNoTurbofish = PathKind? PathIdentifiers
+#+end_src
+Original EBNF: [[file:noir/compiler/noirc_frontend/src/parser/parser/path.rs::55][PathNoTurbofish doc]]
 
 *************** TODO For paths which do allow turbofish do we merge the ts rules into one thing or keep them distinct here
 *************** END
+*************** TODO EBNF doc update
+PathKind is implicit optional everywhere it occurs unless the callsite (parent rule) explicitly checks and errors on it's "nothing" value (in this case, PathKind::Plain).
+*************** END
 
-****** TODO IdentifiersInPathNoTurbofish                               :leaf:
+****** TODO PathIdentifiers                                            :leaf:
 :PROPERTIES:
 :CUSTOM_ID: h:3E35071C-E186-4562-AC61-1916E637A72E
 :END:
@@ -1882,10 +1918,26 @@ Function parse_path_impl called such that **trailing double colons are allowed**
 - State "TODO"       from              [2025-06-07 Sat 17:00] \\
   Needed because of Use quirks.
 :END:
-:pgd:
-+ [[#h:65B0176B-B46F-4679-8535-C504870AC048][ident]] (token)
-+ (rep0 grp) =::= by [[#h:65B0176B-B46F-4679-8535-C504870AC048][ident]] (token)
-:end:
+
+Parser: [[file:noir/compiler/noirc_frontend/src/parser/parser/path.rs::fn parse_path_after_kind(][parse_path_after_kind()]]
+
+#+name: path_identifiers__OLD
+#+begin_src js :rule __path_identifiers :arg $
+seq(
+    field('scope', choice(
+        alias(<<self()>>, $.path),
+        <<r("identifier")>>,
+        <<r("path_kind")>>,
+    )),
+    '::',
+    field('name', <<r("identifier")>>),
+)
+#+end_src
+
+#+name: ,ebnf_path_identifiers
+#+begin_src fundamental
+/// PathIdentifiers = identifier ( '::' identifier )*
+#+end_src
 
 See [[#h:ADB184CE-E43C-423B-803F-DE1679A91829][Use]] for why this node exists.
 
@@ -1902,8 +1954,11 @@ We're using path_kind (decomposed) since we check crate/dep/super as required bu
 
 pgd for this to be changed as well..?
 *************** END
+*************** TODO Should this be a new EBNF rule in Noirc compiler?
+Current usage of PathNoTurbofish and PathKind in Noirc comments as-is is EXTREMELY confusing unless source code is thoroughly reviewed.
+*************** END
 
-#+name: path_no_turbofish__nested_scopes
+#+name: path_no_turbofish__nested_scopes__OLD
 #+begin_src js :rule __nested_scopes_in_path_no_turbofish :arg $
 seq(
     field('scope', <<r("path_no_kind_no_turbofish")>>),
@@ -1913,7 +1968,7 @@ seq(
 #+end_src
 
 TODO: Obviously this rule's name is wrong, but needs to be this way for now.
-#+name: path_no_kind_no_turbofish
+#+name: path_no_kind_no_turbofish__OLD
 #+begin_src js :rule __path_no_kind_no_turbofish :arg $
 seq(
     choice(
@@ -1960,36 +2015,21 @@ see ast statement.rs line 394 context.
 - State "SPEC"       from "TOIMPL"     [2025-05-24 Sat 16:28]
 - State "TOIMPL"     from "TODO"       [2024-11-13 Wed 18:18]
 :END:
-:pgd:
-- =crate= (kw) by =::=
-- =dep= (kw) by =::=
-- =super= (kw) by =::=
-- NIL
-:end:
 
-TODO: Does this mean =crate ::= is valid like =crate::= is? notice the space present
-TODO: Optional wrapping this or not?
+TODO DOCS: Given tight integration with PathNoTurbofish what one would expect as a rule having =::= in it is not.
 
 #+name: path_kind
-#+begin_src js :arg $ :ast PathKind
-seq(
-    choice($.crate, $.dep, $.super),
-    '::',
-)
+#+begin_src js :rule __path_kind :arg $ :ast PathKind
+choice($.crate, $.dep, $.super)
 #+end_src
 
 Parser: [[file:noir/compiler/noirc_frontend/src/parser/parser/path.rs::pub(super) fn parse_path_kind(&mut self)][parse_path_kind()]]
-#+transclude: [[file:noir/compiler/noirc_frontend/src/parser/parser/path.rs::174][PathKind doc]] :lines 174-178 :src fundamental
 
 If there is no path kind, i.e. NIL, this is internally represented via ~PathKind::Plain~.
 
 #+name: ,ebnf_path_kind
 #+begin_src fundamental
-/// PathKind = (
-///     'crate' '::'
-///     | 'dep' '::'
-///     | 'super' '::'
-/// )?
+/// PathKind = ( ( 'crate' | 'dep' | 'super' ) '::' )?
 #+end_src
 Original EBNF: [[file:noir/compiler/noirc_frontend/src/parser/parser/path.rs::174][PathKind doc]]
 
@@ -2322,6 +2362,11 @@ Final part of parser loops over generics from [[#h:8C6AF1F0-DBAC-4030-AEFC-8FBF6
 
 Return ~AST::GenericTypeArgs()~.
 
+*************** TODO GenericTypeArgs EBNF update, and also it's optional
+If =<= is not eaten default GenericTypeArgs is returned, which is presumably empty (and in any case we didn't eat any syntax) so really GenericTypeArgs is optional wherever it appears.
+*************** END
+
+
 ******* SPEC GenericTypeArgsList                                       :node:
 :PROPERTIES:
 :CUSTOM_ID: h:8C6AF1F0-DBAC-4030-AEFC-8FBF6B069EAD
@@ -2523,23 +2568,25 @@ If Type returns ~None~ then parser early returns ~None~ also.
 #+begin_src js :arg $ :ast TraitBounds
 seq(
     ':', // Common prefix reduction.
-    sepBy1(<<r("trait_bound")>>, '+'),
-    optional('+'),
+    sepBy(<<r("trait_bound")>>, '+'),
+    // optional('+'), // TODO: I think not allowed, test compiler methods post-grammar.
 )
 #+end_src
 
-Even though the literal Noirc parser has already checked =:= before it's called we place that token in our tree-sitter rule to simplify the grammar a little. There are only two possible combinations of this rule appearing (according to Noirc comments).
+Even though the literal Noirc parser has already checked =:= before it's called we place that token in our tree-sitter rule to simplify the grammar a little. There are only two possible combinations of this rule appearing (according to Noirc comments) and this way the =:= is part of this CST node.
 
 #+begin_example
 ugrep -r "':' TraitBounds" -t rust noir -n
 #+end_example
 
-Parser: [[file:noir/compiler/noirc_frontend/src/parser/parser/where_clause.rs::pub(super) fn parse_trait_bounds(&mut self)][parse_trait_bounds()]]
-#+transclude: [[file:noir/compiler/noirc_frontend/src/parser/parser/where_clause.rs::51][TraitBounds doc]] :lines 50-50 :src rust
+Parser: [[file:noir/compiler/noirc_frontend/src/parser/parser/where_clause.rs::fn parse_trait_bounds(&mut self)][parse_trait_bounds()]]
 
 Via [[#h:8E0DC05B-1ED6-47BE-9589-64DC06FAECCA][parse_many]] inline split on =+= calls [[file:noir/compiler/noirc_frontend/src/parser/parser/where_clause.rs::fn parse_trait_bound_in_list(&mut self)][parse_trait_bound_in_list()]].
 
 ~parse_trait_bound_in_list~ checks [[file:noir/compiler/noirc_frontend/src/parser/parser/where_clause.rs::pub(crate) fn parse_trait_bound(&mut self)][parse_trait_bound()]] returns ~Some~ and returns that (which /is/ [[#h:161848E1-1F70-4DEF-9353-4C6BAF517C82][TraitBound]]), otherwise parse error.
+
+#+name: ,ebnf_trait_bounds
+#+transclude: [[file:noir/compiler/noirc_frontend/src/parser/parser/where_clause.rs::50][TraitBounds doc]] :lines 50-50 :src fundamental
 
 *************** TODO stop_if_separator_is_missing consequences
 Really tired right now, double check any undocumented BNF implications of this
@@ -2558,17 +2605,19 @@ Really tired right now, double check any undocumented BNF implications of this
 :end:
 
 #+name: trait_bound
-#+begin_src js :arg $ :ast TraitBound
+#+begin_src js :rule __trait_bound :arg $ :ast TraitBound
 seq(
-    optional(<<r("path_no_turbofish")>>),
-    <<r("generic_type_args")>>,
+    <<r("identifier_or_path_no_turbofish")>>,
 )
 #+end_src
 
-Parser: [[file:noir/compiler/noirc_frontend/src/parser/parser/where_clause.rs::pub(crate) fn parse_trait_bound(&mut self)][parse_trait_bound()]]
-Returns: [[file:noir/compiler/noirc_frontend/src/ast/traits.rs::pub struct TraitBound {][TraitBound struct]]
+Parser: [[file:noir/compiler/noirc_frontend/src/parser/parser/where_clause.rs::fn parse_trait_bound(&mut self)][parse_trait_bound()]]
+Types: [[file:noir/compiler/noirc_frontend/src/ast/traits.rs::pub struct TraitBound {][TraitBound struct]]
 
 A ~TraitBound~ is a single type path used to constrain a trait.
+
+#+name: ,ebnf_trait_bound
+#+transclude: [[file:noir/compiler/noirc_frontend/src/parser/parser/where_clause.rs::85][TraitBound doc]] :lines 85-85 :src fundamental
 
 *** SPEC PatternOrSelf                                                 :node:
 :PROPERTIES:
@@ -4344,6 +4393,17 @@ Checking token kind goes down to [[file:noir/compiler/noirc_frontend/src/lexer/t
 
 #+transclude: [[file:noir/compiler/noirc_frontend/src/lexer/token.rs::498][Token.kind() pattern match]] :lines 498-522 :src rust
 
+*** [[file:noir/compiler/noirc_frontend/src/parser/parser/path.rs::fn parse_path_impl(][Parser::parse_path_impl(allow_turbofish, allow_trailing_double_colon)]]
+:PROPERTIES:
+:CUSTOM_ID: h:3DFE0B54-1BEB-41CE-B486-4CA40058C092
+:END:
+
+Further calls [[#h:96FCF9AD-3B89-451B-B84D-90A7A625B56D][PathKind]]'s parser (~parse_path_kind~) for =kind=, and ~parse_optional_path_after_kind~ ([[file:noir/compiler/noirc_frontend/src/parser/parser/path.rs::fn parse_optional_path_after_kind(][src]]) which is a simple wrapper for [[#h:7BA3BCB8-65F3-4001-8B02-2F904B014F87][parse_path_after_kind]] for =path=.
+
+If the parsed =path= has no segments and it's =kind= is NOT ~PathKind::Plain~ a parse error is raised.
+
+Whenever this function is called a parsed =path= only ever has it's =kind= parsed once.
+
 *** [[file:noir/compiler/noirc_frontend/src/parser/parser/path.rs::pub(super) fn parse_path_after_kind(][Parser::parse_path_after_kind(kind, allow_turbofish, allow_trailing_double_colon)]]
 :PROPERTIES:
 :CUSTOM_ID: h:7BA3BCB8-65F3-4001-8B02-2F904B014F87
@@ -4489,6 +4549,11 @@ module.exports = grammar({
         $.block_comment,
     ],
 
+    // Rule names tree-sitter will automatically inline at their callsites when generating the parser. Unlike anonymous CST nodes these will then NEVER result in a CST node.
+    inline: ($) => [
+        <<r("identifier_or_path_no_turbofish")>>,
+    ],
+
     // TODO: Need to document (for myself) keyword extraction to check we're doing it properly.
     word: ($) => $.identifier,
 
@@ -4568,11 +4633,11 @@ function sepBy(rule, sep) {
 <<n("mod_or_contract")>>
 <<c('("struct" "struct_field" "struct_field_list"))>>
 <<c('("impl" "trait_impl"))>>
-<<c('("trait" "trait_body" "trait_item" "trait_type" "trait_constant" "trait_function"))>>
+<<c('("trait"  "trait_bounds" "trait_bound" "trait_body" "trait_type" "trait_constant" "trait_function"))>>
 <<n("global")>>
 // TODO: TypeAlias
 <<c('("function_parameters" "function_parameter" "function" "function_modifiers"))>>
-<<c('("where" "where_clause" "trait_bounds" "trait_bound"))>>
+<<c('("where" "where_clause"))>>
 #+end_src
 
 ** Statements
@@ -4637,7 +4702,7 @@ function sepBy(rule, sep) {
 <<n("comment")>>
 <<c('("line_comment__doc_style__inner" "line_comment__doc_style__outer" "line_comment__doc_style" "line_comment"))>>
 <<c('("block_comment__doc_style" "block_comment"))>>
-<<c('("path" "path_no_turbofish" "path_no_turbofish__nested_scopes" "path_no_kind_no_turbofish"))>>
+<<c('("path" "path_no_turbofish" "identifier_or_path_no_turbofish" "path_identifiers"))>>
 <<n("path_kind")>>
 <<n("identifier")>>
 #+end_src
@@ -4775,6 +4840,11 @@ Collect them all here so we can process (do a bunch of regex replacements) just 
 <<ebnf("function_parameters")>>
 
 <<ebnf("literal")>>
+
+<<ebnf("path")>>
+<<ebnf("path_no_turbofish")>>
+<<ebnf("path_kind")>>
+<<ebnf("turbofish")>>
 
 <<ebnf("identifier")>>
 <<ebnf("bool")>>

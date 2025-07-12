@@ -620,18 +620,122 @@ impl foo {}
 #+end_test
 
 ** Trait
+
+*** Simple
 #+begin_test
-trait Foo {};
+trait Foo {}
+trait Bar {} trait Lorem {}
 
 ---
 
-(trait
+(trait_item
   name: (identifier)
-  body)
+  body: (declaration_list))
+(trait_item
+  name: (identifier)
+  body: (declaration_list))
+(trait_item
+  name: (identifier)
+  body: (declaration_list))
 #+end_test
 
+*** Declarations
+#+begin_test
+trait Foo { type Bar; }
+trait Bar { let x: Field; }
+trait Lorem { let y    : Field = 1; }
+trait Ipsum { type Foo; let y: Field = 420; }
+
+---
+
+(trait_item
+  name: (identifier)
+  body: (declaration_list
+    (trait_type
+      name: (identifier))))
+(trait_item
+  name: (identifier)
+  body: (declaration_list
+    (trait_constant
+      name: (identifier)
+      type: (primitive_type))))
+(trait_item
+  name: (identifier)
+  body: (declaration_list
+    (trait_constant
+      name: (identifier)
+      type: (primitive_type)
+      value: (int_literal))))
+(trait_item
+  name: (identifier)
+  body: (declaration_list
+    (trait_type
+      name: (identifier))
+    (trait_constant
+      name: (identifier)
+      type: (primitive_type)
+      value: (int_literal))))
+#+end_test
+
+*** Bounds
+#+begin_test
+trait Foo: Bar {}
+trait Foo: Bar + Lorem {}
+trait Foo: a::b::c::Bar + crate::y::z::Lorem {}
+
+---
+
+(trait_item
+  name: (identifier)
+  bounds: (trait_bounds
+    (identifier))
+  body: (declaration_list))
+(trait_item
+  name: (identifier)
+  bounds: (trait_bounds
+    (identifier)
+    (identifier))
+  body: (declaration_list))
+(trait_item
+  name: (identifier)
+  bounds: (trait_bounds
+    (path
+      scope: (path
+        scope: (path
+          scope: (identifier)
+          name: (identifier))
+        name: (identifier))
+      name: (identifier))
+    (path
+      scope: (path
+        scope: (path
+          scope: (crate)
+          name: (identifier))
+        name: (identifier))
+      name: (identifier)))
+  body: (declaration_list))
+#+end_test
+
+**** TODO Generics
+
+Generics associated with the /Bounds/ declared on the Trait.
+
 *** TODO Generics
-Trait with generics
+
+Generics associated with the /Trait/ itself.
+
+#+begin_test :skip
+trait Foo<A, B> {}
+trait Foo<A, B> where A: Z {}
+#+end_test
+
+*** TODO Function
+If Trait functions /are/ normal functions etc need to know before writing ts rule and thus associated tests.
+
+#+begin_test :skip
+trait Foo { fn foo(); }
+trait Foo { fn foo() {} }
+#+end_test
 
 ** Global
 x

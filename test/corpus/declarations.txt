@@ -673,18 +673,140 @@ impl foo {}
 )
 
 
-=====
-Trait
-=====
+==============
+Trait / Simple
+==============
 
-trait Foo {};
+trait Foo {}
+trait Bar {} trait Lorem {}
 
 ---
 
 (source_file
-  (trait
+  (trait_item
     name: (identifier)
-    body)
+    body: (declaration_list))
+  (trait_item
+    name: (identifier)
+    body: (declaration_list))
+  (trait_item
+    name: (identifier)
+    body: (declaration_list))
+)
+
+
+====================
+Trait / Declarations
+====================
+
+trait Foo { type Bar; }
+trait Bar { let x: Field; }
+trait Lorem { let y    : Field = 1; }
+trait Ipsum { type Foo; let y: Field = 420; }
+
+---
+
+(source_file
+  (trait_item
+    name: (identifier)
+    body: (declaration_list
+      (trait_type
+        name: (identifier))))
+  (trait_item
+    name: (identifier)
+    body: (declaration_list
+      (trait_constant
+        name: (identifier)
+        type: (primitive_type))))
+  (trait_item
+    name: (identifier)
+    body: (declaration_list
+      (trait_constant
+        name: (identifier)
+        type: (primitive_type)
+        value: (int_literal))))
+  (trait_item
+    name: (identifier)
+    body: (declaration_list
+      (trait_type
+        name: (identifier))
+      (trait_constant
+        name: (identifier)
+        type: (primitive_type)
+        value: (int_literal))))
+)
+
+
+==============
+Trait / Bounds
+==============
+
+trait Foo: Bar {}
+trait Foo: Bar + Lorem {}
+trait Foo: a::b::c::Bar + crate::y::z::Lorem {}
+
+---
+
+(source_file
+  (trait_item
+    name: (identifier)
+    bounds: (trait_bounds
+      (identifier))
+    body: (declaration_list))
+  (trait_item
+    name: (identifier)
+    bounds: (trait_bounds
+      (identifier)
+      (identifier))
+    body: (declaration_list))
+  (trait_item
+    name: (identifier)
+    bounds: (trait_bounds
+      (path
+        scope: (path
+          scope: (path
+            scope: (identifier)
+            name: (identifier))
+          name: (identifier))
+        name: (identifier))
+      (path
+        scope: (path
+          scope: (path
+            scope: (crate)
+            name: (identifier))
+          name: (identifier))
+        name: (identifier)))
+    body: (declaration_list))
+)
+
+
+================
+Trait / Generics
+:skip
+================
+
+trait Foo<A, B> {}
+trait Foo<A, B> where A: Z {}
+
+---
+
+(source_file
+
+)
+
+
+================
+Trait / Function
+:skip
+================
+
+trait Foo { fn foo(); }
+trait Foo { fn foo() {} }
+
+---
+
+(source_file
+
 )
 
 

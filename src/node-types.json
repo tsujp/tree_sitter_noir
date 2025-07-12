@@ -552,6 +552,29 @@
     "fields": {}
   },
   {
+    "type": "declaration_list",
+    "named": true,
+    "fields": {},
+    "children": {
+      "multiple": true,
+      "required": false,
+      "types": [
+        {
+          "type": "trait_constant",
+          "named": true
+        },
+        {
+          "type": "trait_function",
+          "named": true
+        },
+        {
+          "type": "trait_type",
+          "named": true
+        }
+      ]
+    }
+  },
+  {
     "type": "escape_sequence",
     "named": true,
     "fields": {}
@@ -1451,6 +1474,25 @@
     }
   },
   {
+    "type": "trait_bounds",
+    "named": true,
+    "fields": {},
+    "children": {
+      "multiple": true,
+      "required": false,
+      "types": [
+        {
+          "type": "identifier",
+          "named": true
+        },
+        {
+          "type": "path",
+          "named": true
+        }
+      ]
+    }
+  },
+  {
     "type": "trait_constant",
     "named": true,
     "fields": {
@@ -1556,21 +1598,44 @@
   {
     "type": "trait_item",
     "named": true,
-    "fields": {},
+    "fields": {
+      "body": {
+        "multiple": false,
+        "required": true,
+        "types": [
+          {
+            "type": "declaration_list",
+            "named": true
+          }
+        ]
+      },
+      "bounds": {
+        "multiple": false,
+        "required": false,
+        "types": [
+          {
+            "type": "trait_bounds",
+            "named": true
+          }
+        ]
+      },
+      "name": {
+        "multiple": false,
+        "required": true,
+        "types": [
+          {
+            "type": "identifier",
+            "named": true
+          }
+        ]
+      }
+    },
     "children": {
       "multiple": false,
-      "required": true,
+      "required": false,
       "types": [
         {
-          "type": "trait_constant",
-          "named": true
-        },
-        {
-          "type": "trait_function",
-          "named": true
-        },
-        {
-          "type": "trait_type",
+          "type": "visibility_modifier",
           "named": true
         }
       ]
@@ -2059,6 +2124,10 @@
   {
     "type": "super",
     "named": true
+  },
+  {
+    "type": "trait",
+    "named": false
   },
   {
     "type": "trait_function",
