@@ -836,9 +836,9 @@ seq(
     optional(<<r("item_visibility")>>),
     'trait',
     field('name', <<r("identifier")>>),
-    // TODO: Generics
+    field('type_parameters', optional(<<r("generics")>>)),
     field('bounds', optional(<<r("trait_bounds")>>)),
-    // optional(r("where")),
+    optional(<<r("where")>>),
     field('body', alias(<<r("trait_body")>>, $.declaration_list)),
 )
 #+end_src
@@ -953,10 +953,7 @@ CLOSED: [2025-07-12 Sat 20:22]
 #+name: trait_constant
 #+begin_src js :arg $ :ast TraitConstant
 seq(
-    'let',
-    field('name', <<r("identifier")>>),
-    ':',
-    field('type', <<r("type")>>),
+    <<r("tmp__let_to_type")>>,
     optional(seq(
         '=', // We don't want '=' part of the CST node for the (default) value.
         field('value', <<r("expression")>>),
@@ -1059,6 +1056,7 @@ choice(
     // $.mutable_reference_type,
     // $.function_type,
     // TODO: TraitAsType, AsTraitPathType, UnresolvedNamedType
+    <<r("identifier_or_path_no_turbofish")>>,
 )
 #+end_src
 
@@ -2263,73 +2261,115 @@ Types: [[file:noir/compiler/noirc_frontend/src/ast/expression.rs::pub enum Expre
 :PROPERTIES:
 :CUSTOM_ID: h:BA1422E4-AB97-4099-8346-5845CA9223A1
 :END:
- * (opt grp) =<= by (opt) GenericsList by =>=.
- 
+
+#+name: generics
+#+begin_src js :rule type_parameters :arg $ :ast Generics
+seq(
+    '<',
+    sepBy(<<r("generic")>>, ','), // Inlined Noirc: GenericsList.
+    optional(','),
+    '>',
+)
+#+end_src
+
 **Note** Generics itself is optional, so anywhere it's referenced it implies optionality.
 
-Parser: [[file:noir/compiler/noirc_frontend/src/parser/parser/generics.rs::pub(super) fn parse_generics(&mut self)][parse_generics()]]
+Parser: [[file:noir/compiler/noirc_frontend/src/parser/parser/generics.rs::fn parse_generics(&mut self)][parse_generics()]]
 
-#+transclude: [[file:noir/compiler/noirc_frontend/src/parser/parser/generics.rs::13][parse_generics()]] :lines 13-15 :src rust
+Via [[#h:8E0DC05B-1ED6-47BE-9589-64DC06FAECCA][parse_many]] split on =,= until =>= call [[file:noir/compiler/noirc_frontend/src/parser/parser/generics.rs::fn parse_generic_in_list(&mut self)][parse_generic_in_list()]].
 
-#+begin_src rust
-        /// Generics = ( '<' GenericsList? '>' )?
-        ///
-        /// GenericsList = Generic ( ',' Generic )* ','?
-#+end_src
+#+name: ,ebnf_generics
+#+transclude: [[file:noir/compiler/noirc_frontend/src/parser/parser/generics.rs::13][Generics doc]] :lines 13-13 :src fundamental
 
-- [X] ~Parser:parse_many()~.
-  - nb :: splits on =,= until =>= encountered.
-- [ ] ~Parser:parse_generic_in_list()~.
-  - [ ] ~Parser::parse_generic()~.
+*************** TODO Call this rule generics_list or type_parameters_list instead?
+All other list type rules have _list suffix.
+*************** END
 
-****** TODO GenericsList
-+ Generic.
-+ (rep0 grp) =,= by Generic.
-+ (opt) =,=.
+****** DONE GenericsList
+CLOSED: [2025-07-12 Sat 22:06]
+:LOGBOOK:
+- State "DONE"       from              [2025-07-12 Sat 22:06]
+:END:
+
+Inlined, subheading only kept for reference.
+
+#+name: ,ebnf_generics_list
+#+transclude: [[file:noir/compiler/noirc_frontend/src/parser/parser/generics.rs::15][GenericsList doc]] :lines 15-15 :src fundamental
 
 ****** TODO Generic
-- VariableGeneric.
-- NumericGeneric.
-- ResolvedGeneric.
 
-[[file:noir/compiler/noirc_frontend/src/parser/parser/generics.rs::41][Parser::parse_generic()]]:
-#+transclude: [[file:noir/compiler/noirc_frontend/src/parser/parser/generics.rs][Generic doc]] :lines 37-40 :src rust
-
-****** TOIMPL VariableGeneric
-:LOGBOOK:
-- State "TOIMPL"     from "TODO"       [2024-11-03 Sun 05:25]
-:END:
- * An ~identifier~.
-
-[[file:noir/compiler/noirc_frontend/src/parser/parser/generics.rs::58][Parser::parse_variable_generic()]]:
-#+begin_src rust
-        /// VariableGeneric = identifier
+#+name: generic
+#+begin_src js :rule _generic :arg $ :ast Generic
+choice(
+    <<r("identifier")>>, // Inlined Noirc: VariableGeneric.
+    <<r("constrained_type")>>,
+    // TODO: ResolvedGeneric IFF it even matters for CST.
+)
 #+end_src
 
-Calls ~Parser::eat_ident()~ and returns that as an ~UnresolvedGeneric::Variable~ enum.
+Parser: [[file:noir/compiler/noirc_frontend/src/parser/parser/generics.rs::fn parse_generic(&mut self)][parse_generic()]]
 
-*************** TODO Appears to be some wacky macro stuff for enum ~UnresolvedGeneric~, look at way, way later.
-*************** END
+Simple wrapper for child AST nodes.
 
-****** TOIMPL NumericGeneric
+#+name: ,ebnf_generic
+#+transclude: [[file:noir/compiler/noirc_frontend/src/parser/parser/generics.rs::37][Generic doc]] :lines 37-40 :src fundamental
+
+****** DONE VariableGeneric
+CLOSED: [2025-07-12 Sat 21:56]
 :LOGBOOK:
+- State "DONE"       from "TOIMPL"     [2025-07-12 Sat 21:56]
+- State "TOIMPL"     from "TODO"       [2024-11-03 Sun 05:25]
+:END:
+
+Parser: [[file:noir/compiler/noirc_frontend/src/parser/parser/generics.rs::fn parse_variable_generic(&mut self)][parse_variable_generic()]]
+
+Effective alias for [[#h:65B0176B-B46F-4679-8535-C504870AC048][ident]].
+
+#+name: ,ebnf_variable_generic
+#+transclude: [[file:noir/compiler/noirc_frontend/src/parser/parser/generics.rs::57][VariableGeneric doc]] :lines 57-57 :src fundamental
+
+****** DONE NumericGeneric
+CLOSED: [2025-07-12 Sat 22:23]
+:LOGBOOK:
+- State "DONE"       from "SPEC"       [2025-07-12 Sat 22:23]
+- State "SPEC"       from "TOIMPL"     [2025-07-12 Sat 22:04]
 - State "TOIMPL"     from "TODO"       [2024-11-03 Sun 05:26]
 :END:
-+ =let=.
-+ An ~identifier~.
-+ =:=.
-+ Type.
 
-[[file:noir/compiler/noirc_frontend/src/parser/parser/generics.rs::63][Parser::parse_numeric_generic()]]:
-#+transclude: [[file:noir/compiler/noirc_frontend/src/parser/parser/generics.rs][NumericGeneric doc]] :lines 62-62 :src rust
+#+name: constrained_type
+#+begin_src js :arg $ :ast NumericType
+<<r("tmp__let_to_type")>>
+#+end_src
 
-*************** TODO Parse function returns an error if missing a type after =:= (and assumes type is ~u32~) but is this error fatal?
+#+name: tmp__let_to_type
+#+begin_src js :arg $
+seq(
+    'let',
+    field('name', $.identifier),
+    ':',
+    field('type', $._type),
+)
+#+end_src
+
+Parser: [[file:noir/compiler/noirc_frontend/src/parser/parser/generics.rs::fn parse_numeric_generic(&mut self)][parse_numeric_generic()]]
+
+There's additional checks on integer generic type which we ignore for the purpose of tree-sitter grammar rules.
+
+*************** TODO re-home the template bit on this subheading
+Inlined grammar rules are nice, don't have to keep redefining things.
 *************** END
-*************** TODO There's some forbidden numeric generic type logic there, look at later.
+*************** TODO Rename NumericType rule from constrained_type
+Placeholder-ish name for now idk.
 *************** END
+
+#+name: ,ebnf_numeric_generic
+#+transclude: [[file:noir/compiler/noirc_frontend/src/parser/parser/generics.rs::62][NumericGeneric doc]] :lines 62-62 :src fundamental
 
 ****** TODO ResolvedGeneric
-Foo
+:LOGBOOK:
+- State "TODO"       from "TODO"       [2025-07-12 Sat 22:05] \\
+  Quoted expression stuff, do as the very last thing
+:END:
 
 ****** SPEC GenericTypeArgs                                    :node:cluster:
 :PROPERTIES:
@@ -2484,23 +2524,19 @@ Return ~AST::GenericTypeArg::Ordered()~.
 :LOGBOOK:
 - State "SPEC"       from "TODO"       [2025-06-09 Mon 00:54]
 :END:
-:pgd:
-+ =where= (kw)
-+ (opt) [[#h:40EAA2CE-8D14-4663-B5A8-83F4D34EABF0][WhereClauseItems]]
-:end:
 
 #+name: where
-#+begin_src js :rule where_clause :arg $
+#+begin_src js :rule where_clause :arg $ :ast WhereClause
 seq(
-        'where',
-        sepBy1(<<r("where_clause")>>, ','),
-        optional(',')
+    'where',
+    sepBy(<<r("where_clause")>>, ','), // Inlined Noirc: WhereClauseItems.
+    optional(',')
 )
 #+end_src
 
 Is implicit optional ([[file:noir/compiler/noirc_frontend/src/parser/parser/where_clause.rs::if !self.eat_keyword(Keyword::Where) {][src]]) everywhere it appears unless callsite checks for empty vec return.
 
-Parser: [[file:noir/compiler/noirc_frontend/src/parser/parser/where_clause.rs::pub(super) fn parse_where_clause(&mut self)][parse_where_clause()]]
+Parser: [[file:noir/compiler/noirc_frontend/src/parser/parser/where_clause.rs::fn parse_where_clause(&mut self)][parse_where_clause()]]
 Returns: vec of [[file:noir/compiler/noirc_frontend/src/ast/traits.rs::pub struct UnresolvedTraitConstraint {][UnresolvedTraitConstraint struct]]
 
 Note that Type returns an [[file:noir/compiler/noirc_frontend/src/ast/mod.rs::pub struct UnresolvedType {][UnresolvedType struct]], and WhereClause an UnresolvedTraitConstraint struct the latter of which has a field ~typ~ which is the former.
@@ -2516,19 +2552,12 @@ Does this mean =impl Bar for Foo where {}= is valid in noir then? (there's no co
 :LOGBOOK:
 - State "SPEC"       from "TODO"       [2025-06-09 Mon 01:29]
 :END:
-:pgd:
-+ [[#h:E13DAE9C-1546-4BEA-9F5C-F18A6497497E][WhereClauseItem]]
-+ (rep0 grp) =,= by [[#h:E13DAE9C-1546-4BEA-9F5C-F18A6497497E][WhereClauseItem]]
-+ (opt) =,=
-:end:
 
 #+name: where_clause
-#+begin_src js :rule where_clause_item :arg $
+#+begin_src js :rule where_constraint :arg $ :ast WhereClauseItem
 seq(
-        $._type,
-        $.trait_bounds,
-        // ':',
-        // $.trait_bounds,
+    $._type,
+    field('bounds', $.trait_bounds),
 )
 #+end_src
 
@@ -2568,7 +2597,7 @@ If Type returns ~None~ then parser early returns ~None~ also.
 #+begin_src js :arg $ :ast TraitBounds
 seq(
     ':', // Common prefix reduction.
-    sepBy(<<r("trait_bound")>>, '+'),
+    sepBy1(<<r("trait_bound")>>, '+'),
     // optional('+'), // TODO: I think not allowed, test compiler methods post-grammar.
 )
 #+end_src
@@ -2608,6 +2637,7 @@ Really tired right now, double check any undocumented BNF implications of this
 #+begin_src js :rule __trait_bound :arg $ :ast TraitBound
 seq(
     <<r("identifier_or_path_no_turbofish")>>,
+    optional(<<r("generic_type_args")>>),
 )
 #+end_src
 
@@ -4552,6 +4582,7 @@ module.exports = grammar({
     // Rule names tree-sitter will automatically inline at their callsites when generating the parser. Unlike anonymous CST nodes these will then NEVER result in a CST node.
     inline: ($) => [
         <<r("identifier_or_path_no_turbofish")>>,
+        <<r("tmp__let_to_type")>>,
     ],
 
     // TODO: Need to document (for myself) keyword extraction to check we're doing it properly.
@@ -4601,6 +4632,9 @@ module.exports = grammar({
 
         // * * * * * * * * * * * * * * * * * * * * * * * * * LITERALS
         <<grp__literals>>
+
+        // * * * * * * * * * * * * * * * * * * * * * * * * * TEMPLATES / MISC
+        <<grp__misc>>
 
         mut_bound: _ => 'mut',
         self: _ => 'self',
@@ -4672,6 +4706,7 @@ function sepBy(rule, sep) {
 <<n("type")>>
 <<c('("primitive_type" "field_type" "int_type" "bool_type" "str_type" "fmt_str_type"))>>
 <<c('("parentheses_type" "unit_type" "tuple_type"))>>
+<<c('("generics" "generic" "constrained_type"))>>
 <<c('("generic_type_args" "generic_type_arg" "named_type_arg" "ordered_type_arg"))>>
 
 // 'TypeExpressions' are limited to constant integers, variables, and basic numeric binary operators; they are a special type that is allowed in the length position of an array (and some other limited places).
@@ -4705,6 +4740,15 @@ function sepBy(rule, sep) {
 <<c('("path" "path_no_turbofish" "identifier_or_path_no_turbofish" "path_identifiers"))>>
 <<n("path_kind")>>
 <<n("identifier")>>
+#+end_src
+
+** Misc
+
+Mostly meta-rules e.g. inlined tree-sitter rules serving as templates.
+
+#+name: grp__misc
+#+begin_src js :noweb yes
+<<n("tmp__let_to_type")>>
 #+end_src
 
 * Tangle

@@ -5,6 +5,8 @@
 
 Including definitions, and items.
 
+Top-level test under a subheading will either be the simple case or a combination of all it's children. This means when diagnosing errors it's easier to run child-specific tests and then "a mix of" those combinations without creating temporary tests.
+
 ** Attributes
 
 *** Normal
@@ -621,7 +623,8 @@ impl foo {}
 
 ** Trait
 
-*** Simple
+TODO: Bounds + generics in this test
+
 #+begin_test
 trait Foo {}
 trait Bar {} trait Lorem {}
@@ -639,42 +642,30 @@ trait Bar {} trait Lorem {}
   body: (declaration_list))
 #+end_test
 
-*** Declarations
+*** Generics
+
+Generics associated with the /Trait/ itself.
+
 #+begin_test
-trait Foo { type Bar; }
-trait Bar { let x: Field; }
-trait Lorem { let y    : Field = 1; }
-trait Ipsum { type Foo; let y: Field = 420; }
+trait Foo<A, B> {}
+trait Foo<A, let X: Field> {}
 
 ---
 
 (trait_item
   name: (identifier)
-  body: (declaration_list
-    (trait_type
-      name: (identifier))))
+  type_parameters: (type_parameters
+    (identifier)
+    (identifier))
+  body: (declaration_list))
 (trait_item
   name: (identifier)
-  body: (declaration_list
-    (trait_constant
+  type_parameters: (type_parameters
+    (identifier)
+    (constrained_type
       name: (identifier)
-      type: (primitive_type))))
-(trait_item
-  name: (identifier)
-  body: (declaration_list
-    (trait_constant
-      name: (identifier)
-      type: (primitive_type)
-      value: (int_literal))))
-(trait_item
-  name: (identifier)
-  body: (declaration_list
-    (trait_type
-      name: (identifier))
-    (trait_constant
-      name: (identifier)
-      type: (primitive_type)
-      value: (int_literal))))
+      type: (primitive_type)))
+  body: (declaration_list))
 #+end_test
 
 *** Bounds
@@ -716,26 +707,168 @@ trait Foo: a::b::c::Bar + crate::y::z::Lorem {}
   body: (declaration_list))
 #+end_test
 
+**** Missing
+#+begin_test :error
+trait Foo: {}
+#+end_test
+
+**** Trailing separator
+#+begin_test :error
+trait Foo: Bar + {}
+#+end_test
+
 **** TODO Generics
 
 Generics associated with the /Bounds/ declared on the Trait.
 
-*** TODO Generics
+#+begin_test
+trait Foo: Bar<T> {}
+trait Bar: Lorem<A, B, C> + x::y::Foo<X = Y> {}
 
-Generics associated with the /Trait/ itself.
+---
 
-#+begin_test :skip
-trait Foo<A, B> {}
-trait Foo<A, B> where A: Z {}
 #+end_test
 
-*** TODO Function
+**** TODO Where
+
+Effectively tests for where clauses wherever they appear. Just here since we need complete (minimal) valid syntax to even test.
+
+#+begin_test
+trait Lorem where Foo: Bar<T> + Baz {}
+trait Ipsum where Foo: Bar<T>, i32: Qux {}
+
+---
+
+
+#+end_test
+
+*** Where
+#+begin_test
+trait Foo where X: Y {}
+trait Foo where X: Y , {}
+
+trait Foo where X: Y , xx::yy::A: B + Lorem {}
+
+---
+
+(trait_item
+  name: (identifier)
+  (where_clause
+    (where_constraint
+      (identifier)
+      bounds: (trait_bounds
+        (identifier))))
+  body: (declaration_list))
+(trait_item
+  name: (identifier)
+  (where_clause
+    (where_constraint
+      (identifier)
+      bounds: (trait_bounds
+        (identifier))))
+  body: (declaration_list))
+
+(trait_item
+  name: (identifier)
+  (where_clause
+    (where_constraint
+      (identifier)
+      bounds: (trait_bounds
+        (identifier)))
+    (where_constraint
+      (path
+        scope: (path
+          scope: (identifier)
+          name: (identifier))
+        name: (identifier))
+      bounds: (trait_bounds
+        (identifier)
+        (identifier))))
+  body: (declaration_list))
+#+end_test
+
+**** Degenerate
+
+Noirc =parse_where_clause= says empty constraints are valid.
+
+#+begin_test
+trait Foo where {}
+trait Foo where, {}
+
+---
+
+(trait_item
+  name: (identifier)
+  (where_clause)
+  body: (declaration_list))
+(trait_item
+  name: (identifier)
+  (where_clause)
+  body: (declaration_list))
+#+end_test
+
+*** Declarations
+
+#+begin_test
+trait Ipsum { type Foo; let y: Field = 420; }
+
+---
+
+(trait_item
+  name: (identifier)
+  body: (declaration_list
+    (trait_type
+      name: (identifier))
+    (trait_constant
+      name: (identifier)
+      type: (primitive_type)
+      value: (int_literal))))
+#+end_test
+
+**** Type
+#+begin_test
+trait Foo { type Bar; }
+
+---
+
+(trait_item
+  name: (identifier)
+  body: (declaration_list
+    (trait_type
+      name: (identifier))))
+#+end_test
+
+**** Constant
+#+begin_test
+trait Bar { let x: Field; }
+trait Lorem { let y    : Field = 1; }
+
+---
+
+(trait_item
+  name: (identifier)
+  body: (declaration_list
+    (trait_constant
+      name: (identifier)
+      type: (primitive_type))))
+(trait_item
+  name: (identifier)
+  body: (declaration_list
+    (trait_constant
+      name: (identifier)
+      type: (primitive_type)
+      value: (int_literal))))
+#+end_test
+
+**** TODO Function
+
 If Trait functions /are/ normal functions etc need to know before writing ts rule and thus associated tests.
 
 #+begin_test :skip
 trait Foo { fn foo(); }
 trait Foo { fn foo() {} }
 #+end_test
+
 
 ** Global
 x

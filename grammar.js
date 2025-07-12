@@ -82,6 +82,12 @@ module.exports = grammar({
         $.block_comment,
     ],
 
+    // Rule names tree-sitter will automatically inline at their callsites when generating the parser. Unlike anonymous CST nodes these will then NEVER result in a CST node.
+    inline: ($) => [
+        $.identifier_or_path_no_turbofish,
+        $.tmp__let_to_type,
+    ],
+
     // TODO: Need to document (for myself) keyword extraction to check we're doing it properly.
     word: ($) => $.identifier,
 
@@ -237,30 +243,38 @@ module.exports = grammar({
         
         // [[file:noir_grammar.org::trait]]
         trait_item: $ => seq(
+            optional($.visibility_modifier),
             'trait',
             field('name', $.identifier),
-            // TODO: Generics
-            // TODO: Name below optional into a field called 'bounds'
-            optional($.trait_bounds),
-            // optional(seq(
-            //     ':',
-            //     $.trait_bounds,
-            // )),
+            field('type_parameters', optional($.type_parameters)),
+            field('bounds', optional($.trait_bounds)),
             optional($.where_clause),
-            field('body', $.trait_body),
+            field('body', alias($.__trait_declaration_list, $.declaration_list)),
+        ),
+        // [[file:noir_grammar.org::trait_bounds]]
+        trait_bounds: $ => seq(
+            ':', // Common prefix reduction.
+            sepBy1($.__trait_bound, '+'),
+            // optional('+'), // TODO: I think not allowed, test compiler methods post-grammar.
+        ),
+        // [[file:noir_grammar.org::trait_bound]]
+        __trait_bound: $ => seq(
+            $.identifier_or_path_no_turbofish,
+            optional($.generic_type_args),
         ),
         // [[file:noir_grammar.org::trait_body]]
-        trait_body: $ => seq(
+        __trait_declaration_list: $ => seq(
             '{',
             // OuterDocComments are extras.
-            repeat($.trait_item),
+            repeat(
+                // Inlined Noirc: TraitItem.
+                choice(
+                    $.trait_type,
+                    $.trait_constant,
+                    $.trait_function,
+                ),
+            ),
             '}',
-        ),
-        // [[file:noir_grammar.org::trait_item]]
-        trait_item: $ => choice(
-            $.trait_type,
-            $.trait_constant,
-            $.trait_function,
         ),
         // [[file:noir_grammar.org::trait_type]]
         trait_type: $ => seq(
@@ -270,9 +284,7 @@ module.exports = grammar({
         ),
         // [[file:noir_grammar.org::trait_constant]]
         trait_constant: $ => seq(
-            'let',
-            field('name', $.identifier),
-            field('type', $._type),
+            $.tmp__let_to_type,
             optional(seq(
                 '=', // We don't want '=' part of the CST node for the (default) value.
                 field('value', $._expression),
@@ -325,27 +337,14 @@ module.exports = grammar({
         
         // [[file:noir_grammar.org::where]]
         where_clause: $ => seq(
-                'where',
-                sepBy1($.where_clause_item, ','),
-                optional(',')
+            'where',
+            sepBy($.where_constraint, ','), // Inlined Noirc: WhereClauseItems.
+            optional(',')
         ),
         // [[file:noir_grammar.org::where_clause]]
-        where_clause_item: $ => seq(
-                $._type,
-                $.trait_bounds,
-                // ':',
-                // $.trait_bounds,
-        ),
-        // [[file:noir_grammar.org::trait_bounds]]
-        trait_bounds: $ => seq(
-            ':', // Common prefix reduction.
-            sepBy1($.trait_bound, '+'),
-            optional('+'),
-        ),
-        // [[file:noir_grammar.org::trait_bound]]
-        trait_bound: $ => seq(
-            optional($.__path_no_turbofish),
-            $.generic_type_args,
+        where_constraint: $ => seq(
+            $._type,
+            field('bounds', $.trait_bounds),
         ),
 
         // * * * * * * * * * * * * * * * * * * * * * * * * * STATEMENT KINDS (AST)
@@ -541,6 +540,7 @@ module.exports = grammar({
             // $.mutable_reference_type,
             // $.function_type,
             // TODO: TraitAsType, AsTraitPathType, UnresolvedNamedType
+            $.identifier_or_path_no_turbofish,
         ),
         
         // [[file:noir_grammar.org::primitive_type]]
@@ -581,6 +581,22 @@ module.exports = grammar({
             optional(','),
             ')',
         ),
+        
+        // [[file:noir_grammar.org::generics]]
+        type_parameters: $ => seq(
+            '<',
+            sepBy($._generic, ','), // Inlined Noirc: GenericsList.
+            optional(','),
+            '>',
+        ),
+        // [[file:noir_grammar.org::generic]]
+        _generic: $ => choice(
+            $.identifier, // Inlined Noirc: VariableGeneric.
+            $.constrained_type,
+            // TODO: ResolvedGeneric IFF it even matters for CST.
+        ),
+        // [[file:noir_grammar.org::constrained_type]]
+        constrained_type: $ => $.tmp__let_to_type,
         
         // [[file:noir_grammar.org::generic_type_args]]
         generic_type_args: $ => seq(
@@ -827,12 +843,27 @@ module.exports = grammar({
             '::',
             field('name', $.identifier),
         ),
+        // [[file:noir_grammar.org::identifier_or_path_no_turbofish]]
+        identifier_or_path_no_turbofish: $ => choice(
+            $.identifier,
+            alias($.__path_no_turbofish, $.path),
+        ),
         
         // [[file:noir_grammar.org::path_kind]]
         __path_kind: $ => choice($.crate, $.dep, $.super),
         
         // [[file:noir_grammar.org::identifier]]
         identifier: _ => /[a-zA-Z_][a-zA-Z0-9_]*/,
+
+        // * * * * * * * * * * * * * * * * * * * * * * * * * TEMPLATES / MISC
+        
+        // [[file:noir_grammar.org::tmp__let_to_type]]
+        tmp__let_to_type: $ => seq(
+            'let',
+            field('name', $.identifier),
+            ':',
+            field('type', $._type),
+        ),
 
         mut_bound: _ => 'mut',
         self: _ => 'self',

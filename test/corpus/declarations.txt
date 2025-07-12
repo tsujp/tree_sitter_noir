@@ -673,9 +673,9 @@ impl foo {}
 )
 
 
-==============
-Trait / Simple
-==============
+=====
+Trait
+=====
 
 trait Foo {}
 trait Bar {} trait Lorem {}
@@ -695,45 +695,30 @@ trait Bar {} trait Lorem {}
 )
 
 
-====================
-Trait / Declarations
-====================
+================
+Trait / Generics
+================
 
-trait Foo { type Bar; }
-trait Bar { let x: Field; }
-trait Lorem { let y    : Field = 1; }
-trait Ipsum { type Foo; let y: Field = 420; }
+trait Foo<A, B> {}
+trait Foo<A, let X: Field> {}
 
 ---
 
 (source_file
   (trait_item
     name: (identifier)
-    body: (declaration_list
-      (trait_type
-        name: (identifier))))
+    type_parameters: (type_parameters
+      (identifier)
+      (identifier))
+    body: (declaration_list))
   (trait_item
     name: (identifier)
-    body: (declaration_list
-      (trait_constant
+    type_parameters: (type_parameters
+      (identifier)
+      (constrained_type
         name: (identifier)
-        type: (primitive_type))))
-  (trait_item
-    name: (identifier)
-    body: (declaration_list
-      (trait_constant
-        name: (identifier)
-        type: (primitive_type)
-        value: (int_literal))))
-  (trait_item
-    name: (identifier)
-    body: (declaration_list
-      (trait_type
-        name: (identifier))
-      (trait_constant
-        name: (identifier)
-        type: (primitive_type)
-        value: (int_literal))))
+        type: (primitive_type)))
+    body: (declaration_list))
 )
 
 
@@ -780,13 +765,30 @@ trait Foo: a::b::c::Bar + crate::y::z::Lorem {}
 )
 
 
-================
-Trait / Generics
-:skip
-================
+=============================
+Trait / Bounds / Missing (e1)
+:error
+=============================
 
-trait Foo<A, B> {}
-trait Foo<A, B> where A: Z {}
+trait Foo: {}
+---
+
+
+========================================
+Trait / Bounds / Trailing separator (e1)
+:error
+========================================
+
+trait Foo: Bar + {}
+---
+
+
+=========================
+Trait / Bounds / Generics
+=========================
+
+trait Foo: Bar<T> {}
+trait Bar: Lorem<A, B, C> + x::y::Foo<X = Y> {}
 
 ---
 
@@ -795,10 +797,158 @@ trait Foo<A, B> where A: Z {}
 )
 
 
-================
-Trait / Function
+======================
+Trait / Bounds / Where
+======================
+
+trait Lorem where Foo: Bar<T> + Baz {}
+trait Ipsum where Foo: Bar<T>, i32: Qux {}
+
+---
+
+(source_file
+
+)
+
+
+=============
+Trait / Where
+=============
+
+trait Foo where X: Y {}
+trait Foo where X: Y , {}
+
+trait Foo where X: Y , xx::yy::A: B + Lorem {}
+
+---
+
+(source_file
+  (trait_item
+    name: (identifier)
+    (where_clause
+      (where_constraint
+        (identifier)
+        bounds: (trait_bounds
+          (identifier))))
+    body: (declaration_list))
+  (trait_item
+    name: (identifier)
+    (where_clause
+      (where_constraint
+        (identifier)
+        bounds: (trait_bounds
+          (identifier))))
+    body: (declaration_list))
+
+  (trait_item
+    name: (identifier)
+    (where_clause
+      (where_constraint
+        (identifier)
+        bounds: (trait_bounds
+          (identifier)))
+      (where_constraint
+        (path
+          scope: (path
+            scope: (identifier)
+            name: (identifier))
+          name: (identifier))
+        bounds: (trait_bounds
+          (identifier)
+          (identifier))))
+    body: (declaration_list))
+)
+
+
+==========================
+Trait / Where / Degenerate
+==========================
+
+trait Foo where {}
+trait Foo where, {}
+
+---
+
+(source_file
+  (trait_item
+    name: (identifier)
+    (where_clause)
+    body: (declaration_list))
+  (trait_item
+    name: (identifier)
+    (where_clause)
+    body: (declaration_list))
+)
+
+
+====================
+Trait / Declarations
+====================
+
+trait Ipsum { type Foo; let y: Field = 420; }
+
+---
+
+(source_file
+  (trait_item
+    name: (identifier)
+    body: (declaration_list
+      (trait_type
+        name: (identifier))
+      (trait_constant
+        name: (identifier)
+        type: (primitive_type)
+        value: (int_literal))))
+)
+
+
+===========================
+Trait / Declarations / Type
+===========================
+
+trait Foo { type Bar; }
+
+---
+
+(source_file
+  (trait_item
+    name: (identifier)
+    body: (declaration_list
+      (trait_type
+        name: (identifier))))
+)
+
+
+===============================
+Trait / Declarations / Constant
+===============================
+
+trait Bar { let x: Field; }
+trait Lorem { let y    : Field = 1; }
+
+---
+
+(source_file
+  (trait_item
+    name: (identifier)
+    body: (declaration_list
+      (trait_constant
+        name: (identifier)
+        type: (primitive_type))))
+  (trait_item
+    name: (identifier)
+    body: (declaration_list
+      (trait_constant
+        name: (identifier)
+        type: (primitive_type)
+        value: (int_literal))))
+)
+
+
+===============================
+Trait / Declarations / Function
 :skip
-================
+===============================
 
 trait Foo { fn foo(); }
 trait Foo { fn foo() {} }
