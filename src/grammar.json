@@ -2948,6 +2948,53 @@
         }
       ]
     },
+    "_generic_parameters": {
+      "type": "ALIAS",
+      "content": {
+        "type": "SYMBOL",
+        "name": "_generics"
+      },
+      "named": true,
+      "value": "type_parameters"
+    },
+    "_generic_type_parameters": {
+      "type": "ALIAS",
+      "content": {
+        "type": "SYMBOL",
+        "name": "_generic_type_args"
+      },
+      "named": true,
+      "value": "type_parameters"
+    },
+    "tmp__let_to_type": {
+      "type": "SEQ",
+      "members": [
+        {
+          "type": "STRING",
+          "value": "let"
+        },
+        {
+          "type": "FIELD",
+          "name": "name",
+          "content": {
+            "type": "SYMBOL",
+            "name": "identifier"
+          }
+        },
+        {
+          "type": "STRING",
+          "value": ":"
+        },
+        {
+          "type": "FIELD",
+          "name": "type",
+          "content": {
+            "type": "SYMBOL",
+            "name": "_type"
+          }
+        }
+      ]
+    },
     "__literal": {
       "type": "CHOICE",
       "members": [
@@ -3537,53 +3584,6 @@
     "unconstrained_modifier": {
       "type": "STRING",
       "value": "unconstrained"
-    },
-    "_generic_parameters": {
-      "type": "ALIAS",
-      "content": {
-        "type": "SYMBOL",
-        "name": "_generics"
-      },
-      "named": true,
-      "value": "type_parameters"
-    },
-    "_generic_type_parameters": {
-      "type": "ALIAS",
-      "content": {
-        "type": "SYMBOL",
-        "name": "_generic_type_args"
-      },
-      "named": true,
-      "value": "type_parameters"
-    },
-    "tmp__let_to_type": {
-      "type": "SEQ",
-      "members": [
-        {
-          "type": "STRING",
-          "value": "let"
-        },
-        {
-          "type": "FIELD",
-          "name": "name",
-          "content": {
-            "type": "SYMBOL",
-            "name": "identifier"
-          }
-        },
-        {
-          "type": "STRING",
-          "value": ":"
-        },
-        {
-          "type": "FIELD",
-          "name": "type",
-          "content": {
-            "type": "SYMBOL",
-            "name": "_type"
-          }
-        }
-      ]
     },
     "mut_bound": {
       "type": "STRING",

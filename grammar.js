@@ -728,6 +728,23 @@ module.exports = grammar({
             optional(seq(':', $._pattern)),
         ),
 
+        // * * * * * * * * * * * * * * * * * * * * * * * * * TEMPLATES / MISC
+        
+        // Alias both Generic and GenericType parameters to a node of the same name.
+        
+        // [[file:noir_grammar.org::generic_parameters]]
+        _generic_parameters: $ => alias($._generics, $.type_parameters),
+        // [[file:noir_grammar.org::generic_type_parameters]]
+        _generic_type_parameters: $ => alias($._generic_type_args, $.type_parameters),
+        
+        // [[file:noir_grammar.org::tmp__let_to_type]]
+        tmp__let_to_type: $ => seq(
+            'let',
+            field('name', $.identifier),
+            ':',
+            field('type', $._type),
+        ),
+
         // * * * * * * * * * * * * * * * * * * * * * * * * * LITERALS
         
         // [[file:noir_grammar.org::literal]]
@@ -891,8 +908,7 @@ module.exports = grammar({
         
         // [[file:noir_grammar.org::identifier]]
         identifier: _ => /[a-zA-Z_][a-zA-Z0-9_]*/,
-
-        // * * * * * * * * * * * * * * * * * * * * * * * * * TEMPLATES / MISC
+        
         // Modifiers except for visibility (in order).
         
         // [[file:noir_grammar.org::modifier_mut]]
@@ -901,20 +917,6 @@ module.exports = grammar({
         comptime_modifier: _ => 'comptime',
         // [[file:noir_grammar.org::modifier_unconstrained]]
         unconstrained_modifier: _ => 'unconstrained',
-        // Alias both Generic and GenericType parameters to a node of the same name.
-        
-        // [[file:noir_grammar.org::generic_parameters]]
-        _generic_parameters: $ => alias($._generics, $.type_parameters),
-        // [[file:noir_grammar.org::generic_type_parameters]]
-        _generic_type_parameters: $ => alias($._generic_type_args, $.type_parameters),
-        
-        // [[file:noir_grammar.org::tmp__let_to_type]]
-        tmp__let_to_type: $ => seq(
-            'let',
-            field('name', $.identifier),
-            ':',
-            field('type', $._type),
-        ),
 
         // TODO: Delete mut_bound in favour of modifier_mut.
         mut_bound: _ => 'mut',

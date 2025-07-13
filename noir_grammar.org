@@ -4625,11 +4625,11 @@ module.exports = grammar({
         // * * * * * * * * * * * * * * * * * * * * * * * * * PATTERNS
         <<grp__patterns>>
 
-        // * * * * * * * * * * * * * * * * * * * * * * * * * LITERALS
-        <<grp__literals>>
-
         // * * * * * * * * * * * * * * * * * * * * * * * * * TEMPLATES / MISC
         <<grp__misc>>
+
+        // * * * * * * * * * * * * * * * * * * * * * * * * * LITERALS
+        <<grp__literals>>
 
         // TODO: Delete mut_bound in favour of modifier_mut.
         mut_bound: _ => 'mut',
@@ -4735,6 +4735,18 @@ alias(<<r("generic_type_args")>>, $.type_parameters)
 <<c('("struct_pattern" "struct_pattern_field"))>>
 #+end_src
 
+** Misc
+
+Mostly meta-rules e.g. inlined tree-sitter rules serving as templates.
+
+#+name: grp__misc
+#+begin_src js :noweb yes
+
+// Alias both Generic and GenericType parameters to a node of the same name.
+<<c('("generic_parameters" "generic_type_parameters"))>>
+<<n("tmp__let_to_type")>>
+#+end_src
+
 ** Literals
 
 #+name: grp__literals
@@ -4752,19 +4764,9 @@ alias(<<r("generic_type_args")>>, $.type_parameters)
 <<c('("path" "identifier_or_path" "path_no_turbofish" "identifier_or_path_no_turbofish" "path_identifiers"))>>
 <<n("path_kind")>>
 <<n("identifier")>>
-#+end_src
 
-** Misc
-
-Mostly meta-rules e.g. inlined tree-sitter rules serving as templates.
-
-#+name: grp__misc
-#+begin_src js :noweb yes
 // Modifiers except for visibility (in order).
 <<c('("modifier_mut" "modifier_comptime" "modifier_unconstrained"))>>
-// Alias both Generic and GenericType parameters to a node of the same name.
-<<c('("generic_parameters" "generic_type_parameters"))>>
-<<n("tmp__let_to_type")>>
 #+end_src
 
 * Tangle
