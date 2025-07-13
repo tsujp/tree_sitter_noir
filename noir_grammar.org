@@ -279,33 +279,33 @@ Parser: [[file:noir/compiler/noirc_frontend/src/parser/parser/attributes.rs::pub
 
 In parent all the parsed attributes are collected.
 
-***** SPEC Modifiers                                                   :node:
+***** SPEC Modifiers
 :PROPERTIES:
 :CUSTOM_ID: h:2A9D09A5-2E52-4B8C-ABA1-0B3B953F093C
 :END:
 :LOGBOOK:
 - State "SPEC"       from "TODO"       [2025-05-20 Tue 18:06]
 :END:
-:pgd:
-+ [[#h:F5A79701-65C9-4FEA-83D8-2413C585A5FA][ItemVisibility]]
-+ (opt) =unconstrained=
-+ (opt) =comptime=
-+ (opt) =mut=
-:end:
 
-#+name: modifiers
-#+begin_src js
-// Noirc: Modifiers -- except for visibility (in order).
-const MODIFIERS = {
-    Unconstrained: 'unconstrained',
-    Comptime: 'comptime',
-    Mut: 'mut',
-}
+#+name: modifier_unconstrained
+#+begin_src js :rule unconstrained_modifier
+'unconstrained'
+#+end_src
+
+#+name: modifier_comptime
+#+begin_src js :rule comptime_modifier
+'comptime'
+#+end_src
+
+#+name: modifier_mut
+#+begin_src js :rule mutable_modifier
+'mut'
 #+end_src
 
 Parser: [[file:noir/compiler/noirc_frontend/src/parser/parser/modifiers.rs::fn parse_modifiers(&mut self, allow_mutable: bool)][parse_modifiers()]]
 
-#+transclude: [[file:noir/compiler/noirc_frontend/src/parser/parser/modifiers.rs][Parser::parse_modifiers()]] :lines 17-19 :src rust
+#+name: ,ebnf_modifiers
+#+transclude: [[file:noir/compiler/noirc_frontend/src/parser/parser/modifiers.rs::17][Modifiers doc]] :lines 17-17 :src fundamental
 
 Remaining keywords consumed as their literal selves:
 
@@ -350,7 +350,7 @@ ItemVisibility = ( 'pub' | 'pub' '(' 'crate' ')' )?
 
 Original EBNF: [[file:noir/compiler/noirc_frontend/src/parser/parser/item_visibility.rs::9][ItemVisibility doc]]
 
-***** DONE Use                                                 :cluster:node:
+***** DONE Use
 CLOSED: [2025-06-08 Sun 17:35]
 :PROPERTIES:
 :CUSTOM_ID: h:ADB184CE-E43C-423B-803F-DE1679A91829
@@ -457,7 +457,7 @@ Parsed [[file:noir/compiler/noirc_frontend/src/ast/statement.rs::pub struct UseT
    parse_use_tree manually calls parse_path_kind which gets the path kind, and then parse_use_tree_without_kind which calls parse_path_after_kind. The latter function is as it says, the rest of the path after kind and this pattern is (essentially) the same as PathNoTurbofish so EBNF rule for Use stating PathKind PathNoTurbofish implies a paths' kind is parsed twice when it isn't, so that part of the rule is wrong.
 *************** END
 
-****** DONE UseTree                                                    :node:
+****** DONE UseTree
 CLOSED: [2025-06-08 Sun 17:35]
 :PROPERTIES:
 :CUSTOM_ID: h:19EAD845-0134-41CA-85BA-2E09E10D479B
@@ -478,7 +478,7 @@ If ~trailing_double_colon~ and ={= then via [[#h:8E0DC05B-1ED6-47BE-9589-64DC06F
 
 Eventually, through UseTreeLists recurive calls, ~trailing_double_colon~ will be true and [[#h:E818DDE4-D341-4AEC-B785-028949A4B4A7][UseTreeAs]] will be parsed.
 
-****** DONE UseTreeList                                                :node:
+****** DONE UseTreeList
 CLOSED: [2025-06-08 Sun 17:35]
 :PROPERTIES:
 :CUSTOM_ID: h:0C07D74C-165A-4128-BF20-EF7E937F7CAA
@@ -489,7 +489,7 @@ CLOSED: [2025-06-08 Sun 17:35]
 
 Parser: [[file:noir/compiler/noirc_frontend/src/parser/parser/use_tree.rs::let use_trees = self.parse_many(][parse_use_tree_in_list() parent callsite]], [[file:noir/compiler/noirc_frontend/src/parser/parser/use_tree.rs::fn parse_use_tree_in_list(&mut self)][parse_use_tree_in_list()]]
 
-****** DONE UseTreeAs                                                  :leaf:
+****** DONE UseTreeAs
 CLOSED: [2025-06-08 Sun 17:35]
 :PROPERTIES:
 :CUSTOM_ID: h:E818DDE4-D341-4AEC-B785-028949A4B4A7
@@ -508,7 +508,7 @@ Functionally this is just checking =as= followed by an ident.
 Make it so.
 *************** END
 
-***** DONE ModOrContract                                               :node:
+***** DONE ModOrContract
 CLOSED: [2025-06-08 Sun 21:02]
 :PROPERTIES:
 :CUSTOM_ID: h:9204514E-E5FC-488B-8066-66F0D9AF0C85
@@ -516,22 +516,13 @@ CLOSED: [2025-06-08 Sun 21:02]
 :LOGBOOK:
 - State "DONE"       from "TODO"       [2025-06-08 Sun 21:02]
 :END:
-:pgd:
-+ (grp)
-  - =mod= (kw)
-  - =contract= (kw)
-+ [[#h:65B0176B-B46F-4679-8535-C504870AC048][ident]] (token)
-+ (grp)
-  - ={= by [[#h:649C4EE8-8F15-4F45-8EA6-3AD48A893930][Module]] by =}=
-  - =;=
-:end:
 
 #+name: mod_or_contract
 #+begin_src js :rule module_or_contract_item :arg $ :ast ModOrContract
 seq(
     optional(<<r("item_visibility")>>),
     choice('mod', 'contract'), // TODO: Discriminate kind into a field?
-    field('name', $.identifier),
+    field('name', <<r("identifier")>>),
     choice(
         ';',
         field('body', $.item_list),
@@ -821,11 +812,13 @@ Cos I am lazy while going through Impl for ts grammar
 + [[#h:B3C4609F-307A-42A1-B420-DBBAB6CDE6E5][Function]]
 :end:
 
-***** TOIMPL Trait                                                     :node:
+***** DONE Trait
+CLOSED: [2025-07-14 Mon 02:33]
 :PROPERTIES:
 :CUSTOM_ID: h:6C38714F-76B7-4472-A776-36023EB84873
 :END:
 :LOGBOOK:
+- State "DONE"       from "TOIMPL"     [2025-07-14 Mon 02:33]
 - State "TOIMPL"     from "TODO"       [2025-07-10 Thu 15:34] \\
   parse_trait() examined
 :END:
@@ -852,11 +845,8 @@ Only [[#h:F5A79701-65C9-4FEA-83D8-2413C585A5FA][ItemVisibility]] modifier applic
 
 *************** TODO Any accomodations for validate_secondary_attributes which is called in Trait's parser?
 *************** END
-*************** TODO Test scenarios
-If =:= is present and there's no following trait bound: that's an error
-*************** END
 
-****** BLOCK TraitBody                                                 :node:
+****** BLOCK TraitBody
 :PROPERTIES:
 :CUSTOM_ID: h:EE2A95CB-6562-465A-A80F-4D2DB57E91DA
 :END:
@@ -892,7 +882,7 @@ Via [[#h:8E0DC05B-1ED6-47BE-9589-64DC06FAECCA][parse_many]] split without separa
 #+name: ,ebnf_trait_body
 #+transclude: [[file:noir/compiler/noirc_frontend/src/parser/parser/traits.rs::45][TraitBody doc]] :lines 45-45 :src fundamental
 
-****** DONE TraitItem                                                  :node:
+****** DONE TraitItem
 CLOSED: [2025-07-12 Sat 20:17]
 :PROPERTIES:
 :CUSTOM_ID: h:7D8A8173-EDB3-4E00-8483-DC25607F69E7
@@ -912,7 +902,7 @@ Simple wrapper to the parsers of it's three AST types. For the three child AST t
 #+name: ,ebnf_trait_item
 #+transclude: [[file:noir/compiler/noirc_frontend/src/parser/parser/traits.rs::66][TraitItem doc]] :lines 66-69 :src fundamental
 
-****** DONE TraitType                                                  :node:
+****** DONE TraitType
 CLOSED: [2025-07-12 Sat 20:22]
 :PROPERTIES:
 :CUSTOM_ID: h:A05394C2-0FFE-431B-8686-AA12F4876025
@@ -938,7 +928,7 @@ Parser: [[file:noir/compiler/noirc_frontend/src/parser/parser/traits.rs::fn pars
 #+name: ,ebnf_trait_type
 #+transclude: [[file:noir/compiler/noirc_frontend/src/parser/parser/traits.rs::86][TraitType doc]] :lines 86-86 :src fundamental
 
-****** DONE TraitConstant                                              :node:
+****** DONE TraitConstant
 CLOSED: [2025-07-12 Sat 20:22]
 :PROPERTIES:
 :CUSTOM_ID: h:02355489-DDCD-4E67-BB39-5DF3F0BC0A8A
@@ -975,7 +965,7 @@ Looks like it should be:
 =?= added after the group since default_value in parser function can be None (which is valid) if no === is parsed. See [[file:noir/compiler/noirc_frontend/src/parser/parser/traits.rs::if self.eat_assign() { Some(self.parse_expression_or_error()) } else { None };][here]]
 *************** END
 
-****** BLOCK TraitFunction                                             :node:
+****** BLOCK TraitFunction
 :LOGBOOK:
 - State "BLOCK"      from "TODO"       [2025-07-10 Thu 16:28] \\
   Parser examined, is it similar to Function so we can share rules? Once Function done implement this ts rule
@@ -1000,34 +990,37 @@ TraitFunction = Modifiers Function
 results in the same behaviour for normal Function (as understood currently) except this allows optional body (unsure if normal function does, but we need to split those up into definition/declaration etc anyway). So FOR NOW its got it's entirely own ts rule (TraitFunction) but once Function is done I expect we can just de-duplicate this entirely and use a simple alias to have the CST be named ~trait_function~ or something.
 *************** END
 
-***** TODO Global                                                      :node:
+***** TODO Global
 :PROPERTIES:
 :CUSTOM_ID: h:C21A19F9-DC0C-4F17-9739-B92412D0C4FF
 :END:
-:pgd:
-+ =global= (kw) by [[#h:65B0176B-B46F-4679-8535-C504870AC048][ident]] (token) by OptionalTypeAnnotation (TODO)
-+ === by [[#h:167542CC-8CDE-49C1-9465-E5157C6A176F][Expression]] by =;=
-:end:
 
 #+name: global
 #+begin_src js :rule global_item :arg $ :ast Global
 seq(
+    optional(<<r("item_visibility")>>),
+    repeat(choice(<<r("modifier_mut")>>, <<r("modifier_comptime")>>)),
     'global',
-    field('name', $.identifier),
-    // TODO: OptionalTypeAnnotation.
+    field('name', <<r("identifier")>>),
+    field('type', optional(<<r("type_annotation")>>)), // Inlined Noirc: OptionalTypeAnnotation.
     '=',
     <<r("expression")>>,
-    // prec.left(1, $._expression),
     ';',
 )
 #+end_src
 
-Parser (sop): [[file:noir/compiler/noirc_frontend/src/parser/parser/item.rs::if self.eat_keyword(Keyword::Global) {][parse_global() parent callsite]], [[file:noir/compiler/noirc_frontend/src/parser/parser/global.rs::pub(crate) fn parse_global(][parse_global()]]
+Parser: [[file:noir/compiler/noirc_frontend/src/parser/parser/item.rs::if self.eat_keyword(Keyword::Global) {][parse_global() parent callsite]], [[file:noir/compiler/noirc_frontend/src/parser/parser/global.rs::fn parse_global(][parse_global()]]
+Types: [[file:noir/compiler/noirc_frontend/src/ast/statement.rs::pub struct LetStatement {][LetStatement struct]]
+All [[#h:2A9D09A5-2E52-4B8C-ABA1-0B3B953F093C][Modifiers]] except =unconstrained= are applicable.
 
 #+name: ,ebnf_global
 #+transclude: [[file:noir/compiler/noirc_frontend/src/parser/parser/global.rs::15][Global doc]] :lines 15-15 :src fundamental
 
-2025/06/12: document (as appropriate) ~parse_global~.
+*************** TODO validate_secondary_attributes in parse_global, any consequence for us?
+*************** END
+*************** TODO it looks like just =global;= is valid but.. do we want to support that?
+If no ident is eaten but a semicolon follows a LetStatement is returned from parse_global
+*************** END
 
 ***** TOIMPL Type                                              :node:cluster:
 :PROPERTIES:
@@ -1737,7 +1730,7 @@ The entire call-tree from AddOrSubtractTypeExpression's parser [[file:noir/compi
 }
 #+end_src
 
-****** DONE TermTypeExpression                                         :node:
+****** DONE TermTypeExpression
 CLOSED: [2025-06-22 Sun 02:12]
 :PROPERTIES:
 :CUSTOM_ID: h:414EDA73-C80F-4081-A2FC-D4C7DFEDC964
@@ -1762,11 +1755,13 @@ The parser continually eats =-= forming that "binary" (really, unary) expression
 Teeny tiny change, fix if not already done as it seems Noir is now at 0.38.0 so some updating will be required anyway.
 *************** END
 
-****** SPEC AtomTypeExpression                                         :node:
+****** DONE AtomTypeExpression
+CLOSED: [2025-07-14 Mon 02:36]
 :PROPERTIES:
 :CUSTOM_ID: h:4E7B0693-6BFF-4B90-A0FB-6BD577A41989
 :END:
 :LOGBOOK:
+- State "DONE"       from "SPEC"       [2025-07-14 Mon 02:36]
 - State "SPEC"       from "TODO"       [2025-06-22 Sun 02:12] \\
   Still needs Path completed for full test coverage.
 - State "TODO"       from              [2025-06-21 Sat 19:07]
@@ -1847,10 +1842,9 @@ If ~parse_path~ called allow turbofish, and allow trailing double colons are alw
 If they are can reduce nesting complexity.
 *************** END
 
-****** TODO Turbofish
+****** Turbofish
 :PROPERTIES:
 :CUSTOM_ID: h:D0AD78D7-3BF6-4D89-A709-C8CD28968213
-:FOO: [[file:noir/compiler/noirc_frontend/src/parser/parser/path.rs::pub(super) fn parse_path_impl(][parse_path_impl()]]
 :END:
 
 #+name: ,ebnf_turbofish
@@ -1858,7 +1852,7 @@ If they are can reduce nesting complexity.
 
 A /turbofish/ is syntax of the form ~::<Type>~ (i.e. generics).
 
-****** TOIMPL PathNoTurbofish                                          :node:
+****** TOIMPL PathNoTurbofish
 :PROPERTIES:
 :CUSTOM_ID: h:A051D0D5-7007-4DF8-83B7-FB4EFF9C383E
 :END:
@@ -1915,7 +1909,7 @@ Original EBNF: [[file:noir/compiler/noirc_frontend/src/parser/parser/path.rs::55
 PathKind is implicit optional everywhere it occurs unless the callsite (parent rule) explicitly checks and errors on it's "nothing" value (in this case, PathKind::Plain).
 *************** END
 
-****** TODO PathIdentifiers                                            :leaf:
+****** TODO PathIdentifiers
 :PROPERTIES:
 :CUSTOM_ID: h:3E35071C-E186-4562-AC61-1916E637A72E
 :END:
@@ -2068,34 +2062,7 @@ By ignoring it this subheading has no rule, simply use GenericTypeArgs directly.
 As the parsing function for PathGenerics shows, any NamedArgs will return a parser error.
 *************** END
 
-****** Internals                                                      :noirc:
-
-******* [[file:noir/compiler/noirc_frontend/src/parser/parser/path.rs::pub(super) fn parse_path_after_kind(][parse_path_after_kind()]]                                    :parse_fn:
-
-Return ~AST::Path~.
-
-Make a segments vector, check ~Token::Ident~ (i.e. check token type) and if the latter is true run the following as a loop:
-
-1. Eat identifier (TODO: link to ~eat_ident~).
-2. Parse generics ([[#h:F8EF693C-A6E2-4D57-BE08-103479D4270D][PathGenerics]]) with [[file:noir/compiler/noirc_frontend/src/parser/parser/path.rs::pub(super) fn parse_path_generics(][parse_path_generics()]] **if**:
-   - Caller allows turbofish, AND
-   - At ~Token::DoubleColon~, AND
-   - Next token is ~Token::Less~ (=<=).
-2. Add parsed generics as ~AST::PathSegment~ to segments.
-3. Back to (1) if current token (will eat) is =::= and next is ~Token::Ident~, otherwise parser error (missing identifier).
-
-Return ~AST::Path~.
-
-*************** TODO In the loop what about the allow_trailing_double_colon bit?
-It reads as if it allows double trailing (true) and it eats a double colon then there's an error, but wouldn't there NOT be an error? ~self.expected_identifier~ is an error no...?
-*************** END
-*************** TODO What is the error argument passed to parse_path_generics?
-self.parse_path_generics(ParserErrorReason::AssociatedTypesNotAllowedInPaths)
-
-Does this mean if there is an error (of any kind) then output an error of the type given as the parameter? Or does it mean if there is this error then treat it as fatal?                    
-*************** END
-
-***** TODO Function                                            :cluster:node:
+***** TODO Function
 :PROPERTIES:
 :CUSTOM_ID: h:B3C4609F-307A-42A1-B420-DBBAB6CDE6E5
 :END:
@@ -2124,7 +2091,7 @@ seq(
 
 #+name: function_modifiers
 #+begin_src js :arg $
-repeat1(choice(MODIFIERS.Unconstrained, MODIFIERS.Comptime))
+'TODO________FUNCTION_MODIFIERS'
 #+end_src
 
 Parser: [[file:noir/compiler/noirc_frontend/src/parser/parser/item.rs::if self.eat_keyword(Keyword::Fn) {][parse_function() parent callsite]], [[file:noir/compiler/noirc_frontend/src/parser/parser/function.rs::fn parse_function(][parse_function()]]
@@ -2268,9 +2235,13 @@ Strictly function return visibility. Default visibility is private. Within paren
 
 Types: [[file:noir/compiler/noirc_frontend/src/ast/expression.rs::pub enum ExpressionKind {][ExpressionKind enum]].
 
-***** TODO Generics                                                    :node:
+***** DONE Generics
+CLOSED: [2025-07-14 Mon 02:30]
 :PROPERTIES:
 :CUSTOM_ID: h:BA1422E4-AB97-4099-8346-5845CA9223A1
+:END:
+:LOGBOOK:
+- State "DONE"       from "TODO"       [2025-07-14 Mon 02:30]
 :END:
 
 #+name: generics
@@ -2284,7 +2255,6 @@ seq(
     '>',
 )
 #+end_src
-
 
 Parser: [[file:noir/compiler/noirc_frontend/src/parser/parser/generics.rs::fn parse_generics(&mut self)][parse_generics()]]
 
@@ -2308,7 +2278,11 @@ CLOSED: [2025-07-12 Sat 22:06]
 #+name: ,ebnf_generics_list
 #+transclude: [[file:noir/compiler/noirc_frontend/src/parser/parser/generics.rs::15][GenericsList doc]] :lines 15-15 :src fundamental
 
-****** TODO Generic
+****** BLOCK Generic
+:LOGBOOK:
+- State "BLOCK"      from "TODO"       [2025-07-14 Mon 02:29] \\
+  Everything done except ResolvedGeneric
+:END:
 
 #+name: generic
 #+begin_src js :rule __generic :arg $ :ast Generic
@@ -2383,11 +2357,13 @@ Placeholder-ish name for now idk.
   Quoted expression stuff, do as the very last thing
 :END:
 
-****** SPEC GenericTypeArgs
+****** DONE GenericTypeArgs
+CLOSED: [2025-07-14 Mon 02:28]
 :PROPERTIES:
 :CUSTOM_ID: h:3267D7A4-7AA4-49FB-91FA-A9601BC6868A
 :END:
 :LOGBOOK:
+- State "DONE"       from "SPEC"       [2025-07-14 Mon 02:28]
 - State "SPEC"       from "TOIMPL"     [2025-05-24 Sat 20:16]
 - State "TOIMPL"     from "TODO"       [2024-11-13 Wed 19:10]
 :END:
@@ -2435,11 +2411,13 @@ CLOSED: [2025-07-13 Sun 17:21]
 #+name: ,ebnf_generic_type_args_list
 #+transclude: [[file:noir/compiler/noirc_frontend/src/parser/parser/generics.rs::108][GenericTypeArgsList doc]] :lines 108-108 :src fundamental
 
-******* SPEC GenericTypeArg
+******* DONE GenericTypeArg
+CLOSED: [2025-07-14 Mon 02:28]
 :PROPERTIES:
 :CUSTOM_ID: h:B2EDBA96-AA93-449F-A8EB-5636CCFC4F1C
 :END:
 :LOGBOOK:
+- State "DONE"       from "SPEC"       [2025-07-14 Mon 02:28]
 - State "SPEC"       from "TOIMPL"     [2025-05-24 Sat 20:16]
 - State "TOIMPL"     from "TODO"       [2024-11-13 Wed 19:07]
 :END:
@@ -2463,11 +2441,13 @@ Failure in attempt to parse OrderedTypeArg raises parser error ~ParsingRuleLabel
 #+name: ,ebnf_generic_type_arg
 #+transclude: [[file:noir/compiler/noirc_frontend/src/parser/parser/generics.rs::110][GenericTypeArg doc]] :lines 110-112 :src fundamental
 
-******* SPEC NamedTypeArg
+******* DONE NamedTypeArg
+CLOSED: [2025-07-14 Mon 02:28]
 :PROPERTIES:
 :CUSTOM_ID: h:8314C368-924E-4B8B-A881-66C9F46D6833
 :END:
 :LOGBOOK:
+- State "DONE"       from "SPEC"       [2025-07-14 Mon 02:28]
 - State "SPEC"       from "TOIMPL"     [2025-05-24 Sat 20:05]
 - State "TOIMPL"     from "TODO"       [2024-11-13 Wed 18:56]
 :END:
@@ -2488,11 +2468,13 @@ Call to Type wrapped in ~parse_type_or_error~. Also called "associated types".
 #+name: ,ebnf_named_type_arg
 #+transclude: [[file:noir/compiler/noirc_frontend/src/parser/parser/generics.rs::114][NamedTypeArg doc]] :lines 114-114 :src fundamental
 
-******* SPEC OrderedTypeArg
+******* DONE OrderedTypeArg
+CLOSED: [2025-07-14 Mon 02:27]
 :PROPERTIES:
 :CUSTOM_ID: h:43662F12-2EC8-47E8-B5B8-DFF8A1226EB2
 :END:
 :LOGBOOK:
+- State "DONE"       from "SPEC"       [2025-07-14 Mon 02:27]
 - State "SPEC"       from "TOIMPL"     [2025-05-24 Sat 20:04] \\
   Effectively just an alias of TypeOrTypeExpression
 - State "TOIMPL"     from "TODO"       [2024-11-13 Wed 18:56]
@@ -3822,6 +3804,21 @@ Parser: [[file:noir/compiler/noirc_frontend/src/parser/parser/arguments.rs::pub(
 
 Looks to specify a macro call if =!(= is the sequence of initial tokens.
 
+*** OptionalTypeAnnotation
+:PROPERTIES:
+:CUSTOM_ID: h:4644D901-3F04-456E-89D1-14351FD138E8
+:END:
+
+#+name: type_annotation
+#+begin_src js :rule _type_annotation :arg $
+seq(':', <<r("type")>>)
+#+end_src
+
+Parser: [[file:noir/compiler/noirc_frontend/src/parser/parser/types.rs::fn parse_optional_type_annotation(&mut self)][parse_optional_type_annotation()]]
+
+#+name: ,ebnf_optional_type_annotation
+#+transclude: [[file:noir/compiler/noirc_frontend/src/parser/parser/types.rs::409][OptionalTypeAnnotation doc]] :lines 409-409 :src fundamental
+
 *** TODO Literals
 :PROPERTIES:
 :CUSTOM_ID: h:3446FD3E-4526-4DBF-80AB-64BD9078C4F5
@@ -4547,8 +4544,6 @@ const PRECEDENCE = {
     equality: 2,
 }
 
-<<modifiers>>
-
 <<primary_attributes>>
 
 <<secondary_attributes>>
@@ -4636,6 +4631,7 @@ module.exports = grammar({
         // * * * * * * * * * * * * * * * * * * * * * * * * * TEMPLATES / MISC
         <<grp__misc>>
 
+        // TODO: Delete mut_bound in favour of modifier_mut.
         mut_bound: _ => 'mut',
         self: _ => 'self',
 
@@ -4717,6 +4713,7 @@ alias(<<r("generic_type_args")>>, $.type_parameters)
 #+name: grp__types
 #+begin_src js :noweb yes
 <<n("type")>>
+<<n("type_annotation")>>
 <<c('("primitive_type" "field_type" "int_type" "bool_type" "str_type" "fmt_str_type"))>>
 <<c('("parentheses_type" "unit_type" "tuple_type"))>>
 <<c('("generics" "generic" "constrained_type"))>>
@@ -4763,6 +4760,8 @@ Mostly meta-rules e.g. inlined tree-sitter rules serving as templates.
 
 #+name: grp__misc
 #+begin_src js :noweb yes
+// Modifiers except for visibility (in order).
+<<c('("modifier_mut" "modifier_comptime" "modifier_unconstrained"))>>
 // Alias both Generic and GenericType parameters to a node of the same name.
 <<c('("generic_parameters" "generic_type_parameters"))>>
 <<n("tmp__let_to_type")>>

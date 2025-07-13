@@ -31,13 +31,6 @@ const PRECEDENCE = {
     equality: 2,
 }
 
-// Noirc: Modifiers -- except for visibility (in order).
-const MODIFIERS = {
-    Unconstrained: 'unconstrained',
-    Comptime: 'comptime',
-    Mut: 'mut',
-}
-
 // Functions can only have one primary attribute.
 const PRIMARY_ATTRIBUTES = [
     'foreign',
@@ -305,12 +298,13 @@ module.exports = grammar({
         
         // [[file:noir_grammar.org::global]]
         global_item: $ => seq(
+            optional($.visibility_modifier),
+            repeat(choice($.mutable_modifier, $.comptime_modifier)),
             'global',
             field('name', $.identifier),
-            // TODO: OptionalTypeAnnotation.
+            field('type', optional($._type_annotation)), // Inlined Noirc: OptionalTypeAnnotation.
             '=',
             $._expression,
-            // prec.left(1, $._expression),
             ';',
         ),
         // TODO: TypeAlias
@@ -342,7 +336,7 @@ module.exports = grammar({
             choice($.block, ';'),
         ),
         // [[file:noir_grammar.org::function_modifiers]]
-        function_modifiers: $ => repeat1(choice(MODIFIERS.Unconstrained, MODIFIERS.Comptime)),
+        function_modifiers: $ => 'TODO________FUNCTION_MODIFIERS',
         
         // [[file:noir_grammar.org::where]]
         where_clause: $ => seq(
@@ -553,6 +547,9 @@ module.exports = grammar({
             // TODO: TraitAsType, AsTraitPathType, UnresolvedNamedType
             $.identifier_or_path_no_turbofish,
         ),
+        
+        // [[file:noir_grammar.org::type_annotation]]
+        _type_annotation: $ => seq(':', $._type),
         
         // [[file:noir_grammar.org::primitive_type]]
         primitive_type: $ => choice(
@@ -896,6 +893,14 @@ module.exports = grammar({
         identifier: _ => /[a-zA-Z_][a-zA-Z0-9_]*/,
 
         // * * * * * * * * * * * * * * * * * * * * * * * * * TEMPLATES / MISC
+        // Modifiers except for visibility (in order).
+        
+        // [[file:noir_grammar.org::modifier_mut]]
+        mutable_modifier: _ => 'mut',
+        // [[file:noir_grammar.org::modifier_comptime]]
+        comptime_modifier: _ => 'comptime',
+        // [[file:noir_grammar.org::modifier_unconstrained]]
+        unconstrained_modifier: _ => 'unconstrained',
         // Alias both Generic and GenericType parameters to a node of the same name.
         
         // [[file:noir_grammar.org::generic_parameters]]
@@ -911,6 +916,7 @@ module.exports = grammar({
             field('type', $._type),
         ),
 
+        // TODO: Delete mut_bound in favour of modifier_mut.
         mut_bound: _ => 'mut',
         self: _ => 'self',
 

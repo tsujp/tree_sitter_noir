@@ -566,6 +566,11 @@
     "fields": {}
   },
   {
+    "type": "comptime_modifier",
+    "named": true,
+    "fields": {}
+  },
+  {
     "type": "comptime_statement",
     "named": true,
     "fields": {},
@@ -813,10 +818,40 @@
             "named": true
           }
         ]
+      },
+      "type": {
+        "multiple": true,
+        "required": false,
+        "types": [
+          {
+            "type": ":",
+            "named": false
+          },
+          {
+            "type": "identifier",
+            "named": true
+          },
+          {
+            "type": "path",
+            "named": true
+          },
+          {
+            "type": "primitive_type",
+            "named": true
+          },
+          {
+            "type": "tuple_type",
+            "named": true
+          },
+          {
+            "type": "unit_type",
+            "named": true
+          }
+        ]
       }
     },
     "children": {
-      "multiple": false,
+      "multiple": true,
       "required": true,
       "types": [
         {
@@ -836,6 +871,10 @@
           "named": true
         },
         {
+          "type": "comptime_modifier",
+          "named": true
+        },
+        {
           "type": "fmt_str_literal",
           "named": true
         },
@@ -848,6 +887,10 @@
           "named": true
         },
         {
+          "type": "mutable_modifier",
+          "named": true
+        },
+        {
           "type": "raw_str_literal",
           "named": true
         },
@@ -857,6 +900,10 @@
         },
         {
           "type": "str_literal",
+          "named": true
+        },
+        {
+          "type": "visibility_modifier",
           "named": true
         }
       ]
@@ -1123,6 +1170,16 @@
         }
       ]
     }
+  },
+  {
+    "type": "mut_bound",
+    "named": true,
+    "fields": {}
+  },
+  {
+    "type": "mutable_modifier",
+    "named": true,
+    "fields": {}
   },
   {
     "type": "outer_doc_style",
@@ -2313,8 +2370,8 @@
     "named": false
   },
   {
-    "type": "mut_bound",
-    "named": true
+    "type": "mut",
+    "named": false
   },
   {
     "type": "pub",

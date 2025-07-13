@@ -1305,6 +1305,52 @@ trait Foo { fn foo() {} }
 )
 
 
+======
+Global
+======
+
+global foo = 1;
+global foo: i32 = 1;
+comptime global foo: i32 = 1;
+mut global foo: i32 = 1;
+pub global foo: i32 = 1;
+pub comptime mut global foo: i32 = 1;
+
+---
+
+(source_file
+  (global_item
+    name: (identifier)
+    (int_literal))
+  (global_item
+    name: (identifier)
+    type: (primitive_type)
+    (int_literal))
+  (global_item
+    (comptime_modifier)
+    name: (identifier)
+    type: (primitive_type)
+    (int_literal))
+  (global_item
+    (mutable_modifier)
+    name: (identifier)
+    type: (primitive_type)
+    (int_literal))
+  (global_item
+    (visibility_modifier)
+    name: (identifier)
+    type: (primitive_type)
+    (int_literal))
+  (global_item
+    (visibility_modifier)
+    (comptime_modifier)
+    (mutable_modifier)
+    name: (identifier)
+    type: (primitive_type)
+    (int_literal))
+)
+
+
 
 ======================
 Function / Definitions
