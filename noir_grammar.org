@@ -54,25 +54,11 @@ From ~ParsedModule~ we see ~Item~ and ~ItemKind~ which reveals some intial top-l
 These help inform the general structure for the tree-sitter grammar. Especially now as I am currently trying to get the top-level stuff coarse enough to reach the fine-grained things which have been 'implemented' but which cannot yet be tested since a full CST is required.
 *************** END
 
-** Structure                                                       :bingbong:
+** Structure
 
 This subtree layout is for documentation, and does not (in it's raw source form) 1:1 represent Noir's AST as there are many nested, recursive, and cross-referencing nodes (which is to be expected). Org-mode is strictly hierarchical so what is literally in-source here are logical groupings for notes and grammar construction.
 
-A graph of the relationship between AST nodes (so showing Noir's AST) can be exported via graphviz (TODO: link and document that custom exporter).
-
-*************** TODO This line and the following one review/change as required
-*************** END
-
-The first list under each /Noir/ heading represents grammar where each element (-) is a logic OR and each element (+) is an ordered item type (also inlined via =by=).
-
-So, the following example list reads "(A followed by B) OR (C followed by D followed by E)".
-
-: - A by B
-: - C
-:   + D
-:   + E
-
-*** DONE Program                                                       :node:
+*** DONE Program
 CLOSED: [2025-05-25 Sun 17:51]
 :PROPERTIES:
 :CUSTOM_ID: h:A8A4AE5F-6FDB-4091-87DA-E4BCE320452C
@@ -80,26 +66,19 @@ CLOSED: [2025-05-25 Sun 17:51]
 :LOGBOOK:
 - State "DONE"       from "TODO"       [2025-05-25 Sun 17:51]
 :END:
-:pgd:
-+ [[#h:649C4EE8-8F15-4F45-8EA6-3AD48A893930][Module]]
-:end:
 
-Parser: [[file:noir/compiler/noirc_frontend/src/parser/parser.rs::pub(crate) fn parse_program(&mut self)][parse_program()]]
+Parser: [[file:noir/compiler/noirc_frontend/src/parser/parser.rs::fn parse_program(&mut self)][parse_program()]]
 
 #+name: ,ebnf_program
 #+transclude: [[file:noir/compiler/noirc_frontend/src/parser/parser.rs::115][Program doc]] :lines 115-115 :src fundamental
 
-*** SPEC Module                                                        :node:
+*** SPEC Module
 :PROPERTIES:
 :CUSTOM_ID: h:649C4EE8-8F15-4F45-8EA6-3AD48A893930
 :END:
 :LOGBOOK:
 - State "SPEC"       from "TODO"       [2025-05-25 Sun 17:52]
 :END:
-:pgd:
-+ [[#h:C58B2CB4-FF62-49BB-AFFD-1BADF4462B9D][InnerDocComments]]
-+ (rep0) [[#h:8CC1D239-66B1-45A9-BB71-66AF07161479][Item]]
-:end:
 
 *************** TODO Have inlined this at the top of rules in the grammar file for now
 Go back to transclusion if/when appropriate.
@@ -107,12 +86,12 @@ Go back to transclusion if/when appropriate.
 
 This /is/ ~ParsedModule~ (see: [[#h:DB42728E-09AF-4189-B2BE-E48853E5C1D9][Parsing]]). So a Module represents one parsed source-file, but they may appear inline (see: [[#h:9204514E-E5FC-488B-8066-66F0D9AF0C85][ModOrContract]]).
 
-Parser: [[file:noir/compiler/noirc_frontend/src/parser/parser.rs::pub(crate) fn parse_module(&mut self, nested: bool)][parse_module()]]
+Parser: [[file:noir/compiler/noirc_frontend/src/parser/parser.rs::fn parse_module(&mut self, nested: bool)][parse_module()]]
 
 #+name: ,ebnf_module
 #+transclude: [[file:noir/compiler/noirc_frontend/src/parser/parser.rs::122][Module doc]] :lines 122-122 :src fundamental
 
-*** DONE DocComments
+*** DONE DocComments                                                 :pseudo:
 CLOSED: [2025-06-05 Thu 16:59]
 :LOGBOOK:
 - State "DONE"       from "TODO"       [2025-06-05 Thu 16:59]
@@ -126,7 +105,7 @@ Calls [[#h:AC5A6E2C-59EC-44C6-9D1E-52553E56C3F9][eat_kind]] with ~TokenKind::{In
 
 A string of the matched comments contents is then returned. The contents (see lexing) exclude the glue-token prefix and (closing suffix for block comments).
 
-**** DONE InnerDocComments                                             :leaf:
+**** DONE InnerDocComments
 CLOSED: [2025-06-05 Thu 16:57]
 :PROPERTIES:
 :CUSTOM_ID: h:C58B2CB4-FF62-49BB-AFFD-1BADF4462B9D
@@ -134,11 +113,8 @@ CLOSED: [2025-06-05 Thu 16:57]
 :LOGBOOK:
 - State "DONE"       from "TODO"       [2025-06-05 Thu 16:57]
 :END:
-:pgd:
-+ (rep0) [[#h:E866B8E1-2736-4A62-938B-0FD416C4A088][comment]] (token, with ~DocStyle::Inner~)
-:end:
 
-Parser: [[file:noir/compiler/noirc_frontend/src/parser/parser/doc_comments.rs::pub(super) fn parse_inner_doc_comments(&mut self)][parse_inner_doc_comments()]], [[file:noir/compiler/noirc_frontend/src/parser/parser/doc_comments.rs::fn parse_inner_doc_comment(&mut self)][parse_inner_doc_comment()]]
+Parser: [[file:noir/compiler/noirc_frontend/src/parser/parser/doc_comments.rs::fn parse_inner_doc_comments(&mut self)][parse_inner_doc_comments()]], [[file:noir/compiler/noirc_frontend/src/parser/parser/doc_comments.rs::fn parse_inner_doc_comment(&mut self)][parse_inner_doc_comment()]]
 
 #+name: ,ebnf_inner_doc_comments
 #+transclude: [[file:noir/compiler/noirc_frontend/src/parser/parser/doc_comments.rs::6][InnerDocComments doc]] :lines 6-6 :src fundamental
@@ -147,7 +123,7 @@ Parser: [[file:noir/compiler/noirc_frontend/src/parser/parser/doc_comments.rs::p
 Not strictly related to this headline only, just while looking around. In token.rs enum BorrowedToken represents a token in noirs grammar. So, all the token types are there.
 *************** END
 
-**** DONE OuterDocComments                                             :leaf:
+**** DONE OuterDocComments
 CLOSED: [2025-06-05 Thu 16:57]
 :PROPERTIES:
 :CUSTOM_ID: h:FB5478BF-5E66-4686-931B-733349F83FD8
@@ -155,25 +131,18 @@ CLOSED: [2025-06-05 Thu 16:57]
 :LOGBOOK:
 - State "DONE"       from "TODO"       [2025-06-05 Thu 16:57]
 :END:
-:pgd:
-+ (rep0) [[#h:E866B8E1-2736-4A62-938B-0FD416C4A088][comment]] (token, with ~DocStyle::Outer~)
-:end:
 
-Parser: [[file:noir/compiler/noirc_frontend/src/parser/parser/doc_comments.rs::pub(super) fn parse_outer_doc_comments(&mut self)][parse_outer_doc_comments()]], [[file:noir/compiler/noirc_frontend/src/parser/parser/doc_comments.rs::fn parse_outer_doc_comment(&mut self)][parse_outer_doc_comment()]]
+Parser: [[file:noir/compiler/noirc_frontend/src/parser/parser/doc_comments.rs::fn parse_outer_doc_comments(&mut self)][parse_outer_doc_comments()]], [[file:noir/compiler/noirc_frontend/src/parser/parser/doc_comments.rs::fn parse_outer_doc_comment(&mut self)][parse_outer_doc_comment()]]
 
 #+name: ,ebnf_outer_doc_comments
 #+transclude: [[file:noir/compiler/noirc_frontend/src/parser/parser/doc_comments.rs::19][OuterDocComments doc]] :lines 19-19 :src fundamental
 
-*** TODO Item                                                          :node:
+*** TODO Item
 :PROPERTIES:
 :CUSTOM_ID: h:8CC1D239-66B1-45A9-BB71-66AF07161479
 :END:
-:pgd:
-+ [[#h:FB5478BF-5E66-4686-931B-733349F83FD8][OuterDocComments]]
-+ [[#h:D661B191-E117-4EB9-B6F7-322B7B67A79F][ItemKind]]
-:end:
 
-Parser: [[file:noir/compiler/noirc_frontend/src/parser/parser/item.rs::pub(crate) fn parse_module_items(&mut self, nested: bool)][parse_module_items()]], [[file:noir/compiler/noirc_frontend/src/parser/parser/item.rs::fn parse_module_item_in_list(&mut self, nested: bool)][parse_module_item_in_list()]], [[file:noir/compiler/noirc_frontend/src/parser/parser/item.rs::fn parse_item(&mut self)][parse_item()]]
+Parser: [[file:noir/compiler/noirc_frontend/src/parser/parser/item.rs::fn parse_module_items(&mut self, nested: bool)][parse_module_items()]], [[file:noir/compiler/noirc_frontend/src/parser/parser/item.rs::fn parse_module_item_in_list(&mut self, nested: bool)][parse_module_item_in_list()]], [[file:noir/compiler/noirc_frontend/src/parser/parser/item.rs::fn parse_item(&mut self)][parse_item()]]
 
 #+name: ,ebnf_item
 #+transclude: [[file:noir/compiler/noirc_frontend/src/parser/parser/item.rs::87][Item doc]] :lines 87-87 :src fundamental
@@ -3670,7 +3639,7 @@ Parser: [[file:noir/compiler/noirc_frontend/src/parser/parser/statement.rs::if l
 seq(
     field('left', <<r("expression")>>),
     choice(
-        // Deseguared (and limited) binary expression assignment, see: next_is_op_assign.
+        // Desugared (and limited) binary expression assignment, see: next_is_op_assign.
         '+=', '-=', '*=', '/=', '%=', '&=', '^=', '<<=', '|=', '>>=',
         // Simple assignment.
         '=',
@@ -3710,7 +3679,7 @@ Parser: defer to [[#h:37FF07C0-5DAA-467E-9DBA-8EBAC79F7DE4][AssignOrExpression]]
 
 Expression statements will appear alongside statements in the tree-sitter grammar instead of nested within them as is depicted in the parser frontend. Implemented at [[#h:788ECB8C-0A48-4255-B35E-F5850902AA32][Statement]].
 
-***** AssignOrExpression
+***** AssignOrExpression                                             :pseudo:
 :PROPERTIES:
 :CUSTOM_ID: h:37FF07C0-5DAA-467E-9DBA-8EBAC79F7DE4
 :END:
@@ -3798,7 +3767,7 @@ seq(
 )
 #+end_src
 
-Parser: [[file:noir/compiler/noirc_frontend/src/parser/parser/arguments.rs::pub(super) fn parse_call_arguments(&mut self)][parse_call_arguments()]]
+Parser: [[file:noir/compiler/noirc_frontend/src/parser/parser/arguments.rs::fn parse_call_arguments(&mut self)][parse_call_arguments()]]
 
 #+transclude: [[file:noir/compiler/noirc_frontend/src/parser/parser/arguments.rs::28][CallArguments doc]] :lines 28-28 :src fundamental
 
@@ -3810,7 +3779,7 @@ Looks to specify a macro call if =!(= is the sequence of initial tokens.
 :END:
 
 #+name: type_annotation
-#+begin_src js :rule _type_annotation :arg $
+#+begin_src js :rule _type_annotation :arg $ :ast OptionalTypeAnnotation
 seq(':', <<r("type")>>)
 #+end_src
 
@@ -4389,7 +4358,7 @@ Parsed via [[file:noir/compiler/noirc_frontend/src/parser/parser.rs::fn eat_quot
 
 ** Internal
 
-*** [[file:noir/compiler/noirc_frontend/src/parser/parser/parse_many.rs::9][Parser::parse_many(items, sep)]]
+*** [[file:noir/compiler/noirc_frontend/src/parser/parser/parse_many.rs::9][Parser::parse_many(items, sep)]]                                :parser_fn:
 :PROPERTIES:
 :CUSTOM_ID: h:8E0DC05B-1ED6-47BE-9589-64DC06FAECCA
 :END:
@@ -4402,7 +4371,7 @@ TODO: Don't think I need to document parse_many_return blah blah, that's a compi
 
 Accepts a single trailing separator (up to callsite if it allows trailing or not).
 
-*** [[file:noir/compiler/noirc_frontend/src/parser/parser.rs::fn eat_kind(&mut self, kind: TokenKind)][Parser.eat_kind(kind)]]
+*** [[file:noir/compiler/noirc_frontend/src/parser/parser.rs::fn eat_kind(&mut self, kind: TokenKind)][Parser.eat_kind(kind)]]                                         :parser_fn:
 :PROPERTIES:
 :CUSTOM_ID: h:AC5A6E2C-59EC-44C6-9D1E-52553E56C3F9
 :END:
@@ -4413,7 +4382,7 @@ Checking token kind goes down to [[file:noir/compiler/noirc_frontend/src/lexer/t
 
 #+transclude: [[file:noir/compiler/noirc_frontend/src/lexer/token.rs::498][Token.kind() pattern match]] :lines 498-522 :src rust
 
-*** [[file:noir/compiler/noirc_frontend/src/parser/parser/path.rs::fn parse_path_impl(][Parser::parse_path_impl(allow_turbofish, allow_trailing_double_colon)]]
+*** [[file:noir/compiler/noirc_frontend/src/parser/parser/path.rs::fn parse_path_impl(][Parser::parse_path_impl(allow_turbofish, allow_trailing_double_colon)]] :parser_fn:
 :PROPERTIES:
 :CUSTOM_ID: h:3DFE0B54-1BEB-41CE-B486-4CA40058C092
 :END:
@@ -4424,7 +4393,7 @@ If the parsed =path= has no segments and it's =kind= is NOT ~PathKind::Plain~ a 
 
 Whenever this function is called a parsed =path= only ever has it's =kind= parsed once.
 
-*** [[file:noir/compiler/noirc_frontend/src/parser/parser/path.rs::pub(super) fn parse_path_after_kind(][Parser::parse_path_after_kind(kind, allow_turbofish, allow_trailing_double_colon)]]
+*** [[file:noir/compiler/noirc_frontend/src/parser/parser/path.rs::pub(super) fn parse_path_after_kind(][Parser::parse_path_after_kind(kind, allow_turbofish, allow_trailing_double_colon)]] :parser_fn:
 :PROPERTIES:
 :CUSTOM_ID: h:7BA3BCB8-65F3-4001-8B02-2F904B014F87
 :END:
@@ -4437,7 +4406,7 @@ Loops [[#h:65B0176B-B46F-4679-8535-C504870AC048][ident]] tokens after the PathKi
 
 Each ident forms a [[file:noir/compiler/noirc_frontend/src/ast/statement.rs::pub struct PathSegment {][PathSegment struct]]. It is possible to eat no idents, returning an empty path.
 
-*** [[file:noir/compiler/noirc_frontend/src/parser/parser/infix.rs::fn parse_infix<Next, Op>(][Parser.parse_infix(allow_constructors, next, op)]]
+*** [[file:noir/compiler/noirc_frontend/src/parser/parser/infix.rs::fn parse_infix<Next, Op>(][Parser.parse_infix(allow_constructors, next, op)]]              :parser_fn:
 :PROPERTIES:
 :CUSTOM_ID: h:CE180901-F6F2-4A65-878D-6C9154971376
 :END:
@@ -4451,7 +4420,7 @@ For all the expression AST nodes in the selfsame file ~parse_infix~ is in they p
 *************** TODO My understanding of the precedence here is correct yeah?
 *************** END
 
-*** [[file:noir/compiler/noirc_frontend/src/parser/parser/statement.rs::fn next_is_op_assign(&mut self)][Parser.next_is_op_assign()]]
+*** [[file:noir/compiler/noirc_frontend/src/parser/parser/statement.rs::fn next_is_op_assign(&mut self)][Parser.next_is_op_assign()]]                                    :parser_fn:
 :PROPERTIES:
 :CUSTOM_ID: h:0AD7B3FC-EF8B-4DE5-85E9-19AFBC8CB257
 :END:
@@ -4474,7 +4443,7 @@ Valid sugared combinations:
 >>=
 #+end_example
 
-*** [[file:noir/compiler/noirc_frontend/src/parser/parser.rs::fn comptime_mutable_and_unconstrained_not_applicable(&mut self, modifiers: Modifiers)][Parser.comptime_mutable_and_unconstrained_not_applicable(modifiers)]]
+*** [[file:noir/compiler/noirc_frontend/src/parser/parser.rs::fn comptime_mutable_and_unconstrained_not_applicable(&mut self, modifiers: Modifiers)][Parser.comptime_mutable_and_unconstrained_not_applicable(modifiers)]] :parser_fn:
 :PROPERTIES:
 :CUSTOM_ID: h:14698757-D7C8-4966-B84E-5DA1CAE3011E
 :END:
@@ -4483,14 +4452,14 @@ Param ~modifiers~ is a previously parsed [[file:noir/compiler/noirc_frontend/src
 
 This effectively means only the visibility modifier (which is ~ItemVisibility~) is valid where this function is called for ~modifiers~.
 
-*** [[file:noir/compiler/noirc_frontend/src/lexer/lexer.rs::fn next_token(&mut self)][Lexer.next_token()]]
+*** [[file:noir/compiler/noirc_frontend/src/lexer/lexer.rs::fn next_token(&mut self)][Lexer.next_token()]]                                             :lexer_fn:
 :PROPERTIES:
 :CUSTOM_ID: h:2AE110C8-8650-4F3B-AAA0-FFE5E79C8C81
 :END:
 
 Major fork where ~Token~\s are created. After a series of whitespace is ignored: attempts to lex [[#h:47747650-8CB5-48B1-A085-AFAF3C469B8B][Glue]], and single-character tokens are made followed by more complex tokens.
 
-*** [[file:noir/compiler/noirc_frontend/src/lexer/lexer.rs::fn lex_word(&mut self, initial_char: char)][Lexer.lex_word(initial_char)]]
+*** [[file:noir/compiler/noirc_frontend/src/lexer/lexer.rs::fn lex_word(&mut self, initial_char: char)][Lexer.lex_word(initial_char)]]                                   :lexer_fn:
 :PROPERTIES:
 :CUSTOM_ID: h:E76126FE-1E7A-40E9-A0C2-14F3FD3DB7E5
 :END:
