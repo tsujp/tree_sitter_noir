@@ -616,6 +616,35 @@ global foo = false * 2 / 3 % true  +  false / 5   -   10 * true;
 )
 
 
+===================
+Binary / Identifier
+===================
+
+global foo1 = n * 1;
+global foo2 = 1 / n;
+global foo3 = N % x;
+
+---
+
+(source_file
+  (global_item
+    name: (identifier)
+    (binary_expression
+      left: (identifier)
+      right: (int_literal)))
+  (global_item
+    name: (identifier)
+    (binary_expression
+      left: (int_literal)
+      right: (identifier)))
+  (global_item
+    name: (identifier)
+    (binary_expression
+      left: (identifier)
+      right: (identifier)))
+)
+
+
 ===
 If
 ===

@@ -836,7 +836,7 @@ seq(
     optional(<<r("item_visibility")>>),
     'trait',
     field('name', <<r("identifier")>>),
-    field('type_parameters', optional(<<r("generics")>>)),
+    field('type_parameters', optional(<<r("generic_parameters")>>)),
     field('bounds', optional(<<r("trait_bounds")>>)),
     optional(<<r("where")>>),
     field('body', alias(<<r("trait_body")>>, $.declaration_list)),
@@ -1661,28 +1661,28 @@ Also I named this node since it doesn't appear to canonically have one.
 I also ASSUME the generic type args are optional (test concretely).
 *************** END
 
-***** TODO TypeOrTypeExpression                                        :node:
+***** TODO TypeOrTypeExpression
 :PROPERTIES:
 :CUSTOM_ID: h:A32A351C-092B-42F1-AB03-DE49862B35D4
 :END:
-:pgd:
-- [[#h:B3490B7C-F387-49C7-BF94-DC9CE8AC3581][Type]]
-- [[#h:0DEF3192-4840-41B3-A941-714798677092][TypeExpression]]
-:end:
 
-Compiler: [[file:noir/compiler/noirc_frontend/src/parser/parser/type_expression.rs::196][parse_type_or_type_expression()]]
-#+transclude: [[file:noir/compiler/noirc_frontend/src/parser/parser/type_expression.rs::195][TypeOrTypeExpression doc]] :lines 195-195 :src rust
+#+name: type_or_type_expr
+#+begin_src js :rule _type_or_type_expr :arg $ :ast TypeOrTypeExpression
+choice(
+    <<r("type")>>,
+    <<r("type_expr")>>,
+)
+#+end_src
 
-Parse logic when entered here attempts to parse any valid non-literal type, before finally calling ~parse_type()~ which /is/ [[#h:B3490B7C-F387-49C7-BF94-DC9CE8AC3581][Type]].
+Parser: [[file:noir/compiler/noirc_frontend/src/parser/parser/type_expression.rs::fn parse_type_or_type_expression(&mut self)][parse_type_or_type_expression()]], [[file:noir/compiler/noirc_frontend/src/parser/parser/type_expression.rs::fn parse_add_or_subtract_type_or_type_expression(&mut self)][parse_add_or_subtract_type_or_type_expression()]]
+Type: [[file:noir/compiler/noirc_frontend/src/ast/mod.rs::pub struct UnresolvedType {][UnresolvedType struct]]
 
-- [ ] ~parse_add_or_subtract_type_or_type_expression()~.
-  - [ ] ~parse_multiply_or_divide_or_modulo_type_or_type_expression()~.
-    - [ ] ~parse_term_type_or_type_expression()~.
-      - [ ] ~parse_atom_type_or_type_expression()~.
-        - [ ] ~parse_parenthesized_type_or_type_expression()~.
-        - [ ] ~parse_type()~.
+#+name: ,ebnf_type_or_type_expression
+#+transclude: [[file:noir/compiler/noirc_frontend/src/parser/parser/type_expression.rs::195][TypeOrTypeExpression doc]] :lines 195-195 :src fundamental
 
-***** DONE TypeExpression                                              :node:
+Similar to [[#h:0DEF3192-4840-41B3-A941-714798677092][TypeExpression]]'s [[id:7A38952D-D669-4DD6-AF3A-065CB546CB21][Infix]] this also contains a heavily nested and confusing implementation with very long and similar reading function names that hurt one's head, it looks to be the same as TypeExpression and it does call those functions but it appears to use it's own wrappers as AST nodes are created ~UnresolvedTypeData~ on this path instead of ~UnresolvedTypeExpression~ on the other. It looks like this has no consequence for tree-sitter grammar so continue with that assumption for now.
+
+***** DONE TypeExpression
 CLOSED: [2025-06-22 Sun 02:13]
 :PROPERTIES:
 :CUSTOM_ID: h:0DEF3192-4840-41B3-A941-714798677092
@@ -1776,7 +1776,7 @@ Teeny tiny change, fix if not already done as it seems Noir is now at 0.38.0 so 
 #+begin_src js :rule __atom_type_expr :arg $ :ast AtomTypeExpression
 choice(
     <<r("int")>>, // Inlined Noirc: ConstantTypeExpression.
-    <<r("path")>>, // Inlined Noirc: VariableTypeExpression.
+    <<r("identifier_or_path")>>, // Inlined Noirc: VariableTypeExpression.
     // TODO: Replace hardcoded rule name with noweb ref.
     alias(<<r("parenthesised_type_expr")>>, $.parenthesized_expression),
 )
@@ -1792,29 +1792,40 @@ Parser: [[file:noir/compiler/noirc_frontend/src/parser/parser/type_expression.rs
 
 All children here either alias calls to other literals or other AST nodes in a simple way, so they have been completely inlined.
 
-***** TODO Path                                                :node:cluster:
+***** TODO Path
 :PROPERTIES:
 :CUSTOM_ID: h:07167116-EAE4-475B-8C87-DE9075BAF88D
 :END:
-:pgd:
-+ [[#h:96FCF9AD-3B89-451B-B84D-90A7A625B56D][PathKind]]
-+ [[#h:65B0176B-B46F-4679-8535-C504870AC048][ident]] (token)
-+ (opt) [[#h:D0AD78D7-3BF6-4D89-A709-C8CD28968213][Turbofish]]
-+ (rep0 grp) =::= by [[#h:65B0176B-B46F-4679-8535-C504870AC048][ident]] (token) by (opt) [[#h:D0AD78D7-3BF6-4D89-A709-C8CD28968213][Turbofish]]
-:end:
 
 #+name: path
-#+begin_src js :rule __path :arg $
+#+begin_src js :rule path :arg $ :ast Path
+seq(
+    field('scope', choice(
+        <<self()>>,
+        <<r("identifier")>>,
+        <<r("path_kind")>>,
+    )),
+    '::',
+    choice(
+        field('type_parameters', <<r("generic_type_parameters")>>),
+        field('name', <<r("identifier")>>),
+    ),
+)
+#+end_src
+
+Similarly with PathNoTurbofish, anywhere a Path or PathNoTurbofish is specified at minimum an identifier could be returned, so we need a rule to choose between a naked identifier or one that is augmented with a path. In all places seen so far this (and equivalently for PathNoTurbofish) choice'd variant should be used.
+
+#+name: identifier_or_path
+#+begin_src js :arg $
 choice(
-    'TODO_____PATH_STUB_ALPHA',
-    'TODO_____PATH_STUB_BETA',
+    <<r("identifier")>>,
+    <<r("path")>>,
 )
 #+end_src
 
 In all cases where Path is parsed via mentioned parsers if there are no path segments None is returned; so **Path is implied optional wherever it occurs**.
 
-Parser: [[file:noir/compiler/noirc_frontend/src/parser/parser/path.rs::pub(super) fn parse_path_impl(][parse_path_impl()]], [[file:noir/compiler/noirc_frontend/src/parser/parser/path.rs::pub(crate) fn parse_path(&mut self)][parse_path()]]
-#+transclude: [[file:noir/compiler/noirc_frontend/src/parser/parser/path.rs::29][Path doc]] :lines 29-33 :src fundamental
+Parser: [[file:noir/compiler/noirc_frontend/src/parser/parser/path.rs::fn parse_path_impl(][parse_path_impl()]], [[file:noir/compiler/noirc_frontend/src/parser/parser/path.rs::fn parse_path(&mut self)][parse_path()]]
 
 #+name: ,ebnf_path
 #+transclude: [[file:noir/compiler/noirc_frontend/src/parser/parser/path.rs::31][Path doc]] :lines 31-31 :src fundamental
@@ -1836,15 +1847,11 @@ If ~parse_path~ called allow turbofish, and allow trailing double colons are alw
 If they are can reduce nesting complexity.
 *************** END
 
-****** TODO Turbofish                                                  :node:
+****** TODO Turbofish
 :PROPERTIES:
 :CUSTOM_ID: h:D0AD78D7-3BF6-4D89-A709-C8CD28968213
 :FOO: [[file:noir/compiler/noirc_frontend/src/parser/parser/path.rs::pub(super) fn parse_path_impl(][parse_path_impl()]]
 :END:
-:pgd:
-+ =::=
-+ [[#h:F8EF693C-A6E2-4D57-BE08-103479D4270D][PathGenerics]]
-:end:
 
 #+name: ,ebnf_turbofish
 #+transclude: [[file:noir/compiler/noirc_frontend/src/parser/parser/path.rs::33][Turbofish doc]] :lines 33-33 :src fundamental
@@ -1864,11 +1871,11 @@ A /turbofish/ is syntax of the form ~::<Type>~ (i.e. generics).
 #+name: path_no_turbofish
 #+begin_src js :rule __path_no_turbofish :arg $
 seq(
-    optional(field('scope', choice(
+    field('scope', choice(
         alias(<<self()>>, $.path),
         <<r("identifier")>>,
         <<r("path_kind")>>,
-    ))),
+    )),
     '::',
     field('name', <<r("identifier")>>),
 )
@@ -2005,7 +2012,7 @@ This is the syntax spaghetti =<Foo as Trait>::Bar= stuff. Specifically the =as T
 see ast statement.rs line 394 context.
 *************** END
 
-****** SPEC PathKind                                                   :leaf:
+****** SPEC PathKind
 :PROPERTIES:
 :CUSTOM_ID: h:96FCF9AD-3B89-451B-B84D-90A7A625B56D
 :END:
@@ -2021,7 +2028,7 @@ TODO DOCS: Given tight integration with PathNoTurbofish what one would expect as
 choice($.crate, $.dep, $.super)
 #+end_src
 
-Parser: [[file:noir/compiler/noirc_frontend/src/parser/parser/path.rs::pub(super) fn parse_path_kind(&mut self)][parse_path_kind()]]
+Parser: [[file:noir/compiler/noirc_frontend/src/parser/parser/path.rs::fn parse_path_kind(&mut self)][parse_path_kind()]]
 
 If there is no path kind, i.e. NIL, this is internally represented via ~PathKind::Plain~.
 
@@ -2035,25 +2042,29 @@ Original EBNF: [[file:noir/compiler/noirc_frontend/src/parser/parser/path.rs::17
 Remove the =| nothing= and instead wrap everything in =( ... )?= to properly mark it as optional. Also missing assignment equals sign.
 *************** END
 
-****** TOIMPL PathGenerics                                             :node:
+****** DONE PathGenerics
+CLOSED: [2025-07-13 Sun 20:31]
 :PROPERTIES:
 :CUSTOM_ID: h:F8EF693C-A6E2-4D57-BE08-103479D4270D
 :END:
 :LOGBOOK:
+- State "DONE"       from "TOIMPL"     [2025-07-13 Sun 20:31]
 - State "TOIMPL"     from "TODO"       [2024-11-13 Wed 19:28]
 :END:
-:pgd:
-- [[#h:3267D7A4-7AA4-49FB-91FA-A9601BC6868A][GenericTypeArgs]]<[[#h:43662F12-2EC8-47E8-B5B8-DFF8A1226EB2][OrderedTypeArg]]>
-:end:
 
-Checks current token is ~Token::Less~ (=<=) before continuing. Only OrderedTypeArgs are allowed, any NamedTypeArgs (aka "associated types" are errors).
+Parser: [[file:noir/compiler/noirc_frontend/src/parser/parser/path.rs::let generics = if allow_turbofish][parse_path_generics() parent callsite]], [[file:noir/compiler/noirc_frontend/src/parser/parser/path.rs::fn parse_path_generics(][parse_path_generics()]]
 
-Parser: [[file:noir/compiler/noirc_frontend/src/parser/parser/path.rs::pub(super) fn parse_path_generics(][parse_path_generics()]]
+**NOTE**: Only [[#h:43662F12-2EC8-47E8-B5B8-DFF8A1226EB2][OrderedTypeArg]]s are allowed, any [[#h:8314C368-924E-4B8B-A881-66C9F46D6833][NamedTypeArg]]s are parser errors.
+
+At parent callsite check for current token ~Token::DoubleColon~ (=::=) followed by ~Token::Less~ (=<=) is before parser is called.
+
+#+name: ,ebnf_path_generics
 #+transclude: [[file:noir/compiler/noirc_frontend/src/parser/parser/path.rs::157][PathGenerics doc]] :lines 157-157 :src fundamental
 
-Return ~AST::GenericTypeArg::Ordered~.
-
-*************** TODO Document in-code Noir that only OrderedGenerics are allowed.
+*************** TODO Currently ignoring the NamedTypeArg being errors for this rule, worth it to not do that?
+By ignoring it this subheading has no rule, simply use GenericTypeArgs directly.
+*************** END
+*************** TODO Document in-code Noir that only OrderedGenerics are allowed, update EBNF accordingly
 As the parsing function for PathGenerics shows, any NamedArgs will return a parser error.
 *************** END
 
@@ -2263,16 +2274,17 @@ Types: [[file:noir/compiler/noirc_frontend/src/ast/expression.rs::pub enum Expre
 :END:
 
 #+name: generics
-#+begin_src js :rule type_parameters :arg $ :ast Generics
+#+begin_src js :rule _generics :arg $ :ast Generics
 seq(
     '<',
-    sepBy(<<r("generic")>>, ','), // Inlined Noirc: GenericsList.
-    optional(','),
+    optional(seq(
+        sepBy1(<<r("generic")>>, ','), // Inlined Noirc: GenericsList.
+        optional(','),
+    )),
     '>',
 )
 #+end_src
 
-**Note** Generics itself is optional, so anywhere it's referenced it implies optionality.
 
 Parser: [[file:noir/compiler/noirc_frontend/src/parser/parser/generics.rs::fn parse_generics(&mut self)][parse_generics()]]
 
@@ -2291,7 +2303,7 @@ CLOSED: [2025-07-12 Sat 22:06]
 - State "DONE"       from              [2025-07-12 Sat 22:06]
 :END:
 
-Inlined, subheading only kept for reference.
+**Inlined**, subheading only kept for reference.
 
 #+name: ,ebnf_generics_list
 #+transclude: [[file:noir/compiler/noirc_frontend/src/parser/parser/generics.rs::15][GenericsList doc]] :lines 15-15 :src fundamental
@@ -2299,7 +2311,7 @@ Inlined, subheading only kept for reference.
 ****** TODO Generic
 
 #+name: generic
-#+begin_src js :rule _generic :arg $ :ast Generic
+#+begin_src js :rule __generic :arg $ :ast Generic
 choice(
     <<r("identifier")>>, // Inlined Noirc: VariableGeneric.
     <<r("constrained_type")>>,
@@ -2371,7 +2383,7 @@ Placeholder-ish name for now idk.
   Quoted expression stuff, do as the very last thing
 :END:
 
-****** SPEC GenericTypeArgs                                    :node:cluster:
+****** SPEC GenericTypeArgs
 :PROPERTIES:
 :CUSTOM_ID: h:3267D7A4-7AA4-49FB-91FA-A9601BC6868A
 :END:
@@ -2379,55 +2391,51 @@ Placeholder-ish name for now idk.
 - State "SPEC"       from "TOIMPL"     [2025-05-24 Sat 20:16]
 - State "TOIMPL"     from "TODO"       [2024-11-13 Wed 19:10]
 :END:
-:pgd:
-+ (grp) =<= by (opt) [[#h:8C6AF1F0-DBAC-4030-AEFC-8FBF6B069EAD][GenericTypeArgsList]] by =>=
-:end:
-
-TODO: If GenericTypeArgsList is referenced by anything else in addition to GenericTypeArgs, then it needs to be its own rule so we can re-use it. Here it's been inlined.
 
 #+name: generic_type_args
-#+begin_src js :arg $ :ast GenericTypeArgs
+#+begin_src js :rule _generic_type_args :arg $ :ast GenericTypeArgs
 seq(
     '<',
-    sepBy(<<r("generic_type_arg")>>, ','), // Inlined Noirc: GenericTypeArgsList.
-    optional(','),
+    optional(seq(
+        sepBy1(<<r("generic_type_arg")>>, ','), // Inlined Noirc: GenericTypeArgsList.
+        optional(','),
+    )),
     '>',
 )
 #+end_src
 
-Parser: [[file:noir/compiler/noirc_frontend/src/parser/parser/generics.rs::pub(super) fn parse_generic_type_args(&mut self)][parse_generic_type_args()]]
-#+transclude: [[file:noir/compiler/noirc_frontend/src/parser/parser/generics.rs::106][GenericTypeArgs doc]] :lines 106-106 :src fundamental
+Parser: [[file:noir/compiler/noirc_frontend/src/parser/parser/generics.rs::fn parse_generic_type_args(&mut self)][parse_generic_type_args()]]
+Types: [[file:noir/compiler/noirc_frontend/src/ast/mod.rs::pub enum GenericTypeArg {][GenericTypeArg enum]]
 
 Final part of parser loops over generics from [[#h:8C6AF1F0-DBAC-4030-AEFC-8FBF6B069EAD][GenericTypeArgsList]] checking if they are Ordered or Named and adding them to ~AST::GenericTypeArgs~ struct before that struct is returned.
 
-Return ~AST::GenericTypeArgs()~.
+- Ordered :: =<A, B, C>=
+- Named :: =<A = B, C = D, E = F>=
+
+#+name: ,ebnf_generic_type_args
+#+transclude: [[file:noir/compiler/noirc_frontend/src/parser/parser/generics.rs::106][GenericTypeArgs doc]] :lines 106-106 :src fundamental
 
 *************** TODO GenericTypeArgs EBNF update, and also it's optional
 If =<= is not eaten default GenericTypeArgs is returned, which is presumably empty (and in any case we didn't eat any syntax) so really GenericTypeArgs is optional wherever it appears.
 *************** END
 
-
-******* SPEC GenericTypeArgsList                                       :node:
+******* DONE GenericTypeArgsList
+CLOSED: [2025-07-13 Sun 17:21]
 :PROPERTIES:
 :CUSTOM_ID: h:8C6AF1F0-DBAC-4030-AEFC-8FBF6B069EAD
 :END:
 :LOGBOOK:
+- State "DONE"       from "SPEC"       [2025-07-13 Sun 17:21]
 - State "SPEC"       from "TOIMPL"     [2025-05-24 Sat 20:16]
 - State "TOIMPL"     from "TODO"       [2024-11-13 Wed 19:09]
 :END:
-:pgd:
-+ [[#h:B2EDBA96-AA93-449F-A8EB-5636CCFC4F1C][GenericTypeArg]]
-+ (rep0 grp) =,= by [[#h:B2EDBA96-AA93-449F-A8EB-5636CCFC4F1C][GenericTypeArg]]
-+ (opt) =,=
-:end:
 
-Parser (sop): [[file:noir/compiler/noirc_frontend/src/parser/parser/generics.rs::let generics = self.parse_many(][GenericTypeArgsList parse]]
+**Inlined**, subheading only kept for reference.
+
+#+name: ,ebnf_generic_type_args_list
 #+transclude: [[file:noir/compiler/noirc_frontend/src/parser/parser/generics.rs::108][GenericTypeArgsList doc]] :lines 108-108 :src fundamental
 
-Split by =,= until =>=, each parsed as [[#h:B2EDBA96-AA93-449F-A8EB-5636CCFC4F1C][GenericTypeArg]].
-#+transclude: [[file:noir/compiler/noirc_frontend/src/parser/parser/generics.rs::123][parse_many()]] :lines 123-127 :src rust
-
-******* SPEC GenericTypeArg                                            :node:
+******* SPEC GenericTypeArg
 :PROPERTIES:
 :CUSTOM_ID: h:B2EDBA96-AA93-449F-A8EB-5636CCFC4F1C
 :END:
@@ -2435,25 +2443,27 @@ Split by =,= until =>=, each parsed as [[#h:B2EDBA96-AA93-449F-A8EB-5636CCFC4F1C
 - State "SPEC"       from "TOIMPL"     [2025-05-24 Sat 20:16]
 - State "TOIMPL"     from "TODO"       [2024-11-13 Wed 19:07]
 :END:
-:pgd:
-- [[#h:8314C368-924E-4B8B-A881-66C9F46D6833][NamedTypeArg]]
-- [[#h:43662F12-2EC8-47E8-B5B8-DFF8A1226EB2][OrderedTypeArg]]
-:end:
 
 #+name: generic_type_arg
-#+begin_src js :arg $ :ast GenericTypeArg
+#+begin_src js :rule __generic_type_arg :arg $ :ast GenericTypeArg
 choice(
     <<r("named_type_arg")>>,
     <<r("ordered_type_arg")>>,
 )
 #+end_src
 
-Parser: [[file:noir/compiler/noirc_frontend/src/parser/parser/generics.rs::fn parse_generic_type_arg(&mut self)][parse_generic_type_arg()]]
+Parser: [[file:noir/compiler/noirc_frontend/src/parser/parser/generics.rs::let generics = self.parse_many(][parse_generic_type_arg() parent callsite]], [[file:noir/compiler/noirc_frontend/src/parser/parser/generics.rs::fn parse_generic_type_arg(&mut self)][parse_generic_type_arg()]]
+
+Via [[#h:8E0DC05B-1ED6-47BE-9589-64DC06FAECCA][parse_many]] at parent callsite, split at =,= until =>=.
+
+First checks if current token is ~Token::Ident~ followed by ~Token::Assign~ (===) at which point it attempts to parse [[#h:8314C368-924E-4B8B-A881-66C9F46D6833][NamedTypeArg]]. If those conditions were not true attempts to parse [[#h:43662F12-2EC8-47E8-B5B8-DFF8A1226EB2][OrderedTypeArg]].
+
+Failure in attempt to parse OrderedTypeArg raises parser error ~ParsingRuleLabel::TypeOrTypeExpression~.
+
+#+name: ,ebnf_generic_type_arg
 #+transclude: [[file:noir/compiler/noirc_frontend/src/parser/parser/generics.rs::110][GenericTypeArg doc]] :lines 110-112 :src fundamental
 
-First checks if current token is ~Token::Ident~ followed by ~Token::Assign~ (===) at which point it attempts to parse NamedTypeArg. If those conditions were not true attempts to parse OrderedTypeArg.
-
-******** SPEC NamedTypeArg                                             :leaf:
+******* SPEC NamedTypeArg
 :PROPERTIES:
 :CUSTOM_ID: h:8314C368-924E-4B8B-A881-66C9F46D6833
 :END:
@@ -2461,32 +2471,24 @@ First checks if current token is ~Token::Ident~ followed by ~Token::Assign~ (===
 - State "SPEC"       from "TOIMPL"     [2025-05-24 Sat 20:05]
 - State "TOIMPL"     from "TODO"       [2024-11-13 Wed 18:56]
 :END:
-:pgd:
-+ ~Token::Ident~ as identifier
-+ ===
-+ [[#h:B3490B7C-F387-49C7-BF94-DC9CE8AC3581][Type]]
-:end:
 
 #+name: named_type_arg
-#+begin_src js :arg $ :ast NamedTypeArg
+#+begin_src js :rule associated_type :arg $ :ast NamedTypeArg
 seq(
-    $.identifier,
+    field('name', $.identifier),
     '=',
-    <<r("type")>>,
+    field('type', <<r("type")>>),
 )
 #+end_src
 
-Also called "associated types".
+NamedTypeArgs should have a wrapping node for clarity on their structure in the CST. It's currently unclear to me exactly what these are like in Noir so the rule name may be subject to change.
 
-Parser: /within slice of parent/
+Call to Type wrapped in ~parse_type_or_error~. Also called "associated types".
+
+#+name: ,ebnf_named_type_arg
 #+transclude: [[file:noir/compiler/noirc_frontend/src/parser/parser/generics.rs::114][NamedTypeArg doc]] :lines 114-114 :src fundamental
-#+transclude: [[file:noir/compiler/noirc_frontend/src/ast/mod.rs::187][GenericTypeArgs.named_args doc]] :lines 187-188 :src fundamental
 
-Return ~AST::GenericTypeArg::Named()~.
-
-Call to Type wrapped in ~parse_type_or_error~.
-
-******** SPEC OrderedTypeArg                                           :leaf:
+******* SPEC OrderedTypeArg
 :PROPERTIES:
 :CUSTOM_ID: h:43662F12-2EC8-47E8-B5B8-DFF8A1226EB2
 :END:
@@ -2495,27 +2497,18 @@ Call to Type wrapped in ~parse_type_or_error~.
   Effectively just an alias of TypeOrTypeExpression
 - State "TOIMPL"     from "TODO"       [2024-11-13 Wed 18:56]
 :END:
-:pgd:
-+ [[#h:A32A351C-092B-42F1-AB03-DE49862B35D4][TypeOrTypeExpression]]
-:end:
-
-// _ordered_type_arg: _ => alias($.TODO_TYPE_OR_TYPE_EXPRESSION, $.ordered_type_arg)
 
 #+name: ordered_type_arg
-#+begin_src js :rule __ordered_type_arg :ast OrderedTypeArg
-'ORDERED_TYPE_ARG___TODO'
+#+begin_src js :rule __ordered_type_arg :arg $ :ast OrderedTypeArg
+<<r("type_or_type_expr")>>
 #+end_src
 
-*************** TODO How I structure TypeOrTypeExpression as a rule in the grammar directly affects this since it can simply be an alias for that
-*************** END
+OrderedTypeArgs should have no wrapping node and just defer to TypeOrTypeExpression since they are "self-contained".
 
-Parser: /within slice of parent/
+If attempt to parse TypeOrTypeExpression yields ~None~ parser error ~ParsingRuleLabel::TypeOrTypeExpression~ is raised.
+
+#+name: ,ebnf_ordered_type_arg
 #+transclude: [[file:noir/compiler/noirc_frontend/src/parser/parser/generics.rs::116][OrderedTypeArg doc]] :lines 116-116 :src fundamental
-#+transclude: [[file:noir/compiler/noirc_frontend/src/ast/mod.rs::184][GenericTypeArgs.ordered_args doc]] :lines 184-184 :src fundamental
-
-If attempt to parse TypeOrTypeExpression fails parser error ~ParsingRuleLabel::TypeOrTypeExpression~ is pushed.
-
-Return ~AST::GenericTypeArg::Ordered()~.
 
 *** SPEC WhereClause                                           :node:cluster:
 :PROPERTIES:
@@ -2556,8 +2549,8 @@ Does this mean =impl Bar for Foo where {}= is valid in noir then? (there's no co
 #+name: where_clause
 #+begin_src js :rule where_constraint :arg $ :ast WhereClauseItem
 seq(
-    $._type,
-    field('bounds', $.trait_bounds),
+    field('type', <<r("type")>>),
+    field('bounds', <<r("trait_bounds")>>),
 )
 #+end_src
 
@@ -2570,11 +2563,6 @@ Via [[#h:8E0DC05B-1ED6-47BE-9589-64DC06FAECCA][parse_many]] in parent split on =
 :LOGBOOK:
 - State "SPEC"       from "TODO"       [2025-06-09 Mon 01:29]
 :END:
-:pgd:
-+ [[#h:B3490B7C-F387-49C7-BF94-DC9CE8AC3581][Type]]
-+ =:=
-+ [[#h:88538872-073E-4ADA-A615-797A00E0DE5F][TraitBounds]]
-:end:
 
 Parser: [[file:noir/compiler/noirc_frontend/src/parser/parser/where_clause.rs::fn parse_single_where_clause(&mut self)][parse_single_where_clause()]]
 
@@ -2587,11 +2575,6 @@ If Type returns ~None~ then parser early returns ~None~ also.
 :LOGBOOK:
 - State "SPEC"       from "TODO"       [2025-06-09 Mon 01:29]
 :END:
-:pgd:
-+ [[#h:161848E1-1F70-4DEF-9353-4C6BAF517C82][TraitBound]]
-+ (opt grp) =+= by [[#h:161848E1-1F70-4DEF-9353-4C6BAF517C82][TraitBound]]
-+ (opt) =+=
-:end:
 
 #+name: trait_bounds
 #+begin_src js :arg $ :ast TraitBounds
@@ -2628,16 +2611,24 @@ Really tired right now, double check any undocumented BNF implications of this
 :LOGBOOK:
 - State "SPEC"       from "TODO"       [2025-06-09 Mon 01:30]
 :END:
-:pgd:
-+ (opt) [[#h:A051D0D5-7007-4DF8-83B7-FB4EFF9C383E][PathNoTurbofish]]
-+ [[#h:3267D7A4-7AA4-49FB-91FA-A9601BC6868A][GenericTypeArgs]]
-:end:
 
 #+name: trait_bound
 #+begin_src js :rule __trait_bound :arg $ :ast TraitBound
-seq(
+choice(
+    // TraitBound without generics associated.
     <<r("identifier_or_path_no_turbofish")>>,
-    optional(<<r("generic_type_args")>>),
+    // TraitBound with generics needs to be wrapped in a CST node.
+    <<r("generic_type")>>,
+)
+#+end_src
+
+To ensure that a generic type argument has a CST node which encompasses the prior PathNoTurbofish we create a special rule and choose between either just PathNoTurbofish or PathNoTurbofish followed by GenericTypeArgs.
+
+#+name: generic_type
+#+begin_src js :rule generic :arg $
+seq(
+    field('trait', <<r("identifier_or_path_no_turbofish")>>),
+    field('type_parameters', <<r("generic_type_parameters")>>),
 )
 #+end_src
 
@@ -2966,6 +2957,8 @@ Guaranteed to NOT have a colon =:= following it.
 choice(
     <<r("binary_expression")>>,
     <<r("literal")>>,
+    // TODO: SURELY identifier is allowed in expression, where's the concrete evidence though? Assuming it is for now.
+    <<r("identifier")>>,
 )
 #+end_src
 
@@ -4581,8 +4574,15 @@ module.exports = grammar({
 
     // Rule names tree-sitter will automatically inline at their callsites when generating the parser. Unlike anonymous CST nodes these will then NEVER result in a CST node.
     inline: ($) => [
+        <<r("identifier_or_path")>>,
         <<r("identifier_or_path_no_turbofish")>>,
         <<r("tmp__let_to_type")>>,
+    ],
+
+    // TODO: Conflicts as-is work but is this the best way? It's mostly around Path.
+    conflicts: ($) => [
+        [<<r("type")>>, <<r("atom_type_expr")>>],
+        [<<r("path")>>, <<r("path_no_turbofish")>>],
     ],
 
     // TODO: Need to document (for myself) keyword extraction to check we're doing it properly.
@@ -4603,7 +4603,7 @@ module.exports = grammar({
             <<r("use")>>,
             <<r("mod_or_contract")>>,
             <<r("struct")>>,
-            <<r("impl")>>,
+            // TODO: Relink impl.
             <<r("trait")>>,
             <<r("global")>>,
         ),
@@ -4656,6 +4656,19 @@ function sepBy(rule, sep) {
 }
 #+end_src
 
+
+TODO: Put these aliases somewhere properly.
+#+name: generic_parameters
+#+begin_src js :rule _generic_parameters :arg $
+alias(<<r("generics")>>, $.type_parameters)
+#+end_src
+
+#+name: generic_type_parameters
+#+begin_src js :rule _generic_type_parameters :arg $
+alias(<<r("generic_type_args")>>, $.type_parameters)
+#+end_src
+
+
 ** Declarations
 
 #+name: grp__declarations
@@ -4707,10 +4720,12 @@ function sepBy(rule, sep) {
 <<c('("primitive_type" "field_type" "int_type" "bool_type" "str_type" "fmt_str_type"))>>
 <<c('("parentheses_type" "unit_type" "tuple_type"))>>
 <<c('("generics" "generic" "constrained_type"))>>
+<<n("generic_type")>>
 <<c('("generic_type_args" "generic_type_arg" "named_type_arg" "ordered_type_arg"))>>
 
 // 'TypeExpressions' are limited to constant integers, variables, and basic numeric binary operators; they are a special type that is allowed in the length position of an array (and some other limited places).
 // Using 'expr' in-place of 'expression' so-as-to- not conflate with _real_ expressions.
+<<n("type_or_type_expr")>>
 <<c('("type_expr" "binary_type_expr" "unary_type_expr" "atom_type_expr" "parenthesised_type_expr"))>>
 #+end_src
 
@@ -4737,7 +4752,7 @@ function sepBy(rule, sep) {
 <<n("comment")>>
 <<c('("line_comment__doc_style__inner" "line_comment__doc_style__outer" "line_comment__doc_style" "line_comment"))>>
 <<c('("block_comment__doc_style" "block_comment"))>>
-<<c('("path" "path_no_turbofish" "identifier_or_path_no_turbofish" "path_identifiers"))>>
+<<c('("path" "identifier_or_path" "path_no_turbofish" "identifier_or_path_no_turbofish" "path_identifiers"))>>
 <<n("path_kind")>>
 <<n("identifier")>>
 #+end_src
@@ -4748,6 +4763,8 @@ Mostly meta-rules e.g. inlined tree-sitter rules serving as templates.
 
 #+name: grp__misc
 #+begin_src js :noweb yes
+// Alias both Generic and GenericType parameters to a node of the same name.
+<<c('("generic_parameters" "generic_type_parameters"))>>
 <<n("tmp__let_to_type")>>
 #+end_src
 
@@ -4822,6 +4839,7 @@ Executes =n= for each element of given list of src-block =block_name=\s.
 #+end_src
 
 
+Inserts the contents of the given src-block parameter =block_name=, resolving that src-block after prepending ~,ebnf_~ to given =block_name=. This is effectively a convenience function for EBNF transcluded snippets as mangling their names makes them easier to find and exclude where necessary.
 #+name: ebnf
 #+begin_src emacs-lisp :var block_name=""
 (when-let* ((block-src-info (org-babel-lob--src-info (concat ",ebnf_" block_name)))
@@ -4830,6 +4848,19 @@ Executes =n= for each element of given list of src-block =block_name=\s.
 #+end_src
 
 
+Like =c= is for =n= this is for =ebnf=.
+#+name: ebnf_c
+#+begin_src emacs-lisp :var block_names=""
+(let (res)
+  (dolist (block_name block_names res)
+    (setq res (concat res (org-babel-execute-src-block
+                           nil
+                           (list "emacs-lisp" "results" `((:var . ,(format "results=ebnf[](block_name=\"%s\")" block_name))))
+                           '((:results . "none")))))
+    ))
+#+end_src
+
+Simple conversion of Noirc EBNF style to W3C EBNF style required for railroad diagram generator as well as removing Rust-specific syntax items (i.e. doc comments prefix).
 #+name: ebnf_preformat
 #+begin_src emacs-lisp :var block_name=""
 (when-let* ((block-src-info (org-babel-lob--src-info block_name))
@@ -4882,6 +4913,9 @@ Collect them all here so we can process (do a bunch of regex replacements) just 
 <<ebnf("function")>>
 
 <<ebnf("function_parameters")>>
+
+// Generic type parameters.
+<<ebnf_c('("generic_type_args" "generic_type_args_list" "generic_type_arg" "named_type_arg" "ordered_type_arg"))>>
 
 <<ebnf("literal")>>
 

@@ -722,6 +722,39 @@ trait Foo<A, let X: Field> {}
 )
 
 
+=============================
+Trait / Generics / Degenerate
+=============================
+
+trait F<> {}
+
+trait F<X    ,     > {}
+
+---
+
+(source_file
+  (trait_item
+    name: (identifier)
+    type_parameters: (type_parameters)
+    body: (declaration_list))
+
+  (trait_item
+    name: (identifier)
+    type_parameters: (type_parameters
+      (identifier))
+    body: (declaration_list))
+)
+
+
+==================================
+Trait / Generics / Solo comma (e1)
+:error
+==================================
+
+trait F<,> {}
+---
+
+
 ==============
 Trait / Bounds
 ==============
@@ -787,8 +820,246 @@ trait Foo: Bar + {}
 Trait / Bounds / Generics
 =========================
 
-trait Foo: Bar<T> {}
 trait Bar: Lorem<A, B, C> + x::y::Foo<X = Y> {}
+
+---
+
+(source_file
+  (trait_item
+    name: (identifier)
+    bounds: (trait_bounds
+      (generic
+        trait: (identifier)
+        type_parameters: (type_parameters
+          (identifier)
+          (identifier)
+          (identifier)))
+      (generic
+        trait: (path
+          scope: (path
+            scope: (identifier)
+            name: (identifier))
+          name: (identifier))
+        type_parameters: (type_parameters
+          (associated_type
+            name: (identifier)
+            type: (identifier)))))
+    body: (declaration_list))
+)
+
+
+===================================
+Trait / Bounds / Generics / Ordered
+===================================
+
+trait Foo: Bar<T> {}
+trait Bar: Lorem<A, 123, a::b::C> {}
+
+trait Meh: Ipsum<N - 1> {}
+
+---
+
+(source_file
+  (trait_item
+    name: (identifier)
+    bounds: (trait_bounds
+      (generic
+        trait: (identifier)
+        type_parameters: (type_parameters
+          (identifier))))
+    body: (declaration_list))
+  (trait_item
+    name: (identifier)
+    bounds: (trait_bounds
+      (generic
+        trait: (identifier)
+        type_parameters: (type_parameters
+          (identifier)
+          (int_literal)
+          (path
+            scope: (path
+              scope: (identifier)
+              name: (identifier))
+            name: (identifier)))))
+    body: (declaration_list))
+
+  (trait_item
+    name: (identifier)
+    bounds: (trait_bounds
+      (generic
+        trait: (identifier)
+        type_parameters: (type_parameters
+          (binary_expression
+            left: (identifier)
+            right: (int_literal)))))
+    body: (declaration_list))
+)
+
+
+====================================================
+Trait / Bounds / Generics / Ordered / Path turbofish
+====================================================
+
+trait Foo: Lorem<N::<1>> {}
+
+trait Ipsum: Dog<X::Y::<1, A,>, Z,> {}
+
+---
+
+(source_file
+  (trait_item
+    name: (identifier)
+    bounds: (trait_bounds
+      (generic
+        trait: (identifier)
+        type_parameters: (type_parameters
+          (path
+            scope: (identifier)
+            type_parameters: (type_parameters
+              (int_literal))))))
+    body: (declaration_list))
+
+  (trait_item
+    name: (identifier)
+    bounds: (trait_bounds
+      (generic
+        trait: (identifier)
+        type_parameters: (type_parameters
+          (path
+            scope: (path
+              scope: (identifier)
+              name: (identifier))
+            type_parameters: (type_parameters
+              (int_literal)
+              (identifier)))
+          (identifier))))
+    body: (declaration_list))
+)
+
+
+=============================================================
+Trait / Bounds / Generics / Ordered / Path turbofish / Nested
+=============================================================
+
+trait Foo: Bar<A::B::C::<1, X::Y::Z, E>> {}
+
+trait Lorem: Ipsum<H::I::<K, Q::W::<1>, L>> {}
+
+---
+
+(source_file
+  (trait_item
+    name: (identifier)
+    bounds: (trait_bounds
+      (generic
+        trait: (identifier)
+        type_parameters: (type_parameters
+          (path
+            scope: (path
+              scope: (path
+                scope: (identifier)
+                name: (identifier))
+              name: (identifier))
+            type_parameters: (type_parameters
+              (int_literal)
+              (path
+                scope: (path
+                  scope: (identifier)
+                  name: (identifier))
+                name: (identifier))
+              (identifier))))))
+    body: (declaration_list))
+
+  (trait_item
+    name: (identifier)
+    bounds: (trait_bounds
+      (generic
+        trait: (identifier)
+        type_parameters: (type_parameters
+          (path
+            scope: (path
+              scope: (identifier)
+              name: (identifier))
+            type_parameters: (type_parameters
+              (identifier)
+              (path
+                scope: (path
+                  scope: (identifier)
+                  name: (identifier))
+                type_parameters: (type_parameters
+                  (int_literal)))
+              (identifier))))))
+    body: (declaration_list))
+)
+
+
+=========================================================================
+Trait / Bounds / Generics / Ordered / Path turbofish / Generics in middle
+=========================================================================
+
+trait Bar: Foo<one::two::<X, 1>::three::Done> {}
+
+---
+
+(source_file
+  (trait_item
+    name: (identifier)
+    bounds: (trait_bounds
+      (generic
+        trait: (identifier)
+        type_parameters: (type_parameters
+          (path
+            scope: (path
+              scope: (path
+                scope: (path
+                  scope: (identifier)
+                  name: (identifier))
+                type_parameters: (type_parameters
+                  (identifier)
+                  (int_literal)))
+              name: (identifier))
+            name: (identifier)))))
+    body: (declaration_list))
+)
+
+
+=================================================================
+Trait / Bounds / Generics / Ordered / Path turbofish / Degenerate
+=================================================================
+
+trait Foo: Lorem<N::<>> {}
+
+---
+
+(source_file
+  (trait_item
+    name: (identifier)
+    bounds: (trait_bounds
+      (generic
+        trait: (identifier)
+        type_parameters: (type_parameters
+          (path
+            scope: (identifier)
+            type_parameters: (type_parameters)))))
+    body: (declaration_list))
+)
+
+
+======================================================================================
+Trait / Bounds / Generics / Ordered / Path turbofish / Missing initial identifier (e1)
+:error
+======================================================================================
+
+trait Foo: Lorem<::<1>> {}
+---
+
+
+========================================================
+Trait / Bounds / Generics / Ordered / Variable turbofish
+:skip
+========================================================
+
+trait Foo: Lorem<N<1>> {}
 
 ---
 
@@ -797,17 +1068,91 @@ trait Bar: Lorem<A, B, C> + x::y::Foo<X = Y> {}
 )
 
 
+=================================
+Trait / Bounds / Generics / Named
+=================================
+
+trait Foo: Bar<X = Field> {}
+trait Bar: Meh<Y = a::b::c::Done> {}
+
+---
+
+(source_file
+  (trait_item
+    name: (identifier)
+    bounds: (trait_bounds
+      (generic
+        trait: (identifier)
+        type_parameters: (type_parameters
+          (associated_type
+            name: (identifier)
+            type: (primitive_type)))))
+    body: (declaration_list))
+  (trait_item
+    name: (identifier)
+    bounds: (trait_bounds
+      (generic
+        trait: (identifier)
+        type_parameters: (type_parameters
+          (associated_type
+            name: (identifier)
+            type: (path
+              scope: (path
+                scope: (path
+                  scope: (identifier)
+                  name: (identifier))
+                name: (identifier))
+              name: (identifier))))))
+    body: (declaration_list))
+)
+
+
+========================================================
+Trait / Bounds / Generics / Named / No path in name (e1)
+:error
+========================================================
+
+trait Foo: Bar<no::path::Allowed = Field> {}
+---
+
+
 ======================
 Trait / Bounds / Where
 ======================
 
 trait Lorem where Foo: Bar<T> + Baz {}
-trait Ipsum where Foo: Bar<T>, i32: Qux {}
+trait Ipsum where Foo: Bar<1>, i32: Qux {}
 
 ---
 
 (source_file
-
+  (trait_item
+    name: (identifier)
+    (where_clause
+      (where_constraint
+        type: (identifier)
+        bounds: (trait_bounds
+          (generic
+            trait: (identifier)
+            type_parameters: (type_parameters
+              (identifier)))
+          (identifier))))
+    body: (declaration_list))
+  (trait_item
+    name: (identifier)
+    (where_clause
+      (where_constraint
+        type: (identifier)
+        bounds: (trait_bounds
+          (generic
+            trait: (identifier)
+            type_parameters: (type_parameters
+              (int_literal)))))
+      (where_constraint
+        type: (primitive_type)
+        bounds: (trait_bounds
+          (identifier))))
+    body: (declaration_list))
 )
 
 
@@ -827,7 +1172,7 @@ trait Foo where X: Y , xx::yy::A: B + Lorem {}
     name: (identifier)
     (where_clause
       (where_constraint
-        (identifier)
+        type: (identifier)
         bounds: (trait_bounds
           (identifier))))
     body: (declaration_list))
@@ -835,7 +1180,7 @@ trait Foo where X: Y , xx::yy::A: B + Lorem {}
     name: (identifier)
     (where_clause
       (where_constraint
-        (identifier)
+        type: (identifier)
         bounds: (trait_bounds
           (identifier))))
     body: (declaration_list))
@@ -844,11 +1189,11 @@ trait Foo where X: Y , xx::yy::A: B + Lorem {}
     name: (identifier)
     (where_clause
       (where_constraint
-        (identifier)
+        type: (identifier)
         bounds: (trait_bounds
           (identifier)))
       (where_constraint
-        (path
+        type: (path
           scope: (path
             scope: (identifier)
             name: (identifier))

@@ -668,6 +668,41 @@ trait Foo<A, let X: Field> {}
   body: (declaration_list))
 #+end_test
 
+**** Degenerate
+
+Empty generics are fine.
+
+#+begin_test
+trait F<> {}
+
+---
+
+(trait_item
+  name: (identifier)
+  type_parameters: (type_parameters)
+  body: (declaration_list))
+#+end_test
+
+Trailing separators are fine.
+
+#+begin_test
+trait F<X    ,     > {}
+
+---
+
+(trait_item
+  name: (identifier)
+  type_parameters: (type_parameters
+    (identifier))
+  body: (declaration_list))
+#+end_test
+
+**** Solo comma
+
+#+begin_test :error
+trait F<,> {}
+#+end_test
+
 *** Bounds
 #+begin_test
 trait Foo: Bar {}
@@ -717,29 +752,302 @@ trait Foo: {}
 trait Foo: Bar + {}
 #+end_test
 
-**** TODO Generics
+**** Generics
 
 Generics associated with the /Bounds/ declared on the Trait.
 
 #+begin_test
-trait Foo: Bar<T> {}
 trait Bar: Lorem<A, B, C> + x::y::Foo<X = Y> {}
 
 ---
 
+(trait_item
+  name: (identifier)
+  bounds: (trait_bounds
+    (generic
+      trait: (identifier)
+      type_parameters: (type_parameters
+        (identifier)
+        (identifier)
+        (identifier)))
+    (generic
+      trait: (path
+        scope: (path
+          scope: (identifier)
+          name: (identifier))
+        name: (identifier))
+      type_parameters: (type_parameters
+        (associated_type
+          name: (identifier)
+          type: (identifier)))))
+  body: (declaration_list))
 #+end_test
 
-**** TODO Where
-
-Effectively tests for where clauses wherever they appear. Just here since we need complete (minimal) valid syntax to even test.
-
+***** Ordered
 #+begin_test
-trait Lorem where Foo: Bar<T> + Baz {}
-trait Ipsum where Foo: Bar<T>, i32: Qux {}
+trait Foo: Bar<T> {}
+trait Bar: Lorem<A, 123, a::b::C> {}
+
+trait Meh: Ipsum<N - 1> {}
 
 ---
 
+(trait_item
+  name: (identifier)
+  bounds: (trait_bounds
+    (generic
+      trait: (identifier)
+      type_parameters: (type_parameters
+        (identifier))))
+  body: (declaration_list))
+(trait_item
+  name: (identifier)
+  bounds: (trait_bounds
+    (generic
+      trait: (identifier)
+      type_parameters: (type_parameters
+        (identifier)
+        (int_literal)
+        (path
+          scope: (path
+            scope: (identifier)
+            name: (identifier))
+          name: (identifier)))))
+  body: (declaration_list))
 
+(trait_item
+  name: (identifier)
+  bounds: (trait_bounds
+    (generic
+      trait: (identifier)
+      type_parameters: (type_parameters
+        (binary_expression
+          left: (identifier)
+          right: (int_literal)))))
+  body: (declaration_list))
+#+end_test
+
+****** Path turbofish
+#+begin_test
+trait Foo: Lorem<N::<1>> {}
+
+trait Ipsum: Dog<X::Y::<1, A,>, Z,> {}
+
+---
+
+(trait_item
+  name: (identifier)
+  bounds: (trait_bounds
+    (generic
+      trait: (identifier)
+      type_parameters: (type_parameters
+        (path
+          scope: (identifier)
+          type_parameters: (type_parameters
+            (int_literal))))))
+  body: (declaration_list))
+
+(trait_item
+  name: (identifier)
+  bounds: (trait_bounds
+    (generic
+      trait: (identifier)
+      type_parameters: (type_parameters
+        (path
+          scope: (path
+            scope: (identifier)
+            name: (identifier))
+          type_parameters: (type_parameters
+            (int_literal)
+            (identifier)))
+        (identifier))))
+  body: (declaration_list))
+#+end_test
+
+******* Nested
+#+begin_test
+trait Foo: Bar<A::B::C::<1, X::Y::Z, E>> {}
+
+trait Lorem: Ipsum<H::I::<K, Q::W::<1>, L>> {}
+
+---
+
+(trait_item
+  name: (identifier)
+  bounds: (trait_bounds
+    (generic
+      trait: (identifier)
+      type_parameters: (type_parameters
+        (path
+          scope: (path
+            scope: (path
+              scope: (identifier)
+              name: (identifier))
+            name: (identifier))
+          type_parameters: (type_parameters
+            (int_literal)
+            (path
+              scope: (path
+                scope: (identifier)
+                name: (identifier))
+              name: (identifier))
+            (identifier))))))
+  body: (declaration_list))
+
+(trait_item
+  name: (identifier)
+  bounds: (trait_bounds
+    (generic
+      trait: (identifier)
+      type_parameters: (type_parameters
+        (path
+          scope: (path
+            scope: (identifier)
+            name: (identifier))
+          type_parameters: (type_parameters
+            (identifier)
+            (path
+              scope: (path
+                scope: (identifier)
+                name: (identifier))
+              type_parameters: (type_parameters
+                (int_literal)))
+            (identifier))))))
+  body: (declaration_list))
+#+end_test
+
+******* Generics in middle
+#+begin_test
+trait Bar: Foo<one::two::<X, 1>::three::Done> {}
+
+---
+
+(trait_item
+  name: (identifier)
+  bounds: (trait_bounds
+    (generic
+      trait: (identifier)
+      type_parameters: (type_parameters
+        (path
+          scope: (path
+            scope: (path
+              scope: (path
+                scope: (identifier)
+                name: (identifier))
+              type_parameters: (type_parameters
+                (identifier)
+                (int_literal)))
+            name: (identifier))
+          name: (identifier)))))
+  body: (declaration_list))
+#+end_test
+
+******* Degenerate
+#+begin_test
+trait Foo: Lorem<N::<>> {}
+
+---
+
+(trait_item
+  name: (identifier)
+  bounds: (trait_bounds
+    (generic
+      trait: (identifier)
+      type_parameters: (type_parameters
+        (path
+          scope: (identifier)
+          type_parameters: (type_parameters)))))
+  body: (declaration_list))
+#+end_test
+
+******* Missing initial identifier
+#+begin_test :error
+trait Foo: Lorem<::<1>> {}
+#+end_test
+
+****** TODO Variable turbofish
+See Noirc test named =parse_var_with_turbofish_in_generic=
+#+begin_test :skip
+trait Foo: Lorem<N<1>> {}
+#+end_test
+
+***** Named
+#+begin_test
+trait Foo: Bar<X = Field> {}
+trait Bar: Meh<Y = a::b::c::Done> {}
+
+---
+
+(trait_item
+  name: (identifier)
+  bounds: (trait_bounds
+    (generic
+      trait: (identifier)
+      type_parameters: (type_parameters
+        (associated_type
+          name: (identifier)
+          type: (primitive_type)))))
+  body: (declaration_list))
+(trait_item
+  name: (identifier)
+  bounds: (trait_bounds
+    (generic
+      trait: (identifier)
+      type_parameters: (type_parameters
+        (associated_type
+          name: (identifier)
+          type: (path
+            scope: (path
+              scope: (path
+                scope: (identifier)
+                name: (identifier))
+              name: (identifier))
+            name: (identifier))))))
+  body: (declaration_list))
+#+end_test
+
+****** No path in name
+#+begin_test :error
+trait Foo: Bar<no::path::Allowed = Field> {}
+#+end_test
+
+**** Where
+
+Effectively tests for where clauses wherever they appear.
+
+#+begin_test
+trait Lorem where Foo: Bar<T> + Baz {}
+trait Ipsum where Foo: Bar<1>, i32: Qux {}
+
+---
+
+(trait_item
+  name: (identifier)
+  (where_clause
+    (where_constraint
+      type: (identifier)
+      bounds: (trait_bounds
+        (generic
+          trait: (identifier)
+          type_parameters: (type_parameters
+            (identifier)))
+        (identifier))))
+  body: (declaration_list))
+(trait_item
+  name: (identifier)
+  (where_clause
+    (where_constraint
+      type: (identifier)
+      bounds: (trait_bounds
+        (generic
+          trait: (identifier)
+          type_parameters: (type_parameters
+            (int_literal)))))
+    (where_constraint
+      type: (primitive_type)
+      bounds: (trait_bounds
+        (identifier))))
+  body: (declaration_list))
 #+end_test
 
 *** Where
@@ -755,7 +1063,7 @@ trait Foo where X: Y , xx::yy::A: B + Lorem {}
   name: (identifier)
   (where_clause
     (where_constraint
-      (identifier)
+      type: (identifier)
       bounds: (trait_bounds
         (identifier))))
   body: (declaration_list))
@@ -763,7 +1071,7 @@ trait Foo where X: Y , xx::yy::A: B + Lorem {}
   name: (identifier)
   (where_clause
     (where_constraint
-      (identifier)
+      type: (identifier)
       bounds: (trait_bounds
         (identifier))))
   body: (declaration_list))
@@ -772,11 +1080,11 @@ trait Foo where X: Y , xx::yy::A: B + Lorem {}
   name: (identifier)
   (where_clause
     (where_constraint
-      (identifier)
+      type: (identifier)
       bounds: (trait_bounds
         (identifier)))
     (where_constraint
-      (path
+      type: (path
         scope: (path
           scope: (identifier)
           name: (identifier))
@@ -868,7 +1176,6 @@ If Trait functions /are/ normal functions etc need to know before writing ts rul
 trait Foo { fn foo(); }
 trait Foo { fn foo() {} }
 #+end_test
-
 
 ** Global
 x
@@ -1884,9 +2191,33 @@ global foo = false * 2 / 3 % true  +  false / 5   -   10 * true;
 i.e. =<<= and =>>= etc all the way down to ==== and =!==.
 *************** END
 
-*** Parenthesized
-
+*** TODO Parenthesized
 TODO
+
+*** Identifier
+#+begin_test
+global foo1 = n * 1;
+global foo2 = 1 / n;
+global foo3 = N % x;
+
+---
+
+(global_item
+  name: (identifier)
+  (binary_expression
+    left: (identifier)
+    right: (int_literal)))
+(global_item
+  name: (identifier)
+  (binary_expression
+    left: (int_literal)
+    right: (identifier)))
+(global_item
+  name: (identifier)
+  (binary_expression
+    left: (identifier)
+    right: (identifier)))
+#+end_test
 
 ** Unary
 

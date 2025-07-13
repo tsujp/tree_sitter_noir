@@ -84,8 +84,15 @@ module.exports = grammar({
 
     // Rule names tree-sitter will automatically inline at their callsites when generating the parser. Unlike anonymous CST nodes these will then NEVER result in a CST node.
     inline: ($) => [
+        $.identifier_or_path,
         $.identifier_or_path_no_turbofish,
         $.tmp__let_to_type,
+    ],
+
+    // TODO: Conflicts as-is work but is this the best way? It's mostly around Path.
+    conflicts: ($) => [
+        [$._type, $.__atom_type_expr],
+        [$.path, $.__path_no_turbofish],
     ],
 
     // TODO: Need to document (for myself) keyword extraction to check we're doing it properly.
@@ -106,7 +113,7 @@ module.exports = grammar({
             $.use_item,
             $.module_or_contract_item,
             $.struct_item,
-            $.impl_item,
+            // TODO: Relink impl.
             $.trait_item,
             $.global_item,
         ),
@@ -235,7 +242,7 @@ module.exports = grammar({
         // [[file:noir_grammar.org::trait_impl]]
         trait_impl: $ => seq(
             // TODO: Path
-            $.generic_type_args,
+            $._generic_type_args,
             'for',
             $._type,
             // optional($.where_clause), // Temp commented for now due to prec error.
@@ -246,7 +253,7 @@ module.exports = grammar({
             optional($.visibility_modifier),
             'trait',
             field('name', $.identifier),
-            field('type_parameters', optional($.type_parameters)),
+            field('type_parameters', optional($._generic_parameters)),
             field('bounds', optional($.trait_bounds)),
             optional($.where_clause),
             field('body', alias($.__trait_declaration_list, $.declaration_list)),
@@ -258,9 +265,11 @@ module.exports = grammar({
             // optional('+'), // TODO: I think not allowed, test compiler methods post-grammar.
         ),
         // [[file:noir_grammar.org::trait_bound]]
-        __trait_bound: $ => seq(
+        __trait_bound: $ => choice(
+            // TraitBound without generics associated.
             $.identifier_or_path_no_turbofish,
-            optional($.generic_type_args),
+            // TraitBound with generics needs to be wrapped in a CST node.
+            $.generic,
         ),
         // [[file:noir_grammar.org::trait_body]]
         __trait_declaration_list: $ => seq(
@@ -343,7 +352,7 @@ module.exports = grammar({
         ),
         // [[file:noir_grammar.org::where_clause]]
         where_constraint: $ => seq(
-            $._type,
+            field('type', $._type),
             field('bounds', $.trait_bounds),
         ),
 
@@ -441,6 +450,8 @@ module.exports = grammar({
         _expression: $ => choice(
             $.binary_expression,
             $.__literal,
+            // TODO: SURELY identifier is allowed in expression, where's the concrete evidence though? Assuming it is for now.
+            $.identifier,
         ),
         
         // [[file:noir_grammar.org::binary_expression]]
@@ -583,14 +594,16 @@ module.exports = grammar({
         ),
         
         // [[file:noir_grammar.org::generics]]
-        type_parameters: $ => seq(
+        _generics: $ => seq(
             '<',
-            sepBy($._generic, ','), // Inlined Noirc: GenericsList.
-            optional(','),
+            optional(seq(
+                sepBy1($.__generic, ','), // Inlined Noirc: GenericsList.
+                optional(','),
+            )),
             '>',
         ),
         // [[file:noir_grammar.org::generic]]
-        _generic: $ => choice(
+        __generic: $ => choice(
             $.identifier, // Inlined Noirc: VariableGeneric.
             $.constrained_type,
             // TODO: ResolvedGeneric IFF it even matters for CST.
@@ -598,29 +611,43 @@ module.exports = grammar({
         // [[file:noir_grammar.org::constrained_type]]
         constrained_type: $ => $.tmp__let_to_type,
         
+        // [[file:noir_grammar.org::generic_type]]
+        generic: $ => seq(
+            field('trait', $.identifier_or_path_no_turbofish),
+            field('type_parameters', $._generic_type_parameters),
+        ),
+        
         // [[file:noir_grammar.org::generic_type_args]]
-        generic_type_args: $ => seq(
+        _generic_type_args: $ => seq(
             '<',
-            sepBy($.generic_type_arg, ','), // Inlined Noirc: GenericTypeArgsList.
-            optional(','),
+            optional(seq(
+                sepBy1($.__generic_type_arg, ','), // Inlined Noirc: GenericTypeArgsList.
+                optional(','),
+            )),
             '>',
         ),
         // [[file:noir_grammar.org::generic_type_arg]]
-        generic_type_arg: $ => choice(
-            $.named_type_arg,
+        __generic_type_arg: $ => choice(
+            $.associated_type,
             $.__ordered_type_arg,
         ),
         // [[file:noir_grammar.org::named_type_arg]]
-        named_type_arg: $ => seq(
-            $.identifier,
+        associated_type: $ => seq(
+            field('name', $.identifier),
             '=',
-            $._type,
+            field('type', $._type),
         ),
         // [[file:noir_grammar.org::ordered_type_arg]]
-        __ordered_type_arg: _ => 'ORDERED_TYPE_ARG___TODO',
+        __ordered_type_arg: $ => $._type_or_type_expr,
         
         // 'TypeExpressions' are limited to constant integers, variables, and basic numeric binary operators; they are a special type that is allowed in the length position of an array (and some other limited places).
         // Using 'expr' in-place of 'expression' so-as-to- not conflate with _real_ expressions.
+        
+        // [[file:noir_grammar.org::type_or_type_expr]]
+        _type_or_type_expr: $ => choice(
+            $._type,
+            $._type_expr,
+        ),
         
         // [[file:noir_grammar.org::type_expr]]
         _type_expr: $ => choice(
@@ -648,7 +675,7 @@ module.exports = grammar({
         // [[file:noir_grammar.org::atom_type_expr]]
         __atom_type_expr: $ => choice(
             $.int_literal, // Inlined Noirc: ConstantTypeExpression.
-            $.__path, // Inlined Noirc: VariableTypeExpression.
+            $.identifier_or_path, // Inlined Noirc: VariableTypeExpression.
             // TODO: Replace hardcoded rule name with noweb ref.
             alias($.parenthesized_expression, $.parenthesized_expression),
         ),
@@ -829,17 +856,30 @@ module.exports = grammar({
         ),
         
         // [[file:noir_grammar.org::path]]
-        __path: $ => choice(
-            'TODO_____PATH_STUB_ALPHA',
-            'TODO_____PATH_STUB_BETA',
+        path: $ => seq(
+            field('scope', choice(
+                $.path,
+                $.identifier,
+                $.__path_kind,
+            )),
+            '::',
+            choice(
+                field('type_parameters', $._generic_type_parameters),
+                field('name', $.identifier),
+            ),
+        ),
+        // [[file:noir_grammar.org::identifier_or_path]]
+        identifier_or_path: $ => choice(
+            $.identifier,
+            $.path,
         ),
         // [[file:noir_grammar.org::path_no_turbofish]]
         __path_no_turbofish: $ => seq(
-            optional(field('scope', choice(
+            field('scope', choice(
                 alias($.__path_no_turbofish, $.path),
                 $.identifier,
                 $.__path_kind,
-            ))),
+            )),
             '::',
             field('name', $.identifier),
         ),
@@ -856,6 +896,12 @@ module.exports = grammar({
         identifier: _ => /[a-zA-Z_][a-zA-Z0-9_]*/,
 
         // * * * * * * * * * * * * * * * * * * * * * * * * * TEMPLATES / MISC
+        // Alias both Generic and GenericType parameters to a node of the same name.
+        
+        // [[file:noir_grammar.org::generic_parameters]]
+        _generic_parameters: $ => alias($._generics, $.type_parameters),
+        // [[file:noir_grammar.org::generic_type_parameters]]
+        _generic_type_parameters: $ => alias($._generic_type_args, $.type_parameters),
         
         // [[file:noir_grammar.org::tmp__let_to_type]]
         tmp__let_to_type: $ => seq(
