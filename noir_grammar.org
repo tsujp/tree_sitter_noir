@@ -959,9 +959,13 @@ TraitFunction = Modifiers Function
 results in the same behaviour for normal Function (as understood currently) except this allows optional body (unsure if normal function does, but we need to split those up into definition/declaration etc anyway). So FOR NOW its got it's entirely own ts rule (TraitFunction) but once Function is done I expect we can just de-duplicate this entirely and use a simple alias to have the CST be named ~trait_function~ or something.
 *************** END
 
-***** TODO Global
+***** DONE Global
+CLOSED: [2025-07-14 Mon 14:30]
 :PROPERTIES:
 :CUSTOM_ID: h:C21A19F9-DC0C-4F17-9739-B92412D0C4FF
+:END:
+:LOGBOOK:
+- State "DONE"       from "TODO"       [2025-07-14 Mon 14:30]
 :END:
 
 #+name: global
@@ -981,6 +985,8 @@ seq(
 Parser: [[file:noir/compiler/noirc_frontend/src/parser/parser/item.rs::if self.eat_keyword(Keyword::Global) {][parse_global() parent callsite]], [[file:noir/compiler/noirc_frontend/src/parser/parser/global.rs::fn parse_global(][parse_global()]]
 Types: [[file:noir/compiler/noirc_frontend/src/ast/statement.rs::pub struct LetStatement {][LetStatement struct]]
 All [[#h:2A9D09A5-2E52-4B8C-ABA1-0B3B953F093C][Modifiers]] except =unconstrained= are applicable.
+
+Parsing of identifier, only in this case, uses [[file:noir/compiler/noirc_frontend/src/parser/parser/global.rs::fn ident_to_pattern(ident: Ident, mutable: bool)][ident_to_pattern()]] which is a simple function I speculate exists because the mutable modifier appears /before/ keyword =global= but with LetStatement's it appears after =let=. For us, there's no change it's just an identifier.
 
 #+name: ,ebnf_global
 #+transclude: [[file:noir/compiler/noirc_frontend/src/parser/parser/global.rs::15][Global doc]] :lines 15-15 :src fundamental
