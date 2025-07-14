@@ -201,7 +201,7 @@ module.exports = grammar({
             optional($.visibility_modifier),
             'struct',
             field('name', $.identifier),
-            // optional($.generics), // TODO: Generics
+            field('type_parameters', optional($._generic_parameters)),
             choice(
                 field('body', $.struct_field_list), // TODO: If this is similar to others, e.g. Impl or Enum we can reduce it to one.
                 ';', // Empty struct.
@@ -209,6 +209,7 @@ module.exports = grammar({
         ),
         // [[file:noir_grammar.org::struct_field]]
         struct_field_item: $ => seq(
+            // OuterDocComments are extras.
             optional($.visibility_modifier),
             field('name', $.identifier),
             ':',
@@ -428,7 +429,7 @@ module.exports = grammar({
         assign_statement: $ => seq(
             field('left', $._expression),
             choice(
-                // Deseguared (and limited) binary expression assignment, see: next_is_op_assign.
+                // Desugared (and limited) binary expression assignment, see: next_is_op_assign.
                 '+=', '-=', '*=', '/=', '%=', '&=', '^=', '=',
                 // Simple assignment.
                 '=',

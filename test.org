@@ -569,12 +569,19 @@ struct foo {
 #+end_test
 
 *** Generic
-#+begin_test :skip
+#+begin_test
 struct foo<A, let B: u32> {}
 
 ---
 
-TODO
+(struct_item
+  name: (identifier)
+  type_parameters: (type_parameters
+    (identifier)
+    (constrained_type
+      name: (identifier)
+      type: (primitive_type)))
+  body: (struct_field_list))
 #+end_test
 
 *** Degenerate

@@ -607,7 +607,6 @@ struct foo {
 
 ================
 Struct / Generic
-:skip
 ================
 
 struct foo<A, let B: u32> {}
@@ -615,7 +614,14 @@ struct foo<A, let B: u32> {}
 ---
 
 (source_file
-  TODO
+  (struct_item
+    name: (identifier)
+    type_parameters: (type_parameters
+      (identifier)
+      (constrained_type
+        name: (identifier)
+        type: (primitive_type)))
+    body: (struct_field_list))
 )
 
 
