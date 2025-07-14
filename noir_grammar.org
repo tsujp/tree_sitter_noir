@@ -150,22 +150,22 @@ Parser: [[file:noir/compiler/noirc_frontend/src/parser/parser/item.rs::fn parse_
 - Parsed without separator (~Parser::parse_module_items~).
 - ~Parser::parse_module_item_in_list~.
 
-**** TODO ItemKind                                             :node:cluster:
+**** TODO ItemKind
 :PROPERTIES:
 :CUSTOM_ID: h:D661B191-E117-4EB9-B6F7-322B7B67A79F
 :END:
-:pgd:
+
 - [[#h:AE3747A8-8CA3-4B6D-AF09-3553CE24CD70][InnerAttribute]]
-- [[#h:FF901AEF-D40D-44AB-9BA6-C324F3531088][Attribute]] by [[#h:2A9D09A5-2E52-4B8C-ABA1-0B3B953F093C][Modifiers]] by (grp):
-  - [[#h:ADB184CE-E43C-423B-803F-DE1679A91829][Use]]
-  - [[#h:9204514E-E5FC-488B-8066-66F0D9AF0C85][ModOrContract]]
-  - [[#h:A53DF633-322A-464B-9947-E56B64A112C7][Struct]]
-  - [[#h:954A182F-703F-48FC-85D3-37C11EC959A3][Implementation]]
-  - Trait
-  - [[#h:C21A19F9-DC0C-4F17-9739-B92412D0C4FF][Global]]
-  - TypeAlias
-  - [[#h:B3C4609F-307A-42A1-B420-DBBAB6CDE6E5][Function]]
-:end:
+- [[#h:FF901AEF-D40D-44AB-9BA6-C324F3531088][Attribute]]
+- [[#h:2A9D09A5-2E52-4B8C-ABA1-0B3B953F093C][Modifiers]]
+- [[#h:ADB184CE-E43C-423B-803F-DE1679A91829][Use]]
+- [[#h:9204514E-E5FC-488B-8066-66F0D9AF0C85][ModOrContract]]
+- [[#h:A53DF633-322A-464B-9947-E56B64A112C7][Struct]]
+- [[#h:954A182F-703F-48FC-85D3-37C11EC959A3][Implementation]]
+- [[#h:6C38714F-76B7-4472-A776-36023EB84873][Trait]]
+- [[#h:C21A19F9-DC0C-4F17-9739-B92412D0C4FF][Global]]
+- TypeAlias
+- [[#h:B3C4609F-307A-42A1-B420-DBBAB6CDE6E5][Function]]
 
 Parser: [[file:noir/compiler/noirc_frontend/src/parser/parser/item.rs::fn parse_item_kind(&mut self)][parse_item_kind()]]
 
@@ -248,11 +248,13 @@ Parser: [[file:noir/compiler/noirc_frontend/src/parser/parser/attributes.rs::pub
 
 In parent all the parsed attributes are collected.
 
-***** SPEC Modifiers
+***** DONE Modifiers
+CLOSED: [2025-07-14 Mon 14:54]
 :PROPERTIES:
 :CUSTOM_ID: h:2A9D09A5-2E52-4B8C-ABA1-0B3B953F093C
 :END:
 :LOGBOOK:
+- State "DONE"       from "SPEC"       [2025-07-14 Mon 14:54]
 - State "SPEC"       from "TODO"       [2025-05-20 Tue 18:06]
 :END:
 
@@ -276,32 +278,21 @@ Parser: [[file:noir/compiler/noirc_frontend/src/parser/parser/modifiers.rs::fn p
 #+name: ,ebnf_modifiers
 #+transclude: [[file:noir/compiler/noirc_frontend/src/parser/parser/modifiers.rs::17][Modifiers doc]] :lines 17-17 :src fundamental
 
-Remaining keywords consumed as their literal selves:
-
-#+transclude: [[file:noir/compiler/noirc_frontend/src/parser/parser/modifiers.rs][unconstrained, comptime, mut]] :lines 32-48 :src rust
-
-*************** TODO Verify that the Noir compiler will error if modifiers are supplied out of order, with the exception (mentioned in Noir compiler source) of unconstrained being before pub to support that legacy ordering.
-*************** END
-*************** TODO Decide on and note that we do not support legacy unconstrained ordering because it complicates things massively.
-*************** END
 *************** TODO Apparently Traits call parse_modifiers
 Using eglot to show the call hierarchy Traits apparently call this parser, so when we ge to Traits have a looksey I guess.
 *************** END
 
-***** SPEC ItemVisibility                                  :declaration:leaf:
+****** DONE ItemVisibility
+CLOSED: [2025-07-14 Mon 14:56]
 :PROPERTIES:
 :CUSTOM_ID: h:F5A79701-65C9-4FEA-83D8-2413C585A5FA
 :END:
 :LOGBOOK:
+- State "DONE"       from "SPEC"       [2025-07-14 Mon 14:56]
 - State "SPEC"       from "DONE"       [2025-06-05 Thu 20:14] \\
   Don't actually have any tests for this yet
 - State "DONE"       from "TODO"       [2024-11-01 Fri 19:56]
 :END:
-:pgd:
-- =pub= (kw)
-- =pub(crate)= (kw is =crate=)
-- NIL.
-:end:
 
 #+name: item_visibility
 #+begin_src js :rule visibility_modifier :arg $ :ast ItemVisibility
@@ -310,7 +301,7 @@ seq('pub', optional('(crate)'))
 
 Parser: [[file:noir/compiler/noirc_frontend/src/parser/parser/item_visibility.rs::fn parse_item_visibility(&mut self)][parse_item_visibility()]]
 
-Missing text (NIL) is a type of visibility in the sense that the default visibility is private if unspecified. Missing text won't affect tree-sitter unless/until qualifying item visibility becomes part of the CST.
+Failure for this rule to parse is a type of visibility in the sense that the default visibility is private if unspecified.
 
 #+name: ,ebnf_item_visibility
 #+begin_src fundamental
