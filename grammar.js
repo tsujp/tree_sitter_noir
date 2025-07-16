@@ -86,6 +86,8 @@ module.exports = grammar({
     conflicts: ($) => [
         [$._type, $.__atom_type_expr],
         [$.path, $.__path_no_turbofish],
+        // XXX: slice_expression is causing unresolved sequences error because the '&' of the slice sequence is also a character in binary expression. No attempt to set precedences worked and had to add conflict. This feels wrong.. try and fix without a conflict later?
+        [$.__statement_kind, $.__literal],
     ],
 
     // TODO: Need to document (for myself) keyword extraction to check we're doing it properly.
@@ -93,15 +95,15 @@ module.exports = grammar({
 
     rules: {
         // Noirc: Module -- top-level AST node is really Program but it immediately wraps Module.
-        source_file: ($) => repeat($._statement),
+        source_file: ($) => repeat($._module),
 
         // Can statement-ise anything so we'll use this as top-level.
         // _statement: ($) => choice($._expression_statement, $._declaration_statement),
         // _expression_statement: ($) => seq($._expression, ';'),
-        _statement: ($) => choice($.__item),
+        _module: ($) => choice($._top_level_item),
 
         // Noirc: Module -- Since doc comments can appear anywhere, Module is Item which is ItemKind.
-        __item: ($) => choice(
+        _top_level_item: ($) => choice(
             $.attribute_item,
             $.use_item,
             $.module_or_contract_item,
@@ -109,11 +111,13 @@ module.exports = grammar({
             // TODO: Relink impl.
             $.trait_item,
             $.global_item,
+            // TODO: TypeAlias.
+            //r("function")>>,
         ),
 
         item_list: ($) => seq(
             '{',
-            repeat($.__item),
+            repeat($._top_level_item),
             '}',
         ),
 
@@ -126,7 +130,7 @@ module.exports = grammar({
         visibility: $ => choice(
             'pub',
             'return_data',
-            seq('call_data(', $.int_literal ,')'),
+            seq('call_data', '(', $.int_literal ,')'),
         ),
         
         // [[file:noir_grammar.org::attribute]]
@@ -303,13 +307,26 @@ module.exports = grammar({
             repeat(choice($.mutable_modifier, $.comptime_modifier)),
             'global',
             field('name', $.identifier),
-            field('type', optional($._type_annotation)), // Inlined Noirc: OptionalTypeAnnotation.
+            field('type', optional($._type_annotation)), // Inlined Noirc: OptionalTypeAnnotation.,
             '=',
             $._expression,
             ';',
         ),
         // TODO: TypeAlias
         
+        // [[file:noir_grammar.org::function]]
+        function_item: $ => seq(
+            optional($.visibility_modifier),
+            repeat(choice($.comptime_modifier, $.unconstrained_modifier)),
+            'fn',
+            field('name', $.identifier),
+            field('type_parameters', optional($._generic_parameters)),
+            field('parameters', $.function_parameters),
+            optional(seq('->', optional($.visibility), $._type)),
+            optional($.where_clause),
+            // No optional body allowed at this locus.
+            field('body', $.block),
+        ),
         // [[file:noir_grammar.org::function_parameters]]
         function_parameters: $ => seq(
             '(',
@@ -324,20 +341,6 @@ module.exports = grammar({
             ':',
             $._type,
         ),
-        // [[file:noir_grammar.org::function]]
-        function: $ => seq(
-            optional($.visibility_modifier),
-            optional($.function_modifiers),
-            'fn',
-            field('name', $.identifier),
-            // TODO: Generics
-            field('parameters', $.function_parameters),
-            optional(seq('->', optional($.visibility), $._type)),
-            optional($.where_clause),
-            choice($.block, ';'),
-        ),
-        // [[file:noir_grammar.org::function_modifiers]]
-        function_modifiers: $ => 'TODO________FUNCTION_MODIFIERS',
         
         // [[file:noir_grammar.org::where]]
         where_clause: $ => seq(
@@ -355,22 +358,25 @@ module.exports = grammar({
         // TODO: Consider all Noirc 'statements' except we enforce trailing semicolon where required? Or just have a statements section idk yet.
         
         // [[file:noir_grammar.org::statement]]
-        _statement_ast: $ => // seq(
-        //     choice(
-        //         // TODO: Attributes.
-        //         $._statement_kind,
-        //         // TODO: Could have as an alias to expression instead, would still result in a node.
-        //         $.expression_statement,
-        //     ),
-        //     ';',
-        seq(
+        _statement: $ => seq(
             // TODO: Attributes.
-            $._statement_kind,
-            ';',
+            choice(
+                $.break_statement,
+                $.continue_statement,
+                $.return_statement,
+                $.let_statement,
+                $.constrain_statement,
+                $.comptime_statement,
+                $.for_statement,
+                $.if_expression,
+                $.block,
+                $.assign_statement,
+                $.expression_statement,
+            ),
         ),
         
         // [[file:noir_grammar.org::statement_kind]]
-        _statement_kind: $ => choice(
+        __statement_kind: $ => choice(
             $.break_statement,
             $.continue_statement,
             $.return_statement,
@@ -384,19 +390,20 @@ module.exports = grammar({
             // Expression statement is handled at parent node for better CST.
         ),
         // [[file:noir_grammar.org::break_statement]]
-        break_statement: _ => 'break',
+        break_statement: _ => seq('break', ';'),
         // [[file:noir_grammar.org::continue_statement]]
-        continue_statement: _ => 'continue',
+        continue_statement: _ => seq('continue', ';'),
         // [[file:noir_grammar.org::return_statement]]
-        return_statement: $ => seq('return', optional($._expression)),
+        return_statement: $ => seq('return', optional($._expression), ';'),
         // [[file:noir_grammar.org::let_statement]]
         let_statement: $ => seq(
             'let',
             optional($.mut_bound),
             field('pattern', $._pattern),
-            // TODO: OptionalTypeAnnotation
+            field('type', optional($._type_annotation)), // Inlined Noirc: OptionalTypeAnnotation.,
             '=',
             field('value', $._expression),
+            ';',
         ),
         // [[file:noir_grammar.org::constrain_statement]]
         constrain_statement: $ => seq(
@@ -404,6 +411,7 @@ module.exports = grammar({
             // 'assert' expects 1 or 2 parameters, 'assert_eq' expects 2 or 3. This is out of scope for tree-sitter grammar (at least for now), if it's a boon without huge complexity the rules can be augmented to enforce this later.
             choice('assert', 'assert_eq'),
             field('arguments', $.arguments),
+            ';',
         ),
         // [[file:noir_grammar.org::comptime_statement]]
         comptime_statement: $ => seq(
@@ -435,9 +443,10 @@ module.exports = grammar({
                 '=',
             ),
             field('right', $._expression),
+            ';',
         ),
         // [[file:noir_grammar.org::expression_statement]]
-        expression_statement: $ => $._expression,
+        expression_statement: $ => seq($._expression, ';'),
 
         // * * * * * * * * * * * * * * * * * * * * * * * * * EXPRESSIONS
         
@@ -495,10 +504,10 @@ module.exports = grammar({
         // [[file:noir_grammar.org::slice_expression]]
         slice_expression: $ => seq('&', $.array_expression),
         
-        // [[file:noir_grammar.org::block_expression]]
+        // [[file:noir_grammar.org::block]]
         block: $ => seq(
             '{',
-            repeat($._statement_ast),
+            repeat($._statement),
             '}',
         ),
         
