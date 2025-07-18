@@ -645,6 +645,64 @@ global foo3 = N % x;
 )
 
 
+====
+Unit
+====
+
+global f1 = ();
+
+---
+
+(source_file
+  (global_item
+    name: (identifier)
+    (unit_expression))
+)
+
+
+=============
+Parenthesised
+=============
+
+global f1 = (a);
+global f2 = (());
+
+---
+
+(source_file
+  (global_item
+    name: (identifier)
+    (parenthesized_expression
+      (identifier)))
+  (global_item
+    name: (identifier)
+    (parenthesized_expression
+      (unit_expression)))
+)
+
+
+=====
+Tuple
+=====
+
+global f1 = (a,);
+global f2 = (a,());
+
+---
+
+(source_file
+  (global_item
+    name: (identifier)
+    (tuple_expression
+      (identifier)))
+  (global_item
+    name: (identifier)
+    (tuple_expression
+      (identifier)
+      (unit_expression)))
+)
+
+
 ===
 If
 ===

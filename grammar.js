@@ -442,9 +442,14 @@ module.exports = grammar({
             $.binary_expression,
             // Inlined Noirc: Atom.
             $.__literal,
+            // Inlined Noirc: ParenthesesExpression.
+            alias($.unit_type, $.unit_expression),
+            $.parenthesized_expression,
+            $.tuple_expression,
+            // ---/ End: ParenthesesExpression.
             // TODO: The rest of the items, ParenthesesExpression, UnsafeExpression etc.
             $.if_expression,
-            // ---/
+            // ---/ End: Atom.
             // TODO: SURELY identifier is allowed in expression, where's the concrete evidence though? Assuming it is for now.
             $.identifier,
         )),
@@ -523,7 +528,21 @@ module.exports = grammar({
             $._expression,
         ),
         
-        // TODO: Order these as makes sense
+        // Ordered as at Atom.
+        
+        // [[file:noir_grammar.org::parenthesised_expression]]
+        parenthesized_expression: $ => seq('(', $._expression, ')'),
+        
+        // [[file:noir_grammar.org::tuple_expression]]
+        tuple_expression: $ => seq(
+            '(',
+            // Required trailing colon to match.
+            seq($._expression, ','),
+            // Additional either includes trailing colon or doesn't.
+            repeat(seq($._expression, ',')),
+            optional($._expression),
+            ')',
+        ),
         
         // [[file:noir_grammar.org::if_expression]]
         if_expression: $ => seq(
@@ -675,10 +694,10 @@ module.exports = grammar({
             $.int_literal, // Inlined Noirc: ConstantTypeExpression.
             $.identifier_or_path, // Inlined Noirc: VariableTypeExpression.
             // TODO: Replace hardcoded rule name with noweb ref.
-            alias($.parenthesized_expression, $.parenthesized_expression),
+            alias($.__parenthesized_type_expr, $.parenthesized_expression),
         ),
         // [[file:noir_grammar.org::parenthesised_type_expr]]
-        parenthesized_expression: $ => seq('(', $._type_expr, ')'),
+        __parenthesized_type_expr: $ => seq('(', $._type_expr, ')'),
 
         // * * * * * * * * * * * * * * * * * * * * * * * * * PATTERNS
         

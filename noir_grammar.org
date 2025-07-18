@@ -1326,7 +1326,7 @@ choice(
 
 Parser: [[file:noir/compiler/noirc_frontend/src/parser/parser/types.rs::fn parse_parentheses_type(&mut self)][parse_parentheses_type()]]
 
-******* SPEC UnitType                                                  :leaf:
+******* SPEC Unit{Literal,Type}                                       :alias:
 :PROPERTIES:
 :CUSTOM_ID: h:9653A5E5-2857-4FB4-8698-5D9F6F0E8755
 :END:
@@ -1334,16 +1334,23 @@ Parser: [[file:noir/compiler/noirc_frontend/src/parser/parser/types.rs::fn parse
 - State "SPEC"       from "TOIMPL"     [2025-05-20 Tue 17:11]
 - State "TOIMPL"     from "TODO"       [2024-11-15 Fri 20:24]
 :END:
-:pgd:
-+ =(= by =)=
-:end:
 
 #+name: unit_type
-#+begin_src js
+#+begin_src js :ast "UnitLiteral, UnitType (ours)"
 seq('(', ')')
 #+end_src
 
-Parser: /in slice of parent/.
+Parser: /only in parents inline/
+Callsites:
+  - [[file:noir/compiler/noirc_frontend/src/parser/parser/types.rs::return Some(UnresolvedTypeData::Unit);][in parse_parentheses_type()]] (for: [[#h:39A2690C-319F-4F34-A139-8549D70FCF26][ParenthesesType]], as: UnitType)
+  - [[file:noir/compiler/noirc_frontend/src/parser/parser/expression.rs::return Some(ExpressionKind::Literal(Literal::Unit));][in parse_parentheses_expression()]] (for: [[#h:DF57FFD8-C50B-406E-95E7-94C3BFC15DAC][ParenthesesExpression]], as: UnitLiteral)
+
+#+name: ,ebnf_unit_literal
+#+transclude: [[file:noir/compiler/noirc_frontend/src/parser/parser/expression.rs::685][UnitLiteral doc]] :lines 685-685 :src fundamental
+  
+*************** TODO Rule names according to locus of production
+If in parse_parentheses_type then UnitType, but if from Atom in ParenthesesExpression then UnitLiteral?
+*************** END
 
 ******* SPEC TupleType                                                 :node:
 :PROPERTIES:
@@ -1743,15 +1750,28 @@ choice(
 )
 #+end_src
 
-Needs to be it's own rule in order to be aliased (by tree-sitter) to a new name correctly.
-#+name: parenthesised_type_expr
-#+begin_src js :rule parenthesized_expression :arg $ :ast ParenthesizedTypeExpression
-seq('(', <<r("type_expr")>>, ')')
-#+end_src
-
 Parser: [[file:noir/compiler/noirc_frontend/src/parser/parser/type_expression.rs::fn parse_atom_type_expression(&mut self)][parse_atom_type_expression()]]
 
 All children here either alias calls to other literals or other AST nodes in a simple way, so they have been completely inlined.
+
+******* DONE ParenthesizedTypeExpression
+CLOSED: [2025-07-19 Sat 03:12]
+:PROPERTIES:
+:CUSTOM_ID: h:CEEC13D7-39B2-434F-90D5-302AB44E2BBA
+:END:
+:LOGBOOK:
+- State "DONE"       from              [2025-07-19 Sat 03:12]
+:END:
+
+Parser: [[file:noir/compiler/noirc_frontend/src/parser/parser/type_expression.rs::fn parse_parenthesized_type_expression(&mut self)][parse_parenthesized_type_expression()]]
+
+#+name: parenthesised_type_expr
+#+begin_src js :rule __parenthesized_type_expr :arg $ :ast ParenthesizedTypeExpression
+seq('(', <<r("type_expr")>>, ')')
+#+end_src
+
+#+name: ,ebnf_parenthesized_type_expression
+#+transclude: [[file:noir/compiler/noirc_frontend/src/parser/parser/type_expression.rs::174][ParenthesizedTypeExpression doc]] :lines 174-174 :src fundamental
 
 ***** TODO Path
 :PROPERTIES:
@@ -2893,9 +2913,14 @@ prec(1, choice(
     <<r("binary_expression")>>,
     // Inlined Noirc: Atom.
     <<r("literal")>>,
+    // Inlined Noirc: ParenthesesExpression.
+    alias(<<r("unit_type")>>, $.unit_expression),
+    <<r("parenthesised_expression")>>,
+    <<r("tuple_expression")>>,
+    // ---/ End: ParenthesesExpression.
     // TODO: The rest of the items, ParenthesesExpression, UnsafeExpression etc.
     <<r("if_expression")>>,
-    // ---/
+    // ---/ End: Atom.
     // TODO: SURELY identifier is allowed in expression, where's the concrete evidence though? Assuming it is for now.
     <<r("identifier")>>,
 ))
@@ -3145,7 +3170,7 @@ seq(
 #+end_src
 
 Parser: [[file:noir/compiler/noirc_frontend/src/parser/parser/expression.rs::fn parse_if_expr(&mut self)][parse_if_expr()]]
-Parent callsites:
+Callsites:
   - [[file:noir/compiler/noirc_frontend/src/parser/parser/statement.rs::if let Some(kind) = self.parse_if_expr() {][in parse_statement_kind()]] (for: [[#h:788ECB8C-0A48-4255-B35E-F5850902AA32][Statement]], as: IfStatement)
   - [[file:noir/compiler/noirc_frontend/src/parser/parser/expression.rs::if let Some(kind) = self.parse_if_expr() {][in parse_atom_kind()]] (for: (TODO: Link Atom), as: IfExpression)
 
@@ -3733,6 +3758,94 @@ field('type', optional(<<r("type_annotation")>>)), // Inlined Noirc: OptionalTyp
 
 #+name: ,ebnf_optional_type_annotation
 #+transclude: [[file:noir/compiler/noirc_frontend/src/parser/parser/types.rs::409][OptionalTypeAnnotation doc]] :lines 409-409 :src fundamental
+
+*** TODO Atom
+:PROPERTIES:
+:CUSTOM_ID: h:14C02FBD-84BA-470B-92C3-8E9C55BCF375
+:END:
+:LOGBOOK:
+- State "TODO"       from              [2025-07-19 Sat 01:05] \\
+  Under Term which is under Expression
+:END:
+
+Parser: [[file:noir/compiler/noirc_frontend/src/parser/parser/expression.rs::fn parse_atom(&mut self, allow_constructors: bool)][parse_atom()]], [[file:noir/compiler/noirc_frontend/src/parser/parser/expression.rs::fn parse_atom_kind(&mut self, allow_constructors: bool)][parse_atom_kind()]]
+
+Grammar rule inlined at [[#h:167542CC-8CDE-49C1-9465-E5157C6A176F][Expression]].
+
+**** DONE ParenthesesExpression
+CLOSED: [2025-07-19 Sat 03:49]
+:PROPERTIES:
+:CUSTOM_ID: h:DF57FFD8-C50B-406E-95E7-94C3BFC15DAC
+:END:
+:LOGBOOK:
+- State "DONE"       from "TODO"       [2025-07-19 Sat 03:49]
+- State "TODO"       from              [2025-07-19 Sat 01:25]
+:END:
+
+Parser: [[file:noir/compiler/noirc_frontend/src/parser/parser/expression.rs::fn parse_parentheses_expression(&mut self)][parse_parentheses_expression()]]
+
+Grammar rule inlined at [[#h:167542CC-8CDE-49C1-9465-E5157C6A176F][Expression]].
+
+Both [[id:D6E2F320-99C6-49BE-972A-FCE3FD65EC38][ParenthesizedExpression]] and [[#h:C5D99479-D00F-4719-852B-947B388EDD59][TupleExpression]] are parsed inline here via [[#h:8E0DC05B-1ED6-47BE-9589-64DC06FAECCA][parse_many]] split on =,= call ~parse_expression_in_list~ call ~parse_expression~ which is [[#h:167542CC-8CDE-49C1-9465-E5157C6A176F][Expression]].
+
+If only 1 Expression was parsed and there's no trailing comma ~ExpressionKind::Parenthesized~ returned, otherwise ~ExpressionKind::Tuple~.
+
+#+name: ,ebnf_parentheses_expression
+#+transclude: [[file:noir/compiler/noirc_frontend/src/parser/parser/expression.rs::680][ParenthesesExpression doc]] :lines 680-683 :src fundamental
+
+**** DONE ParenthesizedExpression
+CLOSED: [2025-07-19 Sat 03:49]
+:PROPERTIES:
+:ID:       D6E2F320-99C6-49BE-972A-FCE3FD65EC38
+:END:
+:LOGBOOK:
+- State "DONE"       from "TODO"       [2025-07-19 Sat 03:49]
+- State "TODO"       from              [2025-07-19 Sat 03:02]
+:END:
+
+#+name: parenthesised_expression
+#+begin_src js :rule parenthesized_expression :arg $ :ast ParenthesizedExpression
+seq('(', <<r("expression")>>, ')')
+#+end_src
+
+Parser: /in parent, see [[#h:DF57FFD8-C50B-406E-95E7-94C3BFC15DAC][ParenthesesExpression]]/
+
+Similar to [[#h:CEEC13D7-39B2-434F-90D5-302AB44E2BBA][ParenthesizedTypeExpression]]. EBNF pattern only appears here and UnquoteExpression (TODO LINK).
+
+#+name: ,ebnf_parenthesized_expression
+#+transclude: [[file:noir/compiler/noirc_frontend/src/parser/parser/expression.rs::687][ParenthesizedExpression doc]] :lines 687-687 :src fundamental
+
+#+begin_example
+just fd "'(' Expression ')'" -C 2
+#+end_example
+
+**** DONE TupleExpression
+CLOSED: [2025-07-19 Sat 03:49]
+:PROPERTIES:
+:CUSTOM_ID: h:C5D99479-D00F-4719-852B-947B388EDD59
+:END:
+:LOGBOOK:
+- State "DONE"       from "TODO"       [2025-07-19 Sat 03:49]
+- State "TODO"       from              [2025-07-19 Sat 03:21]
+:END:
+
+#+name: tuple_expression
+#+begin_src js :arg $ :ast TupleExpression
+seq(
+    '(',
+    // Required trailing colon to match.
+    seq(<<r("expression")>>, ','),
+    // Additional either includes trailing colon or doesn't.
+    repeat(seq(<<r("expression")>>, ',')),
+    optional(<<r("expression")>>),
+    ')',
+)
+#+end_src
+
+Parser: /in parent, see [[#h:DF57FFD8-C50B-406E-95E7-94C3BFC15DAC][ParenthesesExpression]]/
+
+#+name: ,ebnf_tuple_expression
+#+transclude: [[file:noir/compiler/noirc_frontend/src/parser/parser/expression.rs::689][TupleExpression doc]] :lines 689-689 :src fundamental
 
 *** TODO Literals
 :PROPERTIES:
@@ -4692,7 +4805,9 @@ alias(<<r("generic_type_args")>>, $.type_parameters)
 <<c('("arguments" "call_arguments"))>>
 <<n("for_range")>>
 
-// TODO: Order these as makes sense
+// Ordered as at Atom.
+<<n("parenthesised_expression")>>
+<<n("tuple_expression")>>
 <<n("if_expression")>>
 #+end_src
 

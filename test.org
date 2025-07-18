@@ -2326,6 +2326,52 @@ global foo3 = N % x;
     right: (identifier)))
 #+end_test
 
+** Unit
+#+begin_test
+global f1 = ();
+
+---
+
+(global_item
+  name: (identifier)
+  (unit_expression))
+#+end_test
+
+** Parenthesised
+#+begin_test
+global f1 = (a);
+global f2 = (());
+
+---
+
+(global_item
+  name: (identifier)
+  (parenthesized_expression
+    (identifier)))
+(global_item
+  name: (identifier)
+  (parenthesized_expression
+    (unit_expression)))
+#+end_test
+
+** Tuple
+#+begin_test
+global f1 = (a,);
+global f2 = (a,());
+
+---
+
+(global_item
+  name: (identifier)
+  (tuple_expression
+    (identifier)))
+(global_item
+  name: (identifier)
+  (tuple_expression
+    (identifier)
+    (unit_expression)))
+#+end_test
+
 ** TODO Unary
 TODO
 
