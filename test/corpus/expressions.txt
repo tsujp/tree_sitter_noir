@@ -703,6 +703,24 @@ global f2 = (a,());
 )
 
 
+======
+Unsafe
+======
+
+global f1 = unsafe { 123; };
+
+---
+
+(source_file
+  (global_item
+    name: (identifier)
+    (unsafe_block
+      (block
+        (expression_statement
+          (int_literal)))))
+)
+
+
 ===
 If
 ===

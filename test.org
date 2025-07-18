@@ -2372,6 +2372,20 @@ global f2 = (a,());
     (unit_expression)))
 #+end_test
 
+** Unsafe
+#+begin_test
+global f1 = unsafe { 123; };
+
+---
+
+(global_item
+  name: (identifier)
+  (unsafe_block
+    (block
+      (expression_statement
+        (int_literal)))))
+#+end_test
+
 ** TODO Unary
 TODO
 

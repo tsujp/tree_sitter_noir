@@ -447,6 +447,7 @@ module.exports = grammar({
             $.parenthesized_expression,
             $.tuple_expression,
             // ---/ End: ParenthesesExpression.
+            $.unsafe_block,
             // TODO: The rest of the items, ParenthesesExpression, UnsafeExpression etc.
             $.if_expression,
             // ---/ End: Atom.
@@ -554,6 +555,9 @@ module.exports = grammar({
                 field('alternative', choice($.block, $.if_expression)),
             )),
         ),
+        
+        // [[file:noir_grammar.org::unsafe_expression]]
+        unsafe_block: $ => seq('unsafe', $.block),
 
         // * * * * * * * * * * * * * * * * * * * * * * * * * TYPES
         

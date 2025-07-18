@@ -1605,6 +1605,10 @@
           },
           {
             "type": "SYMBOL",
+            "name": "unsafe_block"
+          },
+          {
+            "type": "SYMBOL",
             "name": "if_expression"
           },
           {
@@ -2309,6 +2313,19 @@
               "type": "BLANK"
             }
           ]
+        }
+      ]
+    },
+    "unsafe_block": {
+      "type": "SEQ",
+      "members": [
+        {
+          "type": "STRING",
+          "value": "unsafe"
+        },
+        {
+          "type": "SYMBOL",
+          "name": "block"
         }
       ]
     },
