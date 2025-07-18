@@ -649,11 +649,11 @@ global foo3 = N % x;
 If
 ===
 
-global f1 = { if 1 { }; };
+global f1 = { if 1 { } };
 
-global b1 = { if true { } else { }; };
-global b2 = { if 1 { } else if false { }; };
-global b3 = { if 3 == 3 { } else if false { } else { }; };
+global b1 = { if true { } else { } };
+global b2 = { if 1 { } else if false { } };
+global b3 = { if 3 == 3 { } else if false { } else { } };
 
 ---
 
@@ -701,7 +701,7 @@ If / Alternative order (e1)
 :error
 ===========================
 
-global f1 = { if 1 { } else { } else if 3 { }; };
+global f1 = { if 1 { } else { } else if 3 { } };
 ---
 
 
@@ -710,5 +710,5 @@ If / Alternative else with condition (e1)
 :error
 =========================================
 
-global f1 = { if 1 { } else 2 { }; };
+global f1 = { if 1 { } else 2 { } };
 ---

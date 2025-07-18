@@ -1404,9 +1404,14 @@ global foo1 = { break; };
     (break_statement)))
 #+end_test
 
+*** Missing semicolon
+#+begin_test :error
+global f = { break };
+#+end_test
+
 ** Continue
 #+begin_test
-global foo1 = { continue; };
+global f1 = { continue; };
 
 ---
 
@@ -1414,6 +1419,11 @@ global foo1 = { continue; };
   name: (identifier)
   (block
     (continue_statement)))
+#+end_test
+
+*** Missing semicolon
+#+begin_test :error
+global f = { continue };
 #+end_test
 
 ** Return
@@ -1458,6 +1468,11 @@ global f2 = { let (x, y) = 1; };
         (identifier)
         (identifier))
       value: (int_literal))))
+#+end_test
+
+*** Missing semicolon
+#+begin_test :error
+global f = { let x = 123 };
 #+end_test
 
 *** Complex
@@ -1523,6 +1538,15 @@ global b2 = { assert_eq("foo", "bar", "lorem"); };
           (str_content))))))
 #+end_test
 
+*** Missing semicolon
+#+begin_test :error
+global f1 = { assert(true) };
+#+end_test
+
+#+begin_test :error
+global b1 = { assert_eq(true) };
+#+end_test
+
 *** Argument identifiers
 #+begin_test :skip
 global f1 = { assert(true, 1, x); };
@@ -1558,10 +1582,10 @@ global f2 = { assert(,); };
 
 ** Comptime
 #+begin_test
-global f1 = { comptime { }; };
+global f1 = { comptime { 1; } };
 global f2 = { comptime let x = "foo"; };
 global f3 = { comptime let mut y = true; };
-global f3 = { comptime for i in 0..10 { }; };
+global f3 = { comptime for i in 0..10 { } };
 
 ---
 
@@ -1569,7 +1593,9 @@ global f3 = { comptime for i in 0..10 { }; };
   name: (identifier)
   (block
     (comptime_statement
-      (block))))
+      (block
+        (expression_statement
+          (int_literal))))))
 (global_item
   name: (identifier)
   (block
@@ -1600,9 +1626,9 @@ global f3 = { comptime for i in 0..10 { }; };
 
 ** For
 #+begin_test
-global f1 = { for i in 0..10 { }; };
-global f2 = { for i in 0..9+1 { }; };
-global f3 = { for i in 0..=5 { }; };
+global f1 = { for i in 0..10 { } };
+global f2 = { for i in 0..9+1 { } };
+global f3 = { for i in 0..=5 { } };
 
 
 ---
@@ -1654,16 +1680,51 @@ global f2 = { for foo in 0 .. std::array::len(bar) { } };
       body: (block))))
 #+end_test
 
-** If                                                                  :stub:
+** TODO If                                                        :statement:
+:PROPERTIES:
+:CUSTOM_ID: h:21301E10-509A-4CF3-A8D3-41318D9982FF
+:END:
 
-AST =IfStatement= /is/ =IfExpression= so look to [[#h:9289816C-EFC5-4F57-ABC6-94FC4CF11A21][If (Expression)]] tests instead.
+Also see: [[#h:9289816C-EFC5-4F57-ABC6-94FC4CF11A21][If (Expression)]] tests.
+
+Explicitly for the case IfExpression is used as a Statement.
+
+#+begin_test :skip
+TODO
+#+end_test
 
 ** Block                                                               :stub:
 
 AST =BlockStatement= /is/ =Block= (an expression) so look to [[#h:26192D97-5D6A-47B9-A598-98A41B83BD47][Block (Expression)]] tests instead.
 
-** Assign
-x
+** TODO Assign
+
+Need (as appropriate) more complex tests still.
+
+#+begin_test
+global f1 = { x = y; };
+global f2 = { x += 123; };
+
+---
+
+(global_item
+  name: (identifier)
+  (block
+    (assign_statement
+      left: (identifier)
+      right: (identifier))))
+(global_item
+  name: (identifier)
+  (block
+    (assign_statement
+      left: (identifier)
+      right: (int_literal))))
+#+end_test
+
+*** Missing semicolon
+#+begin_test :error
+global f = { x = y };
+#+end_test
 
 ** Expression
 x
@@ -2265,25 +2326,28 @@ global foo3 = N % x;
     right: (identifier)))
 #+end_test
 
-** Unary
-
+** TODO Unary
 TODO
 
-** If
+** If                                                            :expression:
 :PROPERTIES:
 :CUSTOM_ID: h:9289816C-EFC5-4F57-ABC6-94FC4CF11A21
 :END:
+
+Also see: [[#h:21301E10-509A-4CF3-A8D3-41318D9982FF][If (Statement)]] tests.
+
+Explicitly for the case IfExpression is used as an Expression.
 
 *************** TODO Blocks are empty because not at ExpressionStatement yet
 So having ={ 1 }= in a test is currently an error and I don't want to have let bindings in the blocks etc since it complicates the checked CST, once I add ExpressionStatements can augment these. Similarly elsewhere with Literals and Expressions e.g. in for statements I believe.
 *************** END
 
 #+begin_test
-global f1 = { if 1 { }; };
+global f1 = { if 1 { } };
 
-global b1 = { if true { } else { }; };
-global b2 = { if 1 { } else if false { }; };
-global b3 = { if 3 == 3 { } else if false { } else { }; };
+global b1 = { if true { } else { } };
+global b2 = { if 1 { } else if false { } };
+global b3 = { if 3 == 3 { } else if false { } else { } };
 
 ---
 
@@ -2327,7 +2391,7 @@ global b3 = { if 3 == 3 { } else if false { } else { }; };
 *** Alternative order
 
 #+begin_test :error
-global f1 = { if 1 { } else { } else if 3 { }; };
+global f1 = { if 1 { } else { } else if 3 { } };
 #+end_test
 
 *** Alternative else with condition
@@ -2335,7 +2399,7 @@ global f1 = { if 1 { } else { } else if 3 { }; };
 Alternative =else= cannot have a condition, if a condition is required another if expression must follow, i.e. =else if=.
 
 #+begin_test :error
-global f1 = { if 1 { } else 2 { }; };
+global f1 = { if 1 { } else 2 { } };
 #+end_test
 
 * Types

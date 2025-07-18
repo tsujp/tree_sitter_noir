@@ -966,7 +966,7 @@ seq(
     repeat(choice(<<r("modifier_mut")>>, <<r("modifier_comptime")>>)),
     'global',
     field('name', <<r("identifier")>>),
-    field('type', optional(<<r("type_annotation")>>)), // Inlined Noirc: OptionalTypeAnnotation.
+    <<field__type_annotation>>,
     '=',
     <<r("expression")>>,
     ';',
@@ -2032,42 +2032,30 @@ As the parsing function for PathGenerics shows, any NamedArgs will return a pars
 :PROPERTIES:
 :CUSTOM_ID: h:B3C4609F-307A-42A1-B420-DBBAB6CDE6E5
 :END:
-:pgd:
-+ =fn= by [[#h:65B0176B-B46F-4679-8535-C504870AC048][ident]] (token) by [[#h:BA1422E4-AB97-4099-8346-5845CA9223A1][Generics]] by [[#h:B635EAF3-0AE1-47E0-8817-7174186912D8][FunctionParameters]]
-+ (opt grp) =->= by [[#h:17BBA21C-65D3-447D-93DE-2F13E16575C5][Visibility]] by [[#h:B3490B7C-F387-49C7-BF94-DC9CE8AC3581][Type]]
-+ [[#h:ED279BDF-F033-4C47-9105-6AC549CE7C31][WhereClause]] by (grp)
-  - [[#h:B34CADE5-71B4-41F2-AB54-00483EE593A6][Block]]
-  - =;=
-:end:
 
 #+name: function
-#+begin_src js :arg $ :ast Function
+#+begin_src js :rule function_item :arg $ :ast Function
 seq(
     optional(<<r("item_visibility")>>),
-    optional(<<r("function_modifiers")>>),
+    repeat(choice(<<r("modifier_comptime")>>, <<r("modifier_unconstrained")>>)),
     'fn',
-    field('name', $.identifier),
-    // TODO: Generics
+    field('name', <<r("identifier")>>),
+    field('type_parameters', optional(<<r("generic_parameters")>>)),
     field('parameters', <<r("function_parameters")>>),
-    optional(seq('->', optional(<<r("visibility")>>), $._type)),
+    optional(seq('->', optional(<<r("visibility")>>), <<r("type")>>)),
     optional(<<r("where")>>),
-    choice($.block, ';'),
+    // No optional body allowed at this locus.
+    field('body', <<r("block")>>),
 )
-#+end_src
-
-#+name: function_modifiers
-#+begin_src js :arg $
-'TODO________FUNCTION_MODIFIERS'
 #+end_src
 
 Parser: [[file:noir/compiler/noirc_frontend/src/parser/parser/item.rs::if self.eat_keyword(Keyword::Fn) {][parse_function() parent callsite]], [[file:noir/compiler/noirc_frontend/src/parser/parser/function.rs::fn parse_function(][parse_function()]]
 Types: [[file:noir/compiler/noirc_frontend/src/ast/function.rs::pub struct NoirFunction {][NoirFunction struct]], [[file:noir/compiler/noirc_frontend/src/ast/expression.rs::pub struct FunctionDefinition {][FunctionDefinition struct]]
+All [[#h:2A9D09A5-2E52-4B8C-ABA1-0B3B953F093C][Modifiers]] except =mutable= are applicable.
 
-Mutable modifier =mut= **not applicable**; presence raises parse error.
-Function parameter =self= **not allowed** when called via ItemKind.
+Function parameter =self= **not allowed** at this locus.
 
-:callstack:
-Check status here refers to how these functions are called at their callsite, not that they have been implemented etc (see their associated headline TODO status).
+Parser immediately calls [[file:noir/compiler/noirc_frontend/src/parser/parser/function.rs::fn parse_function_definition(][parse_function_definition()]] which then calls [[file:noir/compiler/noirc_frontend/src/parser/parser/function.rs::fn parse_function_definition_with_optional_body(][parse_function_definition_with_optional_body()]] with =allow_optional_body= ~false~ and =allow_self= ~false~.
 
 - [ ] [[file:noir/compiler/noirc_frontend/src/parser/parser/traits.rs::fn parse_trait_function(&mut self)][parse_trait_function()]]
 - [X] [[file:noir/compiler/noirc_frontend/src/parser/parser/function.rs::fn parse_function(][parse_function()]]
@@ -2082,12 +2070,11 @@ Check status here refers to how these functions are called at their callsite, no
       - [X] [[file:noir/compiler/noirc_frontend/src/parser/parser/types.rs::fn parse_type(&mut self)][parse_type()]] (is: [[#h:B3490B7C-F387-49C7-BF94-DC9CE8AC3581][Type]])
       - [X] [[file:noir/compiler/noirc_frontend/src/parser/parser/where_clause.rs::fn parse_where_clause(&mut self)][parse_where_clause()]] (is: [[#h:ED279BDF-F033-4C47-9105-6AC549CE7C31][WhereClause]])
       - [X] [[file:noir/compiler/noirc_frontend/src/parser/parser/expression.rs::fn parse_block(&mut self)][parse_block()]] (is: [[#h:B34CADE5-71B4-41F2-AB54-00483EE593A6][Block]])
-:end:
 
 #+name: ,ebnf_function
 #+transclude: [[file:noir/compiler/noirc_frontend/src/parser/parser/function.rs::34][Parser::parse_function()]] :lines 34-34 :src fundamental
 
-*************** TODO Look at the call to validate_attributes and document it if required
+*************** TODO validate_attributes and document it if required
 Said call is within the parse_function_definition function, first expression.
 *************** END
 *************** TODO Look at type FunctionDefinitionWithOptionalBody and FunctionDefinition
@@ -2164,38 +2151,39 @@ Types: [[file:noir/compiler/noirc_frontend/src/ast/expression.rs::pub struct Par
 Tired, perhaps parse_function_parameter, pattern_param, self_pattern_param have things of consequence in them (or not). It has ~self~ vs ~Self~ in it which is a straight identifier in the former case and a path to an identifier in the latter.
 *************** END
 
-***** SPEC Visibility                                                  :node:
+***** SPEC Visibility
 :PROPERTIES:
 :CUSTOM_ID: h:17BBA21C-65D3-447D-93DE-2F13E16575C5
 :END:
 :LOGBOOK:
+- State "SPEC"       from "SPEC"       [2025-07-14 Mon 15:16] \\
+  Re-mark spec after fixing accidental inline of =call_data(= instead of =call_data=. Plus reviewing Function downwards now that significant progress made elsewhere.
 - State "SPEC"       from "TOIMPL"     [2025-06-10 Tue 20:09]
 - State "TOIMPL"     from "TODO"       [2025-05-15 Thu 20:36]
 :END:
-:pgd:
-- =pub= (kw)
-- =return_data= (kw)
-- =call_data= (kw) by =(= by [[#h:CA7F6441-C376-4A8E-9C59-B128CC1F841A][int]] (token) by =)=
-- NIL
-:end:
 
 #+name: visibility
 #+begin_src js :arg $ :ast Visibility
 choice(
     'pub',
     'return_data',
-    seq('call_data(', <<r("int")>> ,')'),
+    seq('call_data', '(', <<r("int")>> ,')'),
 )
 #+end_src
 
 Parser: [[file:noir/compiler/noirc_frontend/src/parser/parser/function.rs::fn parse_visibility(&mut self)][parse_visibility()]]
+Types: [[file:noir/compiler/noirc_frontend/src/ast/expression.rs::pub enum FunctionReturnType {][FunctionReturnType enum]]
 
-#+transclude: [[file:noir/compiler/noirc_frontend/src/parser/parser/function.rs][Visibility]] :lines 213-217 :src rust
+Strictly function return visibility. Default visibility is private.
 
-Strictly function return visibility. Default visibility is private. Within parent  [[file:noir/compiler/noirc_frontend/src/parser/parser/function.rs::fn parse_function_definition_with_optional_body(][parse_function_definition_with_optional_body()]] (at: [[#h:B3C4609F-307A-42A1-B420-DBBAB6CDE6E5][Function]]) set on eventually returned ~FunctionDefinitionWithOptionalBody~:
-#+transclude: [[file:noir/compiler/noirc_frontend/src/parser/parser/function.rs][FunctionVisibility]] :lines 97-102 :src rust
+#+name: ,ebnf_visibility
+#+begin_src fundamental
+/// Visibility = ( 'pub' | 'return_data' | ( 'call_data' '(' int ')' ) )?
+#+end_src
+Original EBNF: [[file:noir/compiler/noirc_frontend/src/parser/parser/function.rs::213][Visibility doc]]
 
-#+transclude: [[file:noir/compiler/noirc_frontend/src/ast/expression.rs][FunctionReturnType]] :lines 523-529 :src rust
+*************** TODO Update Visibility EBNF
+*************** END
 
 ***** TODO Expression
 
@@ -2888,36 +2876,39 @@ Guaranteed to NOT have a colon =:= following it.
 #+transclude: [[file:noir/compiler/noirc_frontend/src/lexer/token.rs::1093][`self` is not a keyword]] :lines 1093-1094 :src rust
 :end:
 
-*** TODO Expression                                            :cluster:node:
+*** TODO Expression
 :PROPERTIES:
 :CUSTOM_ID: h:167542CC-8CDE-49C1-9465-E5157C6A176F
 :END:
 :LOGBOOK:
 - State "TODO"       from              [2025-06-12 Thu 18:48]
 :END:
-:pgd:
+
 - [[id:7A38952D-D669-4DD6-AF3A-065CB546CB21][Infix]] (BinaryExpression)
 - [[#h:24F065BB-8AC3-48EE-8C8E-64E188E2AE16][Literal]]
-:end:
 
 #+name: expression
 #+begin_src js :rule _expression :arg $
-choice(
+prec(1, choice(
     <<r("binary_expression")>>,
+    // Inlined Noirc: Atom.
     <<r("literal")>>,
+    // TODO: The rest of the items, ParenthesesExpression, UnsafeExpression etc.
+    <<r("if_expression")>>,
+    // ---/
     // TODO: SURELY identifier is allowed in expression, where's the concrete evidence though? Assuming it is for now.
     <<r("identifier")>>,
-)
+))
 #+end_src
 
-Parser: [[file:noir/compiler/noirc_frontend/src/parser/parser/expression.rs::pub(crate) fn parse_expression_or_error(&mut self)][parse_expression_or_error()]], [[file:noir/compiler/noirc_frontend/src/parser/parser/expression.rs::fn parse_expression_impl(&mut self, allow_constructors: bool)][parse_expression_impl()]], [[file:noir/compiler/noirc_frontend/src/parser/parser/infix.rs::pub(super) fn parse_equal_or_not_equal(][parse_equal_or_not_equal()]]
+Parser: [[file:noir/compiler/noirc_frontend/src/parser/parser/expression.rs::fn parse_expression_or_error(&mut self)][parse_expression_or_error()]], [[file:noir/compiler/noirc_frontend/src/parser/parser/expression.rs::fn parse_expression_impl(&mut self, allow_constructors: bool)][parse_expression_impl()]], [[file:noir/compiler/noirc_frontend/src/parser/parser/infix.rs::fn parse_equal_or_not_equal(][parse_equal_or_not_equal()]]
 
 *************** TODO Document Literal as appropriate in org tree
 Currently lots of confusing names, got lexing at the top, literal at the bottom with more lexing info (which does make sense tho) and then also an AST node called Literal we should keep track of:
 [[file:noir/compiler/noirc_frontend/src/parser/parser/expression.rs::/// Literal][Literal doc]]
 *************** END
 
-**** Infix
+**** Infix                                                           :pseudo:
 :PROPERTIES:
 :CUSTOM_ID: h:ACCBF119-4052-4C4E-87CE-F7B233FF4AA1
 :END:
@@ -2951,29 +2942,32 @@ Currently lots of confusing names, got lexing at the top, literal at the bottom 
 
 All the expression nodes in [[file:noir/compiler/noirc_frontend/src/parser/parser/infix.rs][infix.rs]] constitute binary expressions and their call hierarchy via [[#h:CE180901-F6F2-4A65-878D-6C9154971376][parse_infix]] denotes the reverse of their precedence. Note that the deepest call (in that file) [[file:noir/compiler/noirc_frontend/src/parser/parser/infix.rs::pub(super) fn parse_multiply_or_divide_or_modulo(][parse_multiply_or_divide_or_modulo()]] further calls [[file:noir/compiler/noirc_frontend/src/parser/parser/expression.rs::pub(super) fn parse_term(&mut self, allow_constructors: bool)][parse_term()]] meaning all of Term's (TODO: link) expressions are higher priority still.
 
-**** TODO Literal                                                      :node:
+**** TODO Literal
 :PROPERTIES:
 :CUSTOM_ID: h:24F065BB-8AC3-48EE-8C8E-64E188E2AE16
 :END:
-:pgd:
+
 - [[id:CF0A439A-EFBB-466E-8F5F-7A8827EB703E][QuoteExpression]]
 - [[#h:48EA91F0-AB43-4FEF-94F1-3837C634CF38][ArrayExpression]]
 - [[#h:C6FDB5DB-21D9-46A2-A4E8-DEE2AFFD1F6F][SliceExpression]]
 - [[#h:B34CADE5-71B4-41F2-AB54-00483EE593A6][BlockExpression]]
-:end:
 
 #+name: literal
 #+begin_src js :rule __literal :arg $ :ast Literal
-choice(
-    <<r("bool")>>,
-    <<r("int")>>,
-    <<r("str")>>,
-    <<r("raw_str")>>,
-    <<r("fmt_str")>>,
-    // $.quote_expression, // TODO: Broken for now.
-    <<r("array_expression")>>,
-    <<r("slice_expression")>>,
-    <<r("block_expression")>>,
+prec(
+    // Literals need to bind more tightly than Statement so things like SliceExpression are correctly associated. Since this is similar to Unary we use the same precedence level.
+    PRECEDENCE.unary,
+    choice(
+        <<r("bool")>>,
+        <<r("int")>>,
+        <<r("str")>>,
+        <<r("raw_str")>>,
+        <<r("fmt_str")>>,
+        // $.quote_expression, // TODO: Broken for now.
+        <<r("array_expression")>>,
+        <<r("slice_expression")>>,
+        <<r("block")>>,
+    ),
 )
 #+end_src
 
@@ -2997,7 +2991,7 @@ https://noir-lang.org/docs/noir/concepts/comptime#quasi-quote
 alias(<<r("quote")>>, $.quote_expression)
 #+end_src
 
-**** DONE ArrayExpression                                              :node:
+**** DONE ArrayExpression
 CLOSED: [2025-06-22 Sun 02:11]
 :PROPERTIES:
 :CUSTOM_ID: h:48EA91F0-AB43-4FEF-94F1-3837C634CF38
@@ -3006,10 +3000,9 @@ CLOSED: [2025-06-22 Sun 02:11]
 - State "DONE"       from "TODO"       [2025-06-22 Sun 02:11]
 - State "TODO"       from              [2025-06-21 Sat 16:38]
 :END:
-:pgd:
+
 - [[#h:D27534C1-90A8-4A0C-A601-55A631D16C89][StandardArrayLiteral]]
 - [[#h:437EA6B2-BF82-44D3-8B1F-ABA5BD8B3675][RepeatedArrayLiteral]]
-:end:
 
 #+name: array_expression
 #+begin_src js :arg $ :ast ArrayExpression
@@ -3075,7 +3068,7 @@ CLOSED: [2025-06-22 Sun 02:11]
 
 Parser at parent. Returns ~ArrayLiteral::Repeated~.
 
-**** DONE SliceExpression                                              :node:
+**** DONE SliceExpression
 CLOSED: [2025-06-24 Tue 16:48]
 :PROPERTIES:
 :CUSTOM_ID: h:C6FDB5DB-21D9-46A2-A4E8-DEE2AFFD1F6F
@@ -3083,9 +3076,6 @@ CLOSED: [2025-06-24 Tue 16:48]
 :LOGBOOK:
 - State "DONE"       from              [2025-06-24 Tue 16:48]
 :END:
-:pgd:
-+ =&= by [[#h:48EA91F0-AB43-4FEF-94F1-3837C634CF38][ArrayExpression]]
-:end:
 
 #+name: slice_expression
 #+begin_src js :arg $ :ast SliceExpression
@@ -3096,19 +3086,16 @@ Parser: [[file:noir/compiler/noirc_frontend/src/parser/parser/expression.rs::if 
 
 #+transclude: [[file:noir/compiler/noirc_frontend/src/parser/parser/expression.rs::670][SliceExpression doc]] :lines 670-670 :src fundamental
 
-**** TODO BlockExpression                                              :node:
+**** TODO BlockExpression                                             :alias:
 :PROPERTIES:
 :CUSTOM_ID: h:B34CADE5-71B4-41F2-AB54-00483EE593A6
 :END:
 :LOGBOOK:
 - State "TODO"       from              [2025-05-15 Thu 20:50]
 :END:
-:pgd:
-+ ={= by (rep0) [[#h:788ECB8C-0A48-4255-B35E-F5850902AA32][Statement]] by =}=
-:end:
 
-#+name: block_expression
-#+begin_src js :rule block :arg $ :ast BlockExpression
+#+name: block
+#+begin_src js :arg $ :ast "Block, BlockExpression, BlockStatement"
 seq(
     '{',
     repeat(<<r("statement")>>),
@@ -3116,22 +3103,25 @@ seq(
 )
 #+end_src
 
-Parser: [[file:noir/compiler/noirc_frontend/src/parser/parser/expression.rs::if let Some(kind) = self.parse_block() {][parse_block() parent callsite]], [[file:noir/compiler/noirc_frontend/src/parser/parser/expression.rs::pub(super) fn parse_block(&mut self)][parse_block()]]
-
-#+transclude: [[file:noir/compiler/noirc_frontend/src/parser/parser/expression.rs::721][Block doc]] :lines 721-721 :src fundamental
+Parser: [[file:noir/compiler/noirc_frontend/src/parser/parser/expression.rs::fn parse_block(&mut self)][parse_block()]]
+Parent callsites:
+  - [[file:noir/compiler/noirc_frontend/src/parser/parser/expression.rs::if let Some(kind) = self.parse_block() {][parse_block() parent parse_literal()]] (for: [[#h:3446FD3E-4526-4DBF-80AB-64BD9078C4F5][Literals]])
+  - [[file:noir/compiler/noirc_frontend/src/parser/parser/function.rs::Some(self.parse_block().unwrap_or_else(empty_body))][parse_block() parent parse_function_definition_with_optional_body()]] (for: [[#h:B3C4609F-307A-42A1-B420-DBBAB6CDE6E5][Function]])
+Aliases: BlockExpression, BlockStatement
 
 Via [[#h:8E0DC05B-1ED6-47BE-9589-64DC06FAECCA][parse_many]] split by nothing until =}= each parsed as a [[#h:788ECB8C-0A48-4255-B35E-F5850902AA32][Statement]] via [[file:noir/compiler/noirc_frontend/src/parser/parser/expression.rs::fn parse_statement_in_block(&mut self)][parse_statement_in_block()]].
-#+transclude: [[file:noir/compiler/noirc_frontend/src/parser/parser/expression.rs::727][parse_many block statements]] :lines 727-731 :src rust
 
-All statements except the last require a semicolon at the end, see [[file:noir/compiler/noirc_frontend/src/parser/parser/expression.rs::fn check_statements_require_semicolon(][check_statements_require_semicolon()]]. For the last statement a semicolon is optional. It is an error for non-terminal statements to NOT have a semicolon.
+All statements except the last require a semicolon at the end, see [[file:noir/compiler/noirc_frontend/src/parser/parser/expression.rs::fn check_statements_require_semicolon(][check_statements_require_semicolon()]]. It is generally an error for non-terminal statements to NOT have a semicolon **however** specific of which statement kinds require a semicolon are found on [[file:noir/compiler/noirc_frontend/src/ast/statement.rs::impl StatementKind {][impl StatementKind::add_semicolon()]].
 
 Struct ~BlockExpression~ ([[file:noir/compiler/noirc_frontend/src/ast/expression.rs::pub struct BlockExpression {][src]]) contains vector of ~Statement~ structs, each of a ~StatementKind~ ([[file:noir/compiler/noirc_frontend/src/ast/statement.rs::pub enum StatementKind {][src]]) enum (see also: [[#h:788ECB8C-0A48-4255-B35E-F5850902AA32][Statement]]).
 
-*************** TODO Blocks without statements are not allowed in Noir
-But the pseudo-grammar says it is, so what is it really?
+*************** TODO Go through add_semicolon documenting the statements that require a semicolon for ts grammar
 *************** END
 
-**** DONE IfExpression                                                 :node:
+#+name: ,ebnf_block
+#+transclude: [[file:noir/compiler/noirc_frontend/src/parser/parser/expression.rs::721][Block doc]] :lines 721-721 :src fundamental
+
+**** DONE If                                                          :alias:
 CLOSED: [2025-06-29 Sun 20:01]
 :PROPERTIES:
 :CUSTOM_ID: h:16951F18-730F-4A1F-84C9-3A1F78F67DF0
@@ -3140,68 +3130,72 @@ CLOSED: [2025-06-29 Sun 20:01]
 - State "DONE"       from "TODO"       [2025-06-29 Sun 20:01]
 - State "TODO"       from              [2025-06-26 Thu 17:58]
 :END:
-:pgd:
-+ =if= (kw) by [[#h:167542CC-8CDE-49C1-9465-E5157C6A176F][Expression]] by [[#h:B34CADE5-71B4-41F2-AB54-00483EE593A6][BlockExpression]]
-+ (opt grp) =else= (kw) by
-  - [[#h:B34CADE5-71B4-41F2-AB54-00483EE593A6][BlockExpression]]
-  - [[#h:16951F18-730F-4A1F-84C9-3A1F78F67DF0][IfExpression]]
-:end:
 
 #+name: if_expression
 #+begin_src js :arg $ :ast "IfStatement, IfExpression"
 seq(
     'if',
     field('condition', <<r("expression")>>),
-    field('consequence', <<r("block_expression")>>),
+    field('consequence', <<r("block")>>),
     optional(seq(
         'else',
-        field('alternative', choice(<<r("block_expression")>>, <<self()>>)),
+        field('alternative', choice(<<r("block")>>, <<self()>>)),
     )),
 )
 #+end_src
 
-Parser: [[file:noir/compiler/noirc_frontend/src/parser/parser/statement.rs::if let Some(kind) = self.parse_if_expr() {][parse_if_expr() parent callsite]], [[file:noir/compiler/noirc_frontend/src/parser/parser/expression.rs::pub(super) fn parse_if_expr(&mut self)][parse_if_expr()]]
+Parser: [[file:noir/compiler/noirc_frontend/src/parser/parser/expression.rs::fn parse_if_expr(&mut self)][parse_if_expr()]]
+Parent callsites:
+  - [[file:noir/compiler/noirc_frontend/src/parser/parser/statement.rs::if let Some(kind) = self.parse_if_expr() {][in parse_statement_kind()]] (for: [[#h:788ECB8C-0A48-4255-B35E-F5850902AA32][Statement]], as: IfStatement)
+  - [[file:noir/compiler/noirc_frontend/src/parser/parser/expression.rs::if let Some(kind) = self.parse_if_expr() {][in parse_atom_kind()]] (for: (TODO: Link Atom), as: IfExpression)
 
+#+name: ,ebnf_if_expression
 #+transclude: [[file:noir/compiler/noirc_frontend/src/parser/parser/expression.rs::442][IfExpression doc]] :lines 442-442 :src fundamental
 
 *************** TODO This has ExpressionExceptConstructor stuff similar to ForRange
 Refactor accordingly, if appropriate.
 *************** END
 
-*** TODO Statement                                                     :node:
+*** TOIMPL Statement
 :PROPERTIES:
 :CUSTOM_ID: h:788ECB8C-0A48-4255-B35E-F5850902AA32
 :END:
-:pgd:
-+ Attributes (TODO link to) by [[#h:7BCA6405-C905-45AB-A3C7-1B7F6064454A][StatementKind]] by (opt) =;=
-:end:
+:LOGBOOK:
+- State "TOIMPL"     from "TODO"       [2025-07-15 Tue 21:25] \\
+  Parser function explored, need to consider what to do for ts rule
+:END:
 
 #+name: statement
-#+begin_src js :rule _statement_ast :arg $ :ast Statement
-// seq(
-//     choice(
-//         // TODO: Attributes.
-//         <<r("statement_kind")>>,
-//         // TODO: Could have as an alias to expression instead, would still result in a node.
-//         <<r("expression_statement")>>,
-//     ),
-//     ';',
+#+begin_src js :rule _statement :arg $ :ast Statement
 seq(
     // TODO: Attributes.
-    <<r("statement_kind")>>,
-    ';',
+    choice(
+        // Inlined Noirc: StatementKind.
+        <<r("break_statement")>>,
+        <<r("continue_statement")>>,
+        <<r("return_statement")>>,
+        <<r("let_statement")>>,
+        <<r("constrain_statement")>>,
+        <<r("comptime_statement")>>,
+        <<r("for_statement")>>,
+        <<r("if_expression")>>,
+        <<r("block")>>,
+        <<r("assign_statement")>>,
+        <<r("expression_statement")>>,
+    ),
 )
 #+end_src
 
-Parser: [[file:noir/compiler/noirc_frontend/src/parser/parser/statement.rs::fn parse_statement(&mut self)][parse_statement()]]
 
+Parser: [[file:noir/compiler/noirc_frontend/src/parser/parser/statement.rs::fn parse_statement(&mut self)][parse_statement()]]
+Types: [[file:noir/compiler/noirc_frontend/src/ast/statement.rs::pub enum StatementKind {][StatementKind enum]]
+
+Loop parsing attributes and [[#h:7BCA6405-C905-45AB-A3C7-1B7F6064454A][StatementKind]], each StatementKind is delimited by a semicolon.
+
+#+name: ,ebnf_statement
 #+transclude: [[file:noir/compiler/noirc_frontend/src/parser/parser/statement.rs::25][Statement doc]] :lines 25-25 :src fundamental
 
-#+transclude: [[file:noir/compiler/noirc_frontend/src/ast/statement.rs::36][Statement AST info]] :lines 36-38 :src fundamental
-
-Loop parsing attributes and statement kind, each statement is delimited by a semicolon.
-
-**** BLOCK StatementKind                                       :node:cluster:
+**** BLOCK StatementKind
 :PROPERTIES:
 :CUSTOM_ID: h:7BCA6405-C905-45AB-A3C7-1B7F6064454A
 :END:
@@ -3210,7 +3204,7 @@ Loop parsing attributes and statement kind, each statement is delimited by a sem
   Finish breadth-first grammar exploration, when StatementKind callsites known can continue.
 - State "TODO"       from              [2025-05-20 Tue 18:16]
 :END:
-:pgd:
+
 - [[#h:71AB7D76-FD24-4B91-A187-E9968024DC0C][BreakStatement]]
 - [[#h:6616DE79-93E3-42AA-9633-4A29251F5BA0][ContinueStatement]]
 - [[#h:17935AE3-A964-49D1-927B-E67D035FD8D7][ReturnStatement]]
@@ -3222,27 +3216,11 @@ Loop parsing attributes and statement kind, each statement is delimited by a sem
 - [[#h:B305BFF3-A865-4292-A8E5-5448D38CE872][BlockStatement]]
 - [[#h:D8D0BBE8-6152-479B-8C19-282B2B56C4A9][AssignStatement]]
 - [[#h:12F5ADF9-E496-4D5B-896E-5CE97D44BE3D][ExpressionStatement]]
-:end:
-
-#+name: statement_kind
-#+begin_src js :rule _statement_kind :arg $ :ast StatementKind
-choice(
-    <<r("break_statement")>>,
-    <<r("continue_statement")>>,
-    <<r("return_statement")>>,
-    <<r("let_statement")>>,
-    <<r("constrain_statement")>>,
-    <<r("comptime_statement")>>,
-    <<r("for_statement")>>,
-    <<r("if_expression")>>,
-    <<r("block_expression")>>,
-    <<r("assign_statement")>>,
-    // Expression statement is handled at parent node for better CST.
-)
-#+end_src
 
 Parser: [[file:noir/compiler/noirc_frontend/src/parser/parser/statement.rs::fn parse_statement_kind(][parse_statement_kind()]]
 Types: [[file:noir/compiler/noirc_frontend/src/ast/statement.rs::pub struct Statement {][Statement struct]] / [[file:noir/compiler/noirc_frontend/src/ast/statement.rs::pub enum StatementKind {][StatementKind enum]]
+
+~StatementKind::Semi~ is an ~Expression~ with a trailing semicolon, i.e. an expression-statement (TODO: link to PROJECT.org).
 
 #+transclude: [[file:noir/compiler/noirc_frontend/src/parser/parser/statement.rs::59][StatementKind doc]] :lines 59-70 :src fundamental
 
@@ -3278,32 +3256,9 @@ _block_ending_statements: ($) => choice(
 )
 #+end_src
 
-Some ~StatementKind~\s do not require a terminating semicolon. Function ~StatementKind.add_semicolon~ ([[file:noir/compiler/noirc_frontend/src/ast/statement.rs::impl StatementKind {
- pub fn add_semicolon(][src]]) appears to handle this.
 
-~StatementKind~ optional semicolons:
-- ~For~
-- ~Interned~
-- ~Expression~ inner ~ExpressionKind~ optional semicolons:
-  - ~Block~
-  - ~Unsafe~
-  - ~Interned~
-  - ~InternedStatement~
-  - ~If~ :: Presence of a semicolon turns wrapping ~StatementKind~ into ~StatementKind::Semi~, otherwise (if no semicolon) it remains ~StatementKind::Expression~.
 
-~StatementKind~ required semicolons:
-- ~Let~
-- ~Constrain~
-- ~Assign~
-- ~Semi~
-- ~Break~
-- ~Continue~
-- ~Error~
-
-*************** TODO Comptime statement recurses a bit, do that later. See line 99
-*************** END
-
-***** DONE BreakStatement                                              :leaf:
+***** DONE BreakStatement
 CLOSED: [2025-06-24 Tue 17:43]
 :PROPERTIES:
 :CUSTOM_ID: h:71AB7D76-FD24-4B91-A187-E9968024DC0C
@@ -3313,19 +3268,19 @@ CLOSED: [2025-06-24 Tue 17:43]
 - State "TOIMPL"     from "TODO"       [2025-05-20 Tue 19:03]
 - State "TODO"       from              [2025-05-20 Tue 18:16]
 :END:
-:pgd:
-+ =break= (kw)
-:end:
 
 #+name: break_statement
 #+begin_src js :ast BreakStatement
-'break'
+seq('break', ';')
 #+end_src
 
-Parser: [[file:noir/compiler/noirc_frontend/src/parser/parser/statement.rs::if self.eat_keyword(Keyword::Break) {][parse break statement parent inline]]
+Parser: [[file:noir/compiler/noirc_frontend/src/parser/parser/statement.rs::if self.eat_keyword(Keyword::Break) {][parse_break_statement() parent inline]]
+
+See [[#h:3F52F622-294C-463F-986F-DD38EB41EA89][add_semicolon]], ~StatementKind::Break~ always requires a semicolon.
+
 Takes nothing (unlike say Rust where an expression can follow), only the keyword.
 
-***** DONE ContinueStatement                                           :leaf:
+***** DONE ContinueStatement
 CLOSED: [2025-06-24 Tue 17:47]
 :PROPERTIES:
 :CUSTOM_ID: h:6616DE79-93E3-42AA-9633-4A29251F5BA0
@@ -3335,18 +3290,17 @@ CLOSED: [2025-06-24 Tue 17:47]
 - State "TOIMPL"     from "TODO"       [2025-05-20 Tue 19:07]
 - State "TODO"       from              [2025-05-20 Tue 18:16]
 :END:
-:pgd:
-+ =continue= (kw)
-:end:
 
 #+name: continue_statement
 #+begin_src js :ast ContinueStatement
-'continue'
+seq('continue', ';')
 #+end_src
 
-Parser: [[file:noir/compiler/noirc_frontend/src/parser/parser/statement.rs::if self.eat_keyword(Keyword::Continue) {][parse continue statement parent inline]]
+Parser: [[file:noir/compiler/noirc_frontend/src/parser/parser/statement.rs::if self.eat_keyword(Keyword::Continue) {][parse_continue_statement() parent inline]]
 
-***** DONE ReturnStatement                                             :node:
+See [[#h:3F52F622-294C-463F-986F-DD38EB41EA89][add_semicolon]], ~StatementKind::Continue~ always requires a semicolon.
+
+***** DONE ReturnStatement
 CLOSED: [2025-06-25 Wed 14:06]
 :PROPERTIES:
 :CUSTOM_ID: h:17935AE3-A964-49D1-927B-E67D035FD8D7
@@ -3355,25 +3309,22 @@ CLOSED: [2025-06-25 Wed 14:06]
 - State "DONE"       from "TODO"       [2025-06-25 Wed 14:06]
 - State "TODO"       from              [2025-05-20 Tue 18:16]
 :END:
-:pgd:
-+ =return= (kw) by (opt) [[#h:167542CC-8CDE-49C1-9465-E5157C6A176F][Expression]]
-:end:
 
 #+name: return_statement
 #+begin_src js :arg $ :ast ReturnStatement
-seq('return', optional(<<r("expression")>>))
+seq('return', optional(<<r("expression")>>), ';')
 #+end_src
 
-Parser: [[file:noir/compiler/noirc_frontend/src/parser/parser/statement.rs::if self.eat_keyword(Keyword::Return) {][parse return statement parent inline]]
+Parser: [[file:noir/compiler/noirc_frontend/src/parser/parser/statement.rs::if self.eat_keyword(Keyword::Return) {][parse_return_statement() parent inline]]
+
+See [[#h:3F52F622-294C-463F-986F-DD38EB41EA89][add_semicolon]], ~StatementKind::Error~ always requires a semicolon.
 
 #+transclude: [[file:noir/compiler/noirc_frontend/src/parser/parser/statement.rs::76][ReturnStatement doc]] :lines 76-76 :src fundamental
 
-*************** TODO I thought return statement is always an error in noir since no early returns
-*************** END
 *************** TODO Does the BNF doc have an error is is code missing that makes it actually optional?
 *************** END
 
-***** SPEC LetStatement                                                :node:
+***** SPEC LetStatement
 :PROPERTIES:
 :CUSTOM_ID: h:FD70AFA1-5D45-434E-A9D0-7E8F6DD38058
 :END:
@@ -3382,13 +3333,6 @@ Parser: [[file:noir/compiler/noirc_frontend/src/parser/parser/statement.rs::if s
   Still needs more test coverage
 - State "TODO"       from              [2025-05-20 Tue 18:16]
 :END:
-:pgd:
-+ =let= (kw)
-+ [[#h:D349E307-F033-4D2A-A729-F2EE5B483065][Pattern]]
-+ OptionalTypeAnnotation (TODO link)
-+ ===
-+ [[#h:167542CC-8CDE-49C1-9465-E5157C6A176F][Expression]]
-:end:
 
 #+name: let_statement
 #+begin_src js :arg $ :ast LetStatement
@@ -3396,26 +3340,33 @@ seq(
     'let',
     optional($.mut_bound),
     field('pattern', <<r("pattern")>>),
-    // TODO: OptionalTypeAnnotation
+    <<field__type_annotation>>,
     '=',
     field('value', <<r("expression")>>),
+    ';',
 )
 #+end_src
 
-Parser: [[file:noir/compiler/noirc_frontend/src/parser/parser/statement.rs::if self.at_keyword(Keyword::Let) {][parse let statement parent callsite]], [[file:noir/compiler/noirc_frontend/src/parser/parser/statement.rs::fn parse_let_statement(&mut self, attributes: Vec<(Attribute, Span)>)][parse_let_statement()]]
+Parser: [[file:noir/compiler/noirc_frontend/src/parser/parser/statement.rs::if self.at_keyword(Keyword::Let) {][parse_let_statement() parent callsite]], [[file:noir/compiler/noirc_frontend/src/parser/parser/statement.rs::fn parse_let_statement(&mut self, attributes: Vec<(Attribute, Span)>)][parse_let_statement()]]
 
+See [[#h:3F52F622-294C-463F-986F-DD38EB41EA89][add_semicolon]], ~StatementKind::Let~ always requires a semicolon.
+
+#+name: ,ebnf_let_statement
 #+transclude: [[file:noir/compiler/noirc_frontend/src/parser/parser/statement.rs::351][LetStatement doc]] :lines 351-351 :src fundamental
 
+*************** TODO Change pattern field name to 'name'?
+Makes more sense I think
+*************** END
 *************** TODO Change rendered rule name to let_declaration?
 This kind of ties into using Statements as a category in the final rendered grammar.js anyway, since all _things_ are going to be at least statements anyway (or really, expressions since a statement is an expression with no return value). Semantics.
 *************** END
 *************** TODO Validate secondary attributes stuff in the let statement parse.
 I don't think we need to do that these attributes come from Statement, so long as we have things set correctly on Statement in terms of parsing attributes we're fine here (for the purpose of tree-sitter) I think.
 *************** END
-*************** TODO Noirc doc for pattern needs to be capital P since it's a proper AST node?
+*************** TODO Noirc EBNF for pattern needs to be capital P since it's a proper AST node?
 *************** END
 
-***** DONE ConstrainStatement                                          :node:
+***** DONE ConstrainStatement
 CLOSED: [2025-06-26 Thu 16:15]
 :PROPERTIES:
 :CUSTOM_ID: h:25216601-CAF6-4246-8289-B106F9A9166B
@@ -3424,10 +3375,6 @@ CLOSED: [2025-06-26 Thu 16:15]
 - State "DONE"       from "TODO"       [2025-06-26 Thu 16:15]
 - State "TODO"       from              [2025-05-20 Tue 18:16]
 :END:
-:pgd:
-+ =assert= (kw) OR =assert_eq= (kw)
-+ [[#h:FB4BC935-116B-4C56-B866-3842C5CA9B5F][Arguments]]
-:end:
 
 #+name: constrain_statement
 #+begin_src js :arg $ :ast ConstrainStatement
@@ -3436,10 +3383,13 @@ seq(
     // 'assert' expects 1 or 2 parameters, 'assert_eq' expects 2 or 3. This is out of scope for tree-sitter grammar (at least for now), if it's a boon without huge complexity the rules can be augmented to enforce this later.
     choice('assert', 'assert_eq'),
     field('arguments', <<r("arguments")>>),
+    ';',
 )
 #+end_src
 
-Parser: [[file:noir/compiler/noirc_frontend/src/parser/parser/statement.rs::if let Some(constrain) = self.parse_constrain_statement() {][parse constrain statement parent callsite]], [[file:noir/compiler/noirc_frontend/src/parser/parser/statement.rs::fn parse_constrain_statement(&mut self)][parse_constrain_statement()]], [[file:noir/compiler/noirc_frontend/src/parser/parser/statement.rs::fn parse_constrain_kind(&mut self)][parse_constrain_kind()]]
+Parser: [[file:noir/compiler/noirc_frontend/src/parser/parser/statement.rs::if let Some(constrain) = self.parse_constrain_statement() {][parse_constrain_statement() parent callsite]], [[file:noir/compiler/noirc_frontend/src/parser/parser/statement.rs::fn parse_constrain_statement(&mut self)][parse_constrain_statement()]], [[file:noir/compiler/noirc_frontend/src/parser/parser/statement.rs::fn parse_constrain_kind(&mut self)][parse_constrain_kind()]]
+
+See [[#h:3F52F622-294C-463F-986F-DD38EB41EA89][add_semicolon]], ~StatementKind::Constrain~ always requires a semicolon.
 
 #+transclude: [[file:noir/compiler/noirc_frontend/src/parser/parser/statement.rs::370][ConstrainStatement doc]] :lines 370-373 :src fundamental
 
@@ -3454,23 +3404,22 @@ CLOSED: [2025-06-26 Thu 17:51]
   Doing ForStatement before tests since it depends on that
 - State "TODO"       from              [2025-05-20 Tue 18:16]
 :END:
-:pgd:
+
 + [[#h:5092AC79-344E-465F-973E-70DC2ECF38FB][ComptimeBlock]] OR [[#h:46D5DE09-D9EB-4227-BB31-BA77B8B0063D][ComptimeLet]] OR [[#h:B0F78DC8-11C8-4D7E-A72C-7C3498574225][ComptimeFor]]
-:end:
 
 #+name: comptime_statement
 #+begin_src js :arg $ :ast ComptimeStatement
 seq(
     'comptime',
     choice(
-        <<r("block_expression")>>, // Noirc: ComptimeBlock
+        <<r("block")>>, // Noirc: ComptimeBlock
         <<r("let_statement")>>, // Noirc: ComptimeLet
         <<r("for_statement")>>, // Noirc: ComptimeFor
     ),
 )
 #+end_src
 
-Parser: [[file:noir/compiler/noirc_frontend/src/parser/parser/statement.rs::if self.at_keyword(Keyword::Comptime) {][parse comptime statement parent callsite]], [[file:noir/compiler/noirc_frontend/src/parser/parser/statement.rs::fn parse_comptime_statement(][parse_comptime_statement()]], [[file:noir/compiler/noirc_frontend/src/parser/parser/statement.rs::fn parse_comptime_statement_kind(][parse_comptime_statement_kind()]]
+Parser: [[file:noir/compiler/noirc_frontend/src/parser/parser/statement.rs::if self.at_keyword(Keyword::Comptime) {][parse_comptime_statement() parent callsite]], [[file:noir/compiler/noirc_frontend/src/parser/parser/statement.rs::fn parse_comptime_statement(][parse_comptime_statement()]], [[file:noir/compiler/noirc_frontend/src/parser/parser/statement.rs::fn parse_comptime_statement_kind(][parse_comptime_statement_kind()]]
 
 #+transclude: [[file:noir/compiler/noirc_frontend/src/parser/parser/statement.rs::291][ComptimeStatement ComptimeBlock ComptimeLet ComptimeFor doc]] :lines 291-300 :src fundamental
 
@@ -3504,7 +3453,7 @@ Parser: [[file:noir/compiler/noirc_frontend/src/parser/parser/statement.rs::if s
 
 **Inlined unless something else references it in a way that requires otherwise**.
 
-***** SPEC ForStatement                                                :node:
+***** SPEC ForStatement
 :PROPERTIES:
 :CUSTOM_ID: h:F444339D-00F1-4553-ACF6-DE0B5E2EE35E
 :END:
@@ -3513,27 +3462,25 @@ Parser: [[file:noir/compiler/noirc_frontend/src/parser/parser/statement.rs::if s
   Still needs more test coverage
 - State "TODO"       from              [2025-05-20 Tue 18:16]
 :END:
-:pgd:
-+ =for= (kw) by [[#h:65B0176B-B46F-4679-8535-C504870AC048][ident]] (token) by =in= (kw) by [[#h:C859B697-6DDD-4F6D-B70B-BF0A9FBA6E80][ForRange]] by [[#h:B34CADE5-71B4-41F2-AB54-00483EE593A6][BlockExpression]]
-:end:
 
 #+name: for_statement
 #+begin_src js :arg $ :ast ForStatement
 seq(
     'for',
-    field('value', $.identifier),
+    field('value', <<r("identifier")>>),
     'in',
     field('range', choice(
         <<r("expression")>>,
         <<r("for_range")>>,
     )),
-    field('body', <<r("block_expression")>>),
+    field('body', <<r("block")>>),
 )
 #+end_src
 
-Parser: [[file:noir/compiler/noirc_frontend/src/parser/parser/statement.rs::if let Some(for_loop) = self.parse_for() {][parse for parent callsite]], [[file:noir/compiler/noirc_frontend/src/parser/parser/statement.rs::fn parse_for(&mut self)][parse_for()]]
+Parser: [[file:noir/compiler/noirc_frontend/src/parser/parser/statement.rs::if let Some(for_loop) = self.parse_for() {][parse_for() parent callsite]], [[file:noir/compiler/noirc_frontend/src/parser/parser/statement.rs::fn parse_for(&mut self)][parse_for()]]
 Types: [[file:noir/compiler/noirc_frontend/src/ast/statement.rs::pub struct ForLoopStatement {][ForLoopStatement struct]]
 
+#+name: ,ebnf_for_statement
 #+transclude: [[file:noir/compiler/noirc_frontend/src/parser/parser/statement.rs::227][ForStatement doc]] :lines 227-227 :src fundamental
 
 ****** DONE ForRange                                                   :node:
@@ -3613,7 +3560,7 @@ Parser: [[file:noir/compiler/noirc_frontend/src/parser/parser/statement.rs::if l
 
 #+transclude: [[file:noir/compiler/noirc_frontend/src/parser/parser/statement.rs::80][BlockStatement doc]] :lines 80-80 :src fundamental
 
-***** BLOCK AssignStatement                                            :node:
+***** BLOCK AssignStatement
 :PROPERTIES:
 :CUSTOM_ID: h:D8D0BBE8-6152-479B-8C19-282B2B56C4A9
 :END:
@@ -3623,13 +3570,6 @@ Parser: [[file:noir/compiler/noirc_frontend/src/parser/parser/statement.rs::if l
 - State "SPEC"       from "TODO"       [2025-07-07 Mon 15:27]
 - State "TODO"       from              [2025-05-20 Tue 18:16]
 :END:
-:pgd:
-+ [[#h:167542CC-8CDE-49C1-9465-E5157C6A176F][Expression]]
-+ (grp):
-  - === (token)
-  - any of the token combinations valid in ~next_is_op_assign~
-+ [[#h:167542CC-8CDE-49C1-9465-E5157C6A176F][Expression]]
-:end:
 
 #+name: assign_statement
 #+begin_src js :arg $ :ast AssignStatement
@@ -3642,18 +3582,24 @@ seq(
         '=',
     ),
     field('right', <<r("expression")>>),
+    ';',
 )
 #+end_src
 
 Parser: defer to [[#h:37FF07C0-5DAA-467E-9DBA-8EBAC79F7DE4][AssignOrExpression]] as **multiple parse locations after BlockStatement**
 
+See [[#h:3F52F622-294C-463F-986F-DD38EB41EA89][add_semicolon]], ~StatementKind::Assign~ always requires a semicolon.
+
 For the AssignStatement struct, field =lvalue= is the thing which field =expression= is being assigned to.
 
+*************** TODO If anything but simple assignment put them into a named field?
+Makes it easier to do ts queries for += and -= etc
+*************** END
 *************** TODO keep left/right field name or use value/expression
 left/right appears to be convention, but value/expression is more accurate to parser source.
 *************** END
 
-***** BLOCK ExpressionStatement                                        :node:
+***** BLOCK ExpressionStatement
 :PROPERTIES:
 :CUSTOM_ID: h:12F5ADF9-E496-4D5B-896E-5CE97D44BE3D
 :END:
@@ -3663,18 +3609,15 @@ left/right appears to be convention, but value/expression is more accurate to pa
 - State "SPEC"       from "TODO"       [2025-07-07 Mon 15:27]
 - State "TODO"       from              [2025-05-20 Tue 18:16]
 :END:
-:pgd:
-+ [[#h:167542CC-8CDE-49C1-9465-E5157C6A176F][Expression]]
-:end:
 
 #+name: expression_statement
 #+begin_src js :arg $ :ast ExpressionStatement
-<<r("expression")>>
+seq(<<r("expression")>>, ';')
 #+end_src
 
 Parser: defer to [[#h:37FF07C0-5DAA-467E-9DBA-8EBAC79F7DE4][AssignOrExpression]] as **multiple parse locations after BlockStatement**
 
-Expression statements will appear alongside statements in the tree-sitter grammar instead of nested within them as is depicted in the parser frontend. Implemented at [[#h:788ECB8C-0A48-4255-B35E-F5850902AA32][Statement]].
+Project notes [[file:PROJECT.org::#h:9255C4E4-03B0-4A3B-B3AE-454FF2A53D57][definition of: expression statement]]. 
 
 ***** AssignOrExpression                                             :pseudo:
 :PROPERTIES:
@@ -3781,6 +3724,12 @@ seq(':', <<r("type")>>)
 #+end_src
 
 Parser: [[file:noir/compiler/noirc_frontend/src/parser/parser/types.rs::fn parse_optional_type_annotation(&mut self)][parse_optional_type_annotation()]]
+
+#+name: field__type_annotation
+#+caption: Convenience tangle-time template for common OptionalTypeAnnotation pattern.
+#+begin_src js :noweb yes
+field('type', optional(<<r("type_annotation")>>)), // Inlined Noirc: OptionalTypeAnnotation.
+#+end_src
 
 #+name: ,ebnf_optional_type_annotation
 #+transclude: [[file:noir/compiler/noirc_frontend/src/parser/parser/types.rs::409][OptionalTypeAnnotation doc]] :lines 409-409 :src fundamental
@@ -4449,6 +4398,75 @@ Param ~modifiers~ is a previously parsed [[file:noir/compiler/noirc_frontend/src
 
 This effectively means only the visibility modifier (which is ~ItemVisibility~) is valid where this function is called for ~modifiers~.
 
+*** [[file:noir/compiler/noirc_frontend/src/ast/statement.rs::impl StatementKind {][StatementKind::add_semicolon(semi, span, last_statement_in_block)]] :parser_fn:
+:PROPERTIES:
+:CUSTOM_ID: h:3F52F622-294C-463F-986F-DD38EB41EA89
+:END:
+
+Asserts specific ~StatementKind~\s having semicolons. Called from [[file:noir/compiler/noirc_frontend/src/parser/parser/expression.rs::fn check_statements_require_semicolon(][check_statements_require_semicolon()]]. Some of the rules are simple, others more complex.
+
+Those which /require/ semicolons will have the semicolon form part of their CST node, see [[#h:71AB7D76-FD24-4B91-A187-E9968024DC0C][BreakStatement]] for a simple example.
+
+Those for which semicolons are /optional/ will have an empty statement captured as it's own CST node immediately following their associated rule (TODO: link simple example).
+
+*************** TODO Decide on empty statement or not
+So Block can optionally be followed by ;, do we want an EmptyStatement rule where this trailing ; becomes its own CST node or do we want that Block to then be captured (and so wrapped) in an ExpressionStatement?
+
+I suppose clarity will come at the end of the grammar when we find out if Expressions can be used outside of places that expect Statements. Currently it doesn't look like that and so it should be wrapped in ExpressionStatement.
+*************** END
+
+**** Complex
+
+~Comptime~ requiring a semicolon depends on it's inner ~StatementKind~. Recall that [[file:noir/compiler/noirc_frontend/src/ast/statement.rs::Comptime(Box<Statement>),][Comptime wraps another Statement]] when this other Statement is prefixed with =comptime= (see: [[#h:A0796B1B-462F-4DC6-BE7D-F1D87112AFD4][ComptimeStatement]]).
+
+*************** TODO (parser error) explore where ; goes after wrapped statements which require it
+Comptime wraps block, let, and for. Block ; is always optional. So do we put ; as part of the comptime statement if it follows or not?
+
+This is also currently a parser error if a comptime block is followed by a ; because we haven't implemented / considered that yet.
+*************** END
+
+**** Simple
+
+**Optional**:
+  - ~For~ ([[#h:F444339D-00F1-4553-ACF6-DE0B5E2EE35E][ForStatement]])
+  - ~Interned~ (TODO)
+  - ~Expression~'s inner ~ExpressionKind~ optional semicolons:
+    - ~Block~ ([[#h:B34CADE5-71B4-41F2-AB54-00483EE593A6][BlockExpression]])
+    - ~Unsafe~ (TODO)
+    - ~Interned~ (TODO)
+    - ~InternedStatement~ (TODO)
+    - ~If~ ([[#h:16951F18-730F-4A1F-84C9-3A1F78F67DF0][IfExpression]]) :: Presence of a semicolon turns wrapping ~StatementKind~ into ~StatementKind::Semi~ (i.e. an [[#h:12F5ADF9-E496-4D5B-896E-5CE97D44BE3D][ExpressionStatement]]), otherwise (if no semicolon) it remains ~StatementKind::Expression~.
+
+**Required**:
+  - ~Let~ ([[#h:FD70AFA1-5D45-434E-A9D0-7E8F6DD38058][LetStatement]])
+  - ~Constrain~ ([[#h:25216601-CAF6-4246-8289-B106F9A9166B][ConstrainStatement]])
+  - ~Assign~ ([[#h:D8D0BBE8-6152-479B-8C19-282B2B56C4A9][AssignStatement]])
+  - ~Semi~ ([[#h:16951F18-730F-4A1F-84C9-3A1F78F67DF0][IfExpression]] TODO: Any others which can also be Semi?)
+  - ~Break~ ([[#h:71AB7D76-FD24-4B91-A187-E9968024DC0C][BreakStatement]])
+  - ~Continue~ ([[#h:6616DE79-93E3-42AA-9633-4A29251F5BA0][ContinueStatement]])
+  - ~Error~ ([[#h:17935AE3-A964-49D1-927B-E67D035FD8D7][ReturnStatement]])
+  
+**** Rest
+
+If none of Simple or Complex are triggered the final pattern match lines work as follows (snippet followed by explanation):
+
+#+transclude: [[file:noir/compiler/noirc_frontend/src/ast/statement.rs::124][Pattern non-terminal Expression]] :lines 124-127 :src fundamental
+
+Any ~ExpressionKind~, which has =None= ~semi~ (i.e. no semicolon), and for which ~last_statement_in_block~ is =false= is a parser error. So this matches any Expression that is not the last in the block, and said Expressions require a semicolon.
+
+#+transclude: [[file:noir/compiler/noirc_frontend/src/ast/statement.rs::128][Pattern ExpressionStatement]] :lines 128-128 :src fundamental
+
+Any ~ExpressionKind~, which has =Some= ~semi~ (i.e. a semicolon), at any position in the block is fine. It is considered a ~StatementKind::Semi~ (i.e. an [[#h:12F5ADF9-E496-4D5B-896E-5CE97D44BE3D][ExpressionStatement]]).
+
+#+transclude: [[file:noir/compiler/noirc_frontend/src/ast/statement.rs::129][Pattern terminal Expression]] :lines 129-129 :src fundamental
+
+Any ~ExpressionKind~, which has =None= ~semi~ (i.e. no semicolon), and for which ~last_statement_in_block~ is =true= remains as an Expression.
+
+In plain English these three cases are effectively:
+  1. Non-terminal Expressions require a semicolon.
+  2. An Expression followed by a semicolon is valid anywhere in a Block.
+  3. An Expression which is the last statement in a Block is not required to have a semicolon.
+
 *** [[file:noir/compiler/noirc_frontend/src/lexer/lexer.rs::fn next_token(&mut self)][Lexer.next_token()]]                                             :lexer_fn:
 :PROPERTIES:
 :CUSTOM_ID: h:2AE110C8-8650-4F3B-AAA0-FFE5E79C8C81
@@ -4544,6 +4562,8 @@ module.exports = grammar({
     conflicts: ($) => [
         [<<r("type")>>, <<r("atom_type_expr")>>],
         [<<r("path")>>, <<r("path_no_turbofish")>>],
+        // XXX: slice_expression is causing unresolved sequences error because the '&' of the slice sequence is also a character in binary expression. No attempt to set precedences worked and had to add conflict. This feels wrong.. try and fix without a conflict later?
+        // [<<r("statement_kind")>>, <<r("literal")>>],
     ],
 
     // TODO: Need to document (for myself) keyword extraction to check we're doing it properly.
@@ -4551,15 +4571,15 @@ module.exports = grammar({
 
     rules: {
         // Noirc: Module -- top-level AST node is really Program but it immediately wraps Module.
-        source_file: ($) => repeat($._statement),
+        source_file: ($) => repeat($._module),
 
         // Can statement-ise anything so we'll use this as top-level.
         // _statement: ($) => choice($._expression_statement, $._declaration_statement),
         // _expression_statement: ($) => seq($._expression, ';'),
-        _statement: ($) => choice($.__item),
+        _module: ($) => choice($._top_level_item),
 
         // Noirc: Module -- Since doc comments can appear anywhere, Module is Item which is ItemKind.
-        __item: ($) => choice(
+        _top_level_item: ($) => choice(
             <<r("attribute")>>,
             <<r("use")>>,
             <<r("mod_or_contract")>>,
@@ -4567,11 +4587,13 @@ module.exports = grammar({
             // TODO: Relink impl.
             <<r("trait")>>,
             <<r("global")>>,
+            // TODO: TypeAlias.
+            //r("function")>>,
         ),
 
         item_list: ($) => seq(
             '{',
-            repeat($.__item),
+            repeat($._top_level_item),
             '}',
         ),
 
@@ -4645,7 +4667,7 @@ alias(<<r("generic_type_args")>>, $.type_parameters)
 <<c('("trait"  "trait_bounds" "trait_bound" "trait_body" "trait_type" "trait_constant" "trait_function"))>>
 <<n("global")>>
 // TODO: TypeAlias
-<<c('("function_parameters" "function_parameter" "function" "function_modifiers"))>>
+<<c('("function" "function_parameters" "function_parameter"))>>
 <<c('("where" "where_clause"))>>
 #+end_src
 
@@ -4654,7 +4676,7 @@ alias(<<r("generic_type_args")>>, $.type_parameters)
 #+name: grp__statements
 #+begin_src js :noweb yes
 <<n("statement")>>
-<<c('("statement_kind" "break_statement" "continue_statement" "return_statement" "let_statement" "constrain_statement" "comptime_statement" "for_statement" "assign_statement" "expression_statement"))>>
+<<c('("break_statement" "continue_statement" "return_statement" "let_statement" "constrain_statement" "comptime_statement" "for_statement" "assign_statement" "expression_statement"))>>
 #+end_src
 
 ** Expressions
@@ -4666,7 +4688,7 @@ alias(<<r("generic_type_args")>>, $.type_parameters)
 <<n("quote_expression")>>
 <<n("array_expression")>>
 <<n("slice_expression")>>
-<<n("block_expression")>>
+<<n("block")>>
 <<c('("arguments" "call_arguments"))>>
 <<n("for_range")>>
 

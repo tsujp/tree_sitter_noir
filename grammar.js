@@ -87,7 +87,7 @@ module.exports = grammar({
         [$._type, $.__atom_type_expr],
         [$.path, $.__path_no_turbofish],
         // XXX: slice_expression is causing unresolved sequences error because the '&' of the slice sequence is also a character in binary expression. No attempt to set precedences worked and had to add conflict. This feels wrong.. try and fix without a conflict later?
-        [$.__statement_kind, $.__literal],
+        // [nil, $.__literal],
     ],
 
     // TODO: Need to document (for myself) keyword extraction to check we're doing it properly.
@@ -361,6 +361,7 @@ module.exports = grammar({
         _statement: $ => seq(
             // TODO: Attributes.
             choice(
+                // Inlined Noirc: StatementKind.
                 $.break_statement,
                 $.continue_statement,
                 $.return_statement,
@@ -375,20 +376,6 @@ module.exports = grammar({
             ),
         ),
         
-        // [[file:noir_grammar.org::statement_kind]]
-        __statement_kind: $ => choice(
-            $.break_statement,
-            $.continue_statement,
-            $.return_statement,
-            $.let_statement,
-            $.constrain_statement,
-            $.comptime_statement,
-            $.for_statement,
-            $.if_expression,
-            $.block,
-            $.assign_statement,
-            // Expression statement is handled at parent node for better CST.
-        ),
         // [[file:noir_grammar.org::break_statement]]
         break_statement: _ => seq('break', ';'),
         // [[file:noir_grammar.org::continue_statement]]
@@ -451,12 +438,16 @@ module.exports = grammar({
         // * * * * * * * * * * * * * * * * * * * * * * * * * EXPRESSIONS
         
         // [[file:noir_grammar.org::expression]]
-        _expression: $ => choice(
+        _expression: $ => prec(1, choice(
             $.binary_expression,
+            // Inlined Noirc: Atom.
             $.__literal,
+            // TODO: The rest of the items, ParenthesesExpression, UnsafeExpression etc.
+            $.if_expression,
+            // ---/
             // TODO: SURELY identifier is allowed in expression, where's the concrete evidence though? Assuming it is for now.
             $.identifier,
-        ),
+        )),
         
         // [[file:noir_grammar.org::binary_expression]]
         binary_expression: $ => {
@@ -758,16 +749,20 @@ module.exports = grammar({
         // * * * * * * * * * * * * * * * * * * * * * * * * * LITERALS
         
         // [[file:noir_grammar.org::literal]]
-        __literal: $ => choice(
-            $.bool_literal,
-            $.int_literal,
-            $.str_literal,
-            $.raw_str_literal,
-            $.fmt_str_literal,
-            // $.quote_expression, // TODO: Broken for now.
-            $.array_expression,
-            $.slice_expression,
-            $.block,
+        __literal: $ => prec(
+            // Literals need to bind more tightly than Statement so things like SliceExpression are correctly associated. Since this is similar to Unary we use the same precedence level.
+            PRECEDENCE.unary,
+            choice(
+                $.bool_literal,
+                $.int_literal,
+                $.str_literal,
+                $.raw_str_literal,
+                $.fmt_str_literal,
+                // $.quote_expression, // TODO: Broken for now.
+                $.array_expression,
+                $.slice_expression,
+                $.block,
+            ),
         ),
         
         // [[file:noir_grammar.org::bool]]

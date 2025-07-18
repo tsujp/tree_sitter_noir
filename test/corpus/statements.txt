@@ -14,11 +14,20 @@ global foo1 = { break; };
 )
 
 
+==============================
+Break / Missing semicolon (e1)
+:error
+==============================
+
+global f = { break };
+---
+
+
 ========
 Continue
 ========
 
-global foo1 = { continue; };
+global f1 = { continue; };
 
 ---
 
@@ -28,6 +37,15 @@ global foo1 = { continue; };
     (block
       (continue_statement)))
 )
+
+
+=================================
+Continue / Missing semicolon (e1)
+:error
+=================================
+
+global f = { continue };
+---
 
 
 ======
@@ -77,6 +95,15 @@ global f2 = { let (x, y) = 1; };
           (identifier))
         value: (int_literal))))
 )
+
+
+============================
+Let / Missing semicolon (e1)
+:error
+============================
+
+global f = { let x = 123 };
+---
 
 
 =============
@@ -150,6 +177,24 @@ global b2 = { assert_eq("foo", "bar", "lorem"); };
 )
 
 
+==================================
+Constrain / Missing semicolon (e1)
+:error
+==================================
+
+global f1 = { assert(true) };
+---
+
+
+==================================
+Constrain / Missing semicolon (e2)
+:error
+==================================
+
+global b1 = { assert_eq(true) };
+---
+
+
 ================================
 Constrain / Argument identifiers
 :skip
@@ -200,10 +245,10 @@ global f2 = { assert(,); };
 Comptime
 ========
 
-global f1 = { comptime { }; };
+global f1 = { comptime { 1; } };
 global f2 = { comptime let x = "foo"; };
 global f3 = { comptime let mut y = true; };
-global f3 = { comptime for i in 0..10 { }; };
+global f3 = { comptime for i in 0..10 { } };
 
 ---
 
@@ -212,7 +257,9 @@ global f3 = { comptime for i in 0..10 { }; };
     name: (identifier)
     (block
       (comptime_statement
-        (block))))
+        (block
+          (expression_statement
+            (int_literal))))))
   (global_item
     name: (identifier)
     (block
@@ -246,9 +293,9 @@ global f3 = { comptime for i in 0..10 { }; };
 For
 ===
 
-global f1 = { for i in 0..10 { }; };
-global f2 = { for i in 0..9+1 { }; };
-global f3 = { for i in 0..=5 { }; };
+global f1 = { for i in 0..10 { } };
+global f2 = { for i in 0..9+1 { } };
+global f3 = { for i in 0..=5 { } };
 
 ---
 
@@ -304,3 +351,51 @@ global f2 = { for foo in 0 .. std::array::len(bar) { } };
         range: (identifier)
         body: (block))))
 )
+
+
+===
+If
+:skip
+===
+
+TODO
+
+---
+
+(source_file
+
+)
+
+
+======
+Assign
+======
+
+global f1 = { x = y; };
+global f2 = { x += 123; };
+
+---
+
+(source_file
+  (global_item
+    name: (identifier)
+    (block
+      (assign_statement
+        left: (identifier)
+        right: (identifier))))
+  (global_item
+    name: (identifier)
+    (block
+      (assign_statement
+        left: (identifier)
+        right: (int_literal))))
+)
+
+
+===============================
+Assign / Missing semicolon (e1)
+:error
+===============================
+
+global f = { x = y };
+---
