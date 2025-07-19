@@ -454,7 +454,7 @@ module.exports = grammar({
             $.if_expression,
             $.lambda,
             $.comptime,
-            // UnquoteExpression
+            $.unquote_expression,
             // TypePathExpression
             // AsTraitPath
             // ResolvedExpression
@@ -626,6 +626,15 @@ module.exports = grammar({
         
         // [[file:noir_grammar.org::comptime_block]]
         comptime: $ => seq('comptime', $.block),
+        
+        // [[file:noir_grammar.org::unquote_expression]]
+        unquote_expression: $ => seq(
+            '$',
+            choice(
+                $.path,
+                seq('(', $._expression, ')'),
+            ),
+        ),
 
         // * * * * * * * * * * * * * * * * * * * * * * * * * TYPES
         

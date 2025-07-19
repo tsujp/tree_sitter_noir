@@ -1057,3 +1057,21 @@ global f1 = comptime { 123; };
         (expression_statement
           (int_literal)))))
 )
+
+
+=======
+Unquote
+=======
+
+global f1 = $foo::bar;
+
+---
+
+(source_file
+  (global_item
+    name: (identifier)
+    (unquote_expression
+      (path
+        scope: (identifier)
+        name: (identifier))))
+)

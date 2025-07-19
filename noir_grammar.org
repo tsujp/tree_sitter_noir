@@ -2924,7 +2924,7 @@ prec(1, choice(
     <<r("if_expression")>>,
     <<r("lambda")>>,
     <<r("comptime_block")>>,
-    // UnquoteExpression
+    <<r("unquote_expression")>>,
     // TypePathExpression
     // AsTraitPath
     // ResolvedExpression
@@ -4099,13 +4099,31 @@ Callsites:
 #+transclude: [[file:noir/compiler/noirc_frontend/src/parser/parser/expression.rs::481][ComptimeExpression]] :lines 481-481 :src fundamental
 
 **** TODO UnquoteExpression
+:PROPERTIES:
+:CUSTOM_ID: h:99953D79-E89B-49B8-B23D-E3CE1F8B4B0D
+:END:
 :LOGBOOK:
 - State "TODO"       from              [2025-07-19 Sat 23:31]
 :END:
 
+#+name: unquote_expression
+#+begin_src js :arg $ :ast UnquoteExpression
+seq(
+    '$',
+    choice(
+        <<r("path")>>,
+        seq('(', <<r("expression")>>, ')'),
+    ),
+)
+#+end_src
+
 Parser: [[file:noir/compiler/noirc_frontend/src/parser/parser/expression.rs::fn parse_unquote_expr(&mut self)][parse_unquote_expr()]]
 Callsites:
   - [[file:noir/compiler/noirc_frontend/src/parser/parser/expression.rs::if let Some(kind) = self.parse_unquote_expr() {][in parse_atom_kind()]] (for: [[#h:14C02FBD-84BA-470B-92C3-8E9C55BCF375][Atom]])
+
+*************** TODO EBNF update, identifier should be Path
+*************** END
+
 
 **** TODO TypePathExpression
 :LOGBOOK:
@@ -5119,6 +5137,7 @@ alias(<<r("generic_type_args")>>, $.type_parameters)
 <<n("if_expression")>>
 <<c('("lambda" "lambda_return_type" "lambda_parameters" "lambda_parameter"))>>
 <<n("comptime_block")>>
+<<n("unquote_expression")>>
 #+end_src
 
 ** Types

@@ -2698,6 +2698,23 @@ global f1 = comptime { 123; };
         (int_literal)))))
 #+end_test
 
+** Unquote
+#+begin_test
+global f1 = $foo::bar;
+
+---
+
+(global_item
+  name: (identifier)
+  (unquote_expression
+    (path
+      scope: (identifier)
+      name: (identifier))))
+#+end_test
+
+*************** TODO Generics in the Path, potential limited scope to Quote Expression
+*************** END
+
 ** TODO Unary
 TODO: Also where does it go in terms of ordering
 
