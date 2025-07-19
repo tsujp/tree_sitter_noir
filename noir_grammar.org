@@ -4098,6 +4098,60 @@ Callsites:
 #+name: ,ebnf_comptime_expression
 #+transclude: [[file:noir/compiler/noirc_frontend/src/parser/parser/expression.rs::481][ComptimeExpression]] :lines 481-481 :src fundamental
 
+**** TODO UnquoteExpression
+:LOGBOOK:
+- State "TODO"       from              [2025-07-19 Sat 23:31]
+:END:
+
+Parser: [[file:noir/compiler/noirc_frontend/src/parser/parser/expression.rs::fn parse_unquote_expr(&mut self)][parse_unquote_expr()]]
+Callsites:
+  - [[file:noir/compiler/noirc_frontend/src/parser/parser/expression.rs::if let Some(kind) = self.parse_unquote_expr() {][in parse_atom_kind()]] (for: [[#h:14C02FBD-84BA-470B-92C3-8E9C55BCF375][Atom]])
+
+**** TODO TypePathExpression
+:LOGBOOK:
+- State "TODO"       from              [2025-07-19 Sat 23:31]
+:END:
+
+Parser: [[file:noir/compiler/noirc_frontend/src/parser/parser/expression.rs::fn parse_type_path_expr(&mut self)][parse_type_path_expr()]]
+Callsites:
+  - [[file:noir/compiler/noirc_frontend/src/parser/parser/expression.rs::if let Some(kind) = self.parse_type_path_expr() {][in parse_atom_kind()]] (for: [[#h:14C02FBD-84BA-470B-92C3-8E9C55BCF375][Atom]])
+    
+**** TODO AsTraitPath
+:LOGBOOK:
+- State "TODO"       from              [2025-07-19 Sat 23:31]
+:END:
+
+Parser: [[file:noir/compiler/noirc_frontend/src/parser/parser/path.rs::fn parse_as_trait_path(&mut self)][parse_as_trait_path()]]
+Callsites:
+  - [[file:noir/compiler/noirc_frontend/src/parser/parser/expression.rs::if let Some(as_trait_path) = self.parse_as_trait_path() {][in parse_atom_kind()]] (for: [[#h:14C02FBD-84BA-470B-92C3-8E9C55BCF375][Atom]])
+    
+**** TODO ResolvedExpression
+:LOGBOOK:
+- State "TODO"       from              [2025-07-19 Sat 23:31]
+:END:
+
+Parser: [[file:noir/compiler/noirc_frontend/src/parser/parser/expression.rs::fn parse_resolved_expr(&mut self)][parse_resolved_expr()]]
+Callsites:
+  - [[file:noir/compiler/noirc_frontend/src/parser/parser/expression.rs::if let Some(kind) = self.parse_resolved_expr() {][in parse_atom_kind()]] (for: [[#h:14C02FBD-84BA-470B-92C3-8E9C55BCF375][Atom]])
+    
+**** TODO InternedExpression
+:LOGBOOK:
+- State "TODO"       from              [2025-07-19 Sat 23:31]
+:END:
+
+Parser: [[file:noir/compiler/noirc_frontend/src/parser/parser/expression.rs::fn parse_interned_expr(&mut self)][parse_interned_expr()]]
+Callsites:
+  - [[file:noir/compiler/noirc_frontend/src/parser/parser/expression.rs::if let Some(kind) = self.parse_interned_expr() {][in parse_atom_kind()]] (for: [[#h:14C02FBD-84BA-470B-92C3-8E9C55BCF375][Atom]])
+    
+**** TODO InternedStatementExpression
+:LOGBOOK:
+- State "TODO"       from              [2025-07-19 Sat 23:31]
+:END:
+
+Parser: [[file:noir/compiler/noirc_frontend/src/parser/parser/expression.rs::fn parse_interned_statement_expr(&mut self)][parse_interned_statement_expr()]]
+Callsites:
+  - [[file:noir/compiler/noirc_frontend/src/parser/parser/expression.rs::if let Some(kind) = self.parse_interned_statement_expr() {][in parse_atom_kind()]] (for: [[#h:14C02FBD-84BA-470B-92C3-8E9C55BCF375][Atom]])
+    
 *** TODO Literals
 :PROPERTIES:
 :CUSTOM_ID: h:3446FD3E-4526-4DBF-80AB-64BD9078C4F5
