@@ -2928,10 +2928,7 @@ prec(1, choice(
     <<r("unquote_expression")>>,
     // TypePathExpression is Path.
     alias(<<r("trait_path_alias")>>, $.path),
-    // AsTraitPath
-    // ResolvedExpression
-    // InternedExpression
-    // InternedStatementExpression
+    // Blocked: ResolvedExpression, InternedExpression, InternedStatementExpression.
     // ---/ End: Atom.
     // TODO: SURELY identifier is allowed in expression, where's the concrete evidence though? Assuming it is for now.
     <<r("identifier")>>,
@@ -3778,11 +3775,13 @@ field('type', optional(<<r("type_annotation")>>)), // Inlined Noirc: OptionalTyp
 #+name: ,ebnf_optional_type_annotation
 #+transclude: [[file:noir/compiler/noirc_frontend/src/parser/parser/types.rs::409][OptionalTypeAnnotation doc]] :lines 409-409 :src fundamental
 
-*** TODO Atom
+*** DONE Atom
+CLOSED: [2025-07-20 Sun 00:54]
 :PROPERTIES:
 :CUSTOM_ID: h:14C02FBD-84BA-470B-92C3-8E9C55BCF375
 :END:
 :LOGBOOK:
+- State "DONE"       from "TODO"       [2025-07-20 Sun 00:54]
 - State "TODO"       from              [2025-07-19 Sat 01:05] \\
   Under Term which is under Expression
 :END:
@@ -4182,8 +4181,10 @@ Callsites:
 #+name: ,ebnf_as_trait_path
 #+transclude: [[file:noir/compiler/noirc_frontend/src/parser/parser/path.rs::195][AsTraitPath doc]] :lines 195-195 :src fundamental
     
-**** TODO ResolvedExpression
+**** BLOCK ResolvedExpression
 :LOGBOOK:
+- State "BLOCK"      from "TODO"       [2025-07-20 Sun 00:52] \\
+  Quoted stuff, stretch goal
 - State "TODO"       from              [2025-07-19 Sat 23:31]
 :END:
 
@@ -4191,8 +4192,10 @@ Parser: [[file:noir/compiler/noirc_frontend/src/parser/parser/expression.rs::fn 
 Callsites:
   - [[file:noir/compiler/noirc_frontend/src/parser/parser/expression.rs::if let Some(kind) = self.parse_resolved_expr() {][in parse_atom_kind()]] (for: [[#h:14C02FBD-84BA-470B-92C3-8E9C55BCF375][Atom]])
     
-**** TODO InternedExpression
+**** BLOCK InternedExpression
 :LOGBOOK:
+- State "BLOCK"      from "TODO"       [2025-07-20 Sun 00:53] \\
+  Interned stuff, stretch goal
 - State "TODO"       from              [2025-07-19 Sat 23:31]
 :END:
 
@@ -4200,8 +4203,10 @@ Parser: [[file:noir/compiler/noirc_frontend/src/parser/parser/expression.rs::fn 
 Callsites:
   - [[file:noir/compiler/noirc_frontend/src/parser/parser/expression.rs::if let Some(kind) = self.parse_interned_expr() {][in parse_atom_kind()]] (for: [[#h:14C02FBD-84BA-470B-92C3-8E9C55BCF375][Atom]])
     
-**** TODO InternedStatementExpression
+**** BLOCK InternedStatementExpression
 :LOGBOOK:
+- State "BLOCK"      from "TODO"       [2025-07-20 Sun 00:53] \\
+  Interned stuff, stretch goal
 - State "TODO"       from              [2025-07-19 Sat 23:31]
 :END:
 
