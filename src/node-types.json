@@ -44,6 +44,10 @@
           "named": true
         },
         {
+          "type": "path",
+          "named": true
+        },
+        {
           "type": "raw_str_literal",
           "named": true
         },
@@ -53,6 +57,10 @@
         },
         {
           "type": "str_literal",
+          "named": true
+        },
+        {
+          "type": "struct_expression",
           "named": true
         },
         {
@@ -146,6 +154,10 @@
           "named": true
         },
         {
+          "type": "path",
+          "named": true
+        },
+        {
           "type": "raw_str_literal",
           "named": true
         },
@@ -155,6 +167,10 @@
         },
         {
           "type": "str_literal",
+          "named": true
+        },
+        {
+          "type": "struct_expression",
           "named": true
         },
         {
@@ -217,6 +233,10 @@
             "named": true
           },
           {
+            "type": "path",
+            "named": true
+          },
+          {
             "type": "raw_str_literal",
             "named": true
           },
@@ -226,6 +246,10 @@
           },
           {
             "type": "str_literal",
+            "named": true
+          },
+          {
+            "type": "struct_expression",
             "named": true
           },
           {
@@ -283,6 +307,10 @@
             "named": true
           },
           {
+            "type": "path",
+            "named": true
+          },
+          {
             "type": "raw_str_literal",
             "named": true
           },
@@ -292,6 +320,10 @@
           },
           {
             "type": "str_literal",
+            "named": true
+          },
+          {
+            "type": "struct_expression",
             "named": true
           },
           {
@@ -425,6 +457,10 @@
           },
           {
             "type": "str_literal",
+            "named": true
+          },
+          {
+            "type": "struct_expression",
             "named": true
           },
           {
@@ -569,6 +605,10 @@
           },
           {
             "type": "str_literal",
+            "named": true
+          },
+          {
+            "type": "struct_expression",
             "named": true
           },
           {
@@ -856,6 +896,10 @@
           "named": true
         },
         {
+          "type": "path",
+          "named": true
+        },
+        {
           "type": "raw_str_literal",
           "named": true
         },
@@ -868,6 +912,10 @@
           "named": true
         },
         {
+          "type": "struct_expression",
+          "named": true
+        },
+        {
           "type": "tuple_expression",
           "named": true
         },
@@ -877,6 +925,106 @@
         },
         {
           "type": "unsafe_block",
+          "named": true
+        }
+      ]
+    }
+  },
+  {
+    "type": "field_initializer",
+    "named": true,
+    "fields": {
+      "field": {
+        "multiple": false,
+        "required": false,
+        "types": [
+          {
+            "type": "identifier",
+            "named": true
+          }
+        ]
+      },
+      "value": {
+        "multiple": false,
+        "required": false,
+        "types": [
+          {
+            "type": "array_expression",
+            "named": true
+          },
+          {
+            "type": "binary_expression",
+            "named": true
+          },
+          {
+            "type": "block",
+            "named": true
+          },
+          {
+            "type": "bool_literal",
+            "named": true
+          },
+          {
+            "type": "fmt_str_literal",
+            "named": true
+          },
+          {
+            "type": "identifier",
+            "named": true
+          },
+          {
+            "type": "if_expression",
+            "named": true
+          },
+          {
+            "type": "int_literal",
+            "named": true
+          },
+          {
+            "type": "parenthesized_expression",
+            "named": true
+          },
+          {
+            "type": "path",
+            "named": true
+          },
+          {
+            "type": "raw_str_literal",
+            "named": true
+          },
+          {
+            "type": "slice_expression",
+            "named": true
+          },
+          {
+            "type": "str_literal",
+            "named": true
+          },
+          {
+            "type": "struct_expression",
+            "named": true
+          },
+          {
+            "type": "tuple_expression",
+            "named": true
+          },
+          {
+            "type": "unit_expression",
+            "named": true
+          },
+          {
+            "type": "unsafe_block",
+            "named": true
+          }
+        ]
+      }
+    },
+    "children": {
+      "multiple": false,
+      "required": false,
+      "types": [
+        {
+          "type": "identifier",
           "named": true
         }
       ]
@@ -952,6 +1100,10 @@
             "named": true
           },
           {
+            "type": "path",
+            "named": true
+          },
+          {
             "type": "range_expression",
             "named": true
           },
@@ -965,6 +1117,10 @@
           },
           {
             "type": "str_literal",
+            "named": true
+          },
+          {
+            "type": "struct_expression",
             "named": true
           },
           {
@@ -1117,6 +1273,10 @@
           "named": true
         },
         {
+          "type": "path",
+          "named": true
+        },
+        {
           "type": "raw_str_literal",
           "named": true
         },
@@ -1126,6 +1286,10 @@
         },
         {
           "type": "str_literal",
+          "named": true
+        },
+        {
+          "type": "struct_expression",
           "named": true
         },
         {
@@ -1206,6 +1370,10 @@
             "named": true
           },
           {
+            "type": "path",
+            "named": true
+          },
+          {
             "type": "raw_str_literal",
             "named": true
           },
@@ -1215,6 +1383,10 @@
           },
           {
             "type": "str_literal",
+            "named": true
+          },
+          {
+            "type": "struct_expression",
             "named": true
           },
           {
@@ -1241,6 +1413,21 @@
           }
         ]
       }
+    }
+  },
+  {
+    "type": "initializer_list",
+    "named": true,
+    "fields": {},
+    "children": {
+      "multiple": true,
+      "required": false,
+      "types": [
+        {
+          "type": "field_initializer",
+          "named": true
+        }
+      ]
     }
   },
   {
@@ -1376,6 +1563,10 @@
             "named": true
           },
           {
+            "type": "path",
+            "named": true
+          },
+          {
             "type": "raw_str_literal",
             "named": true
           },
@@ -1385,6 +1576,10 @@
           },
           {
             "type": "str_literal",
+            "named": true
+          },
+          {
+            "type": "struct_expression",
             "named": true
           },
           {
@@ -1556,6 +1751,10 @@
           "named": true
         },
         {
+          "type": "struct_expression",
+          "named": true
+        },
+        {
           "type": "tuple_expression",
           "named": true
         },
@@ -1700,6 +1899,10 @@
           "named": true
         },
         {
+          "type": "path",
+          "named": true
+        },
+        {
           "type": "raw_str_literal",
           "named": true
         },
@@ -1709,6 +1912,10 @@
         },
         {
           "type": "str_literal",
+          "named": true
+        },
+        {
+          "type": "struct_expression",
           "named": true
         },
         {
@@ -1786,6 +1993,10 @@
           "named": true
         },
         {
+          "type": "path",
+          "named": true
+        },
+        {
           "type": "raw_str_literal",
           "named": true
         },
@@ -1795,6 +2006,10 @@
         },
         {
           "type": "str_literal",
+          "named": true
+        },
+        {
+          "type": "struct_expression",
           "named": true
         },
         {
@@ -1880,6 +2095,32 @@
           "named": true
         }
       ]
+    }
+  },
+  {
+    "type": "struct_expression",
+    "named": true,
+    "fields": {
+      "body": {
+        "multiple": false,
+        "required": true,
+        "types": [
+          {
+            "type": "initializer_list",
+            "named": true
+          }
+        ]
+      },
+      "name": {
+        "multiple": false,
+        "required": true,
+        "types": [
+          {
+            "type": "identifier",
+            "named": true
+          }
+        ]
+      }
     }
   },
   {
@@ -2137,6 +2378,10 @@
             "named": true
           },
           {
+            "type": "path",
+            "named": true
+          },
+          {
             "type": "raw_str_literal",
             "named": true
           },
@@ -2146,6 +2391,10 @@
           },
           {
             "type": "str_literal",
+            "named": true
+          },
+          {
+            "type": "struct_expression",
             "named": true
           },
           {
@@ -2285,6 +2534,10 @@
           "named": true
         },
         {
+          "type": "path",
+          "named": true
+        },
+        {
           "type": "raw_str_literal",
           "named": true
         },
@@ -2294,6 +2547,10 @@
         },
         {
           "type": "str_literal",
+          "named": true
+        },
+        {
+          "type": "struct_expression",
           "named": true
         },
         {

@@ -2919,6 +2919,10 @@ prec(1, choice(
     <<r("tuple_expression")>>,
     // ---/ End: ParenthesesExpression.
     <<r("unsafe_expression")>>,
+    // Inlined Noirc: PathExpression.
+    <<r("path")>>, // Inlined Noirc: VariableExpression.
+    <<r("constructor_expression")>>,
+    // ---/ End: PathExpression.
     // TODO: The rest of the items, ParenthesesExpression, UnsafeExpression etc.
     <<r("if_expression")>>,
     // ---/ End: Atom.
@@ -3871,6 +3875,118 @@ Callsites:
 
 #+name: ,ebnf_unsafe_expression
 #+transclude: [[file:noir/compiler/noirc_frontend/src/parser/parser/expression.rs::372][UnsafeExpression doc]] :lines 372-372 :src fundamental
+
+**** DONE PathExpression
+CLOSED: [2025-07-19 Sat 17:30]
+:PROPERTIES:
+:CUSTOM_ID: h:3884C486-9CDF-4A3A-B486-8F7BE0A21494
+:END:
+:LOGBOOK:
+- State "DONE"       from "TODO"       [2025-07-19 Sat 17:30]
+- State "TODO"       from              [2025-07-19 Sat 04:03]
+:END:
+
+Parser: [[file:noir/compiler/noirc_frontend/src/parser/parser/expression.rs::fn parse_path_expr(&mut self, allow_constructors: bool)][parse_path_expr()]]
+Callsites:
+  - [[file:noir/compiler/noirc_frontend/src/parser/parser/expression.rs::if let Some(kind) = self.parse_path_expr(allow_constructors) {][in parse_atom_kind()]] (for: [[#h:14C02FBD-84BA-470B-92C3-8E9C55BCF375][Atom]])
+
+Grammar rule inlined at [[#h:167542CC-8CDE-49C1-9465-E5157C6A176F][Expression]].
+
+The [[#h:07167116-EAE4-475B-8C87-DE9075BAF88D][Path]] component of both [[#h:01A477BE-69D1-48DD-BCFE-4571CC5F3F73][VariableExpression]] and [[#h:33877732-BC96-4CE2-99F3-EDB01CB46420][ConstructorExpression]] are parsed inline here. If parameter ~allow_constructors~ is =true= and there's ={= then [[#h:33877732-BC96-4CE2-99F3-EDB01CB46420][ConstructorExpression]] is parsed.
+
+#+name: ,ebnf_path_expression
+#+transclude: [[file:noir/compiler/noirc_frontend/src/parser/parser/expression.rs::386][PathExpression doc]] :lines 386-388 :src fundamental
+
+***** VariableExpression                                              :alias:
+:PROPERTIES:
+:CUSTOM_ID: h:01A477BE-69D1-48DD-BCFE-4571CC5F3F73
+:END:
+
+Alias for [[#h:07167116-EAE4-475B-8C87-DE9075BAF88D][Path]] except it is represented as an [[file:noir/compiler/noirc_frontend/src/ast/expression.rs::pub enum ExpressionKind {][ExpressionKind enum]] ~ExpressionKind::Variable~.
+
+#+name: ,ebnf_variable_expression
+#+transclude: [[file:noir/compiler/noirc_frontend/src/parser/parser/expression.rs::390][VariableExpression doc]] :lines 390-390 :src fundamental
+
+***** DONE ConstructorExpression
+CLOSED: [2025-07-19 Sat 17:30]
+:PROPERTIES:
+:CUSTOM_ID: h:33877732-BC96-4CE2-99F3-EDB01CB46420
+:END:
+:LOGBOOK:
+- State "DONE"       from "SPEC"       [2025-07-19 Sat 17:30]
+- State "SPEC"       from "TODO"       [2025-07-19 Sat 16:37] \\
+  Parser examined.
+- State "TODO"       from              [2025-07-19 Sat 16:37]
+:END:
+
+#+name: constructor_expression
+#+begin_src js :rule struct_expression :arg $ :ast ConstructorExpression
+seq(
+    field('name', <<r("identifier")>>),
+    field('body', alias(<<r("constructor_body")>>, $.initializer_list)),
+)
+#+end_src
+
+#+name: constructor_body
+#+begin_src js :arg $ :ast ConstructorFields
+seq(
+    '{',
+    optional(seq(
+        sepBy1(alias(<<r("constructor_field")>>, $.field_initializer), ','),
+        optional(','),
+    )),
+    '}',
+)
+#+end_src
+
+#+name: constructor_field
+#+begin_src js :arg $ :ast ConstructorField
+choice(
+    <<r("identifier")>>,
+    seq(
+        field('field', <<r("identifier")>>),
+        ':',
+        field('value', <<r("expression")>>),
+    ),
+)
+#+end_src
+
+Parser: [[file:noir/compiler/noirc_frontend/src/parser/parser/expression.rs::fn parse_constructor(&mut self, typ: UnresolvedType)][parse_constructor()]]
+Types: [[file:noir/compiler/noirc_frontend/src/ast/expression.rs::pub struct ConstructorExpression {][ConstructorExpression struct]], ~ExpressionKind::Constructor~.
+
+Looks to be akin to Rust struct expressions: https://doc.rust-lang.org/reference/expressions/struct-expr.html
+
+#+name: ,ebnf_constructor_expression
+#+transclude: [[file:noir/compiler/noirc_frontend/src/parser/parser/expression.rs::404][ConstructorExpression, ConstructorFields, ConstructorField doc]] :lines 404-408 :src fundamental
+
+*************** TODO In parser UnresolvedType::from_path
+Does this mean OrderedGenerics are allowed in the Path? Investigate later.
+*************** END
+
+****** ConstructorFields
+:PROPERTIES:
+:CUSTOM_ID: h:E6CE7011-D6FC-4662-899D-DF8A5B1D42A0
+:END:
+
+Parser: [[file:noir/compiler/noirc_frontend/src/parser/parser/expression.rs::let fields = self.parse_many(][parse_constructor() parent inline]]
+
+Via [[#h:8E0DC05B-1ED6-47BE-9589-64DC06FAECCA][parse_many]] split at =,= until =}= each calls [[#h:6EE8711B-E124-4A46-B468-1C2F493C160A][ConstructorField]].
+
+****** DONE ConstructorField
+CLOSED: [2025-07-19 Sat 17:30]
+:PROPERTIES:
+:CUSTOM_ID: h:6EE8711B-E124-4A46-B468-1C2F493C160A
+:END:
+:LOGBOOK:
+- State "DONE"       from "SPEC"       [2025-07-19 Sat 17:30]
+- State "SPEC"       from "TODO"       [2025-07-19 Sat 16:37] \\
+  Parser examined.
+- State "TODO"       from              [2025-07-19 Sat 16:37]
+:END:
+
+Parser: [[file:noir/compiler/noirc_frontend/src/parser/parser/expression.rs::fn parse_constructor_field(&mut self)][parse_constructor_field()]]
+
+Parser technically allows === instead of =:= but it does raise a parse error so we'll ignore that in the tree-sitter grammar and only allow =:=.
 
 *** TODO Literals
 :PROPERTIES:
@@ -4835,6 +4951,8 @@ alias(<<r("generic_type_args")>>, $.type_parameters)
 <<n("tuple_expression")>>
 <<n("if_expression")>>
 <<n("unsafe_expression")>>
+// VariableExpression is Path (see elsewhere).
+<<c('("constructor_expression" "constructor_body" "constructor_field"))>>
 #+end_src
 
 ** Types

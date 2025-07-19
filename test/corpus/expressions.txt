@@ -721,6 +721,91 @@ global f1 = unsafe { 123; };
 )
 
 
+====
+Path
+====
+
+global f1 = a::b;
+
+---
+
+(source_file
+  (global_item
+    name: (identifier)
+    (path
+      scope: (identifier)
+      name: (identifier)))
+)
+
+
+===========
+Constructor
+===========
+
+global f1 = Foo {};
+global f2 = Foo { a };
+global f3 = Foo { a, b, };
+
+global b1 = Bar { a: 42, };
+global b2 = Bar { a, x: u32, z };
+
+---
+
+(source_file
+  (global_item
+    name: (identifier)
+    (struct_expression
+      name: (identifier)
+      body: (initializer_list)))
+  (global_item
+    name: (identifier)
+    (struct_expression
+      name: (identifier)
+      body: (initializer_list
+        (field_initializer
+          (identifier)))))
+  (global_item
+    name: (identifier)
+    (struct_expression
+      name: (identifier)
+      body: (initializer_list
+        (field_initializer
+          (identifier))
+        (field_initializer
+          (identifier)))))
+
+  (global_item
+    name: (identifier)
+    (struct_expression
+      name: (identifier)
+      body: (initializer_list
+        (field_initializer
+          field: (identifier)
+          value: (int_literal)))))
+  (global_item
+    name: (identifier)
+    (struct_expression
+      name: (identifier)
+      body: (initializer_list
+        (field_initializer
+          (identifier))
+        (field_initializer
+          field: (identifier)
+          value: (identifier))
+        (field_initializer
+          (identifier)))))
+)
+
+
+=================================
+Constructor / Solo delimiter (e1)
+:error
+=================================
+
+global f1 = Foo {,};
+---
+
+
 ===
 If
 ===

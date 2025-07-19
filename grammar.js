@@ -448,6 +448,10 @@ module.exports = grammar({
             $.tuple_expression,
             // ---/ End: ParenthesesExpression.
             $.unsafe_block,
+            // Inlined Noirc: PathExpression.
+            $.path, // Inlined Noirc: VariableExpression.
+            $.struct_expression,
+            // ---/ End: PathExpression.
             // TODO: The rest of the items, ParenthesesExpression, UnsafeExpression etc.
             $.if_expression,
             // ---/ End: Atom.
@@ -558,6 +562,31 @@ module.exports = grammar({
         
         // [[file:noir_grammar.org::unsafe_expression]]
         unsafe_block: $ => seq('unsafe', $.block),
+        // VariableExpression is Path (see elsewhere).
+        
+        // [[file:noir_grammar.org::constructor_expression]]
+        struct_expression: $ => seq(
+            field('name', $.identifier),
+            field('body', alias($.constructor_body, $.initializer_list)),
+        ),
+        // [[file:noir_grammar.org::constructor_body]]
+        constructor_body: $ => seq(
+            '{',
+            optional(seq(
+                sepBy1(alias($.constructor_field, $.field_initializer), ','),
+                optional(','),
+            )),
+            '}',
+        ),
+        // [[file:noir_grammar.org::constructor_field]]
+        constructor_field: $ => choice(
+            $.identifier,
+            seq(
+                field('field', $.identifier),
+                ':',
+                field('value', $._expression),
+            ),
+        ),
 
         // * * * * * * * * * * * * * * * * * * * * * * * * * TYPES
         
