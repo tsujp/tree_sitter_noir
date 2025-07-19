@@ -2231,7 +2231,15 @@
         "required": false,
         "types": [
           {
+            "type": "generic",
+            "named": true
+          },
+          {
             "type": "identifier",
+            "named": true
+          },
+          {
+            "type": "path",
             "named": true
           }
         ]
@@ -2282,6 +2290,32 @@
           },
           {
             "type": "use_list",
+            "named": true
+          }
+        ]
+      },
+      "type": {
+        "multiple": false,
+        "required": false,
+        "types": [
+          {
+            "type": "identifier",
+            "named": true
+          },
+          {
+            "type": "path",
+            "named": true
+          },
+          {
+            "type": "primitive_type",
+            "named": true
+          },
+          {
+            "type": "tuple_type",
+            "named": true
+          },
+          {
+            "type": "unit_type",
             "named": true
           }
         ]

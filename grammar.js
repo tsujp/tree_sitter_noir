@@ -456,7 +456,7 @@ module.exports = grammar({
             $.comptime,
             $.unquote_expression,
             // TypePathExpression is Path.
-            
+            alias($.trait_path_alias, $.path),
             // AsTraitPath
             // ResolvedExpression
             // InternedExpression
@@ -635,6 +635,17 @@ module.exports = grammar({
                 $.path,
                 seq('(', $._expression, ')'),
             ),
+        ),
+        
+        // [[file:noir_grammar.org::trait_path_alias]]
+        trait_path_alias: $ => seq(
+            '<',
+            field('type', $._type),
+            'as',
+            field('alias', $.__trait_bound),
+            '>',
+            '::',
+            field('name', $.identifier),
         ),
 
         // * * * * * * * * * * * * * * * * * * * * * * * * * TYPES

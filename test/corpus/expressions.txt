@@ -1101,3 +1101,36 @@ global f2 = Field::foo::<T>;
       type_parameters: (type_parameters
         (identifier))))
 )
+
+
+===========
+AsTraitPath
+===========
+
+global f1 = <Field as foo::Bar>::baz;
+global f2 = <Field as lorem::ipsum<X, Y>>::foo;
+
+---
+
+(source_file
+  (global_item
+    name: (identifier)
+    (path
+      type: (primitive_type)
+      alias: (path
+        scope: (identifier)
+        name: (identifier))
+      name: (identifier)))
+  (global_item
+    name: (identifier)
+    (path
+      type: (primitive_type)
+      alias: (generic
+        trait: (path
+          scope: (identifier)
+          name: (identifier))
+        type_parameters: (type_parameters
+          (identifier)
+          (identifier)))
+      name: (identifier)))
+)

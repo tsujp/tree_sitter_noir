@@ -2741,6 +2741,41 @@ global f2 = Field::foo::<T>;
 Do we /need/ to have TypePathExpression?
 *************** END
 
+** AsTraitPath
+#+begin_test
+global f1 = <Field as foo::Bar>::baz;
+global f2 = <Field as lorem::ipsum<X, Y>>::foo;
+
+---
+
+(global_item
+  name: (identifier)
+  (path
+    type: (primitive_type)
+    alias: (path
+      scope: (identifier)
+      name: (identifier))
+    name: (identifier)))
+(global_item
+  name: (identifier)
+  (path
+    type: (primitive_type)
+    alias: (generic
+      trait: (path
+        scope: (identifier)
+        name: (identifier))
+      type_parameters: (type_parameters
+        (identifier)
+        (identifier)))
+    name: (identifier)))
+#+end_test
+
+** TODO Resolved
+
+** TODO Interned
+
+** TODO InternedStatement
+
 ** TODO Unary
 TODO: Also where does it go in terms of ordering
 
