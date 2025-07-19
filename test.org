@@ -2462,9 +2462,6 @@ global b2 = Bar { a, x: u32, z };
 global f1 = Foo {,};
 #+end_test
 
-** TODO Unary
-TODO
-
 ** If                                                            :expression:
 :PROPERTIES:
 :CUSTOM_ID: h:9289816C-EFC5-4F57-ABC6-94FC4CF11A21
@@ -2537,6 +2534,158 @@ Alternative =else= cannot have a condition, if a condition is required another i
 #+begin_test :error
 global f1 = { if 1 { } else 2 { } };
 #+end_test
+
+** TODO Lambda
+#+begin_test
+global f1 = || 123;
+global f2 = || (x, y);
+
+global b1 = || { 123 };
+global b2 = || { 456; };
+
+---
+
+(global_item
+  name: (identifier)
+  (lambda
+    parameters: (lambda_parameters)
+    body: (int_literal)))
+(global_item
+  name: (identifier)
+  (lambda
+    parameters: (lambda_parameters)
+    body: (tuple_expression
+      (identifier)
+      (identifier))))
+
+(global_item
+  name: (identifier)
+  (lambda
+    parameters: (lambda_parameters)
+    body: (block
+      (int_literal))))
+(global_item
+  name: (identifier)
+  (lambda
+    parameters: (lambda_parameters)
+    body: (block
+      (expression_statement
+        (int_literal)))))
+#+end_test
+
+*** Parameters
+#+begin_test
+global f1 = |x,| 123;
+global f2 = |x, y| 456;
+
+global b1 = |x: Field, y| 123;
+
+---
+
+(global_item
+  name: (identifier)
+  (lambda
+    parameters: (lambda_parameters
+      (identifier))
+    body: (int_literal)))
+(global_item
+  name: (identifier)
+  (lambda
+    parameters: (lambda_parameters
+      (identifier)
+      (identifier))
+    body: (int_literal)))
+
+(global_item
+  name: (identifier)
+  (lambda
+    parameters: (lambda_parameters
+      (parameter
+        pattern: (identifier)
+        type: (primitive_type))
+      (identifier))
+    body: (int_literal)))
+#+end_test
+
+**** TODO Struct pattern
+
+Assuming the following Noir source, the subsequent test would be valid Noir source code.
+
+#+begin_example
+mod A {
+  mod B {
+    struct Lorem {
+      foo: Field,
+    }
+  }
+}
+#+end_example
+
+#+begin_test :skip
+global f1 = |a, A::B::Lorem{ foo }| { a + foo };
+
+---
+
+(global_item
+  name: (identifier)
+  (lambda
+    parameters: (lambda_parameters
+      (identifier))
+      TODO STRUCT PATTERN CST HERE
+    body: (block
+      (binary_expression
+        left: (identifier)
+        right: (identifier)))))
+#+end_test
+
+*** Return type
+#+begin_test
+global f1 = || -> Foo 123;
+global f2 = || -> Foo { 456 };
+global f3 = || -> Foo { 789; };
+
+---
+
+(global_item
+  name: (identifier)
+  (lambda
+    parameters: (lambda_parameters)
+    return_type: (lambda_return_type
+      type: (identifier))
+    body: (int_literal)))
+(global_item
+  name: (identifier)
+  (lambda
+    parameters: (lambda_parameters)
+    return_type: (lambda_return_type
+      type: (identifier))
+    body: (block
+      (int_literal))))
+(global_item
+  name: (identifier)
+  (lambda
+    parameters: (lambda_parameters)
+    return_type: (lambda_return_type
+      type: (identifier))
+    body: (block
+      (expression_statement
+        (int_literal)))))
+#+end_test
+
+*** TODO Body call expression
+#+begin_test :skip
+global f1 = || assert_board_serial("BBDBVBXBAA");
+
+global b1 = |from, to| game.apply(Turn { piece, from, to, promotion_piece: 0 });
+#+end_test
+
+*** Solo delimiter
+#+begin_test :error
+global f1 = |,| 123;
+#+end_test
+
+** TODO Unary
+TODO: Also where does it go in terms of ordering
 
 * Types
 :PROPERTIES:

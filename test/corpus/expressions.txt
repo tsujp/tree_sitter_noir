@@ -873,3 +873,169 @@ If / Alternative else with condition (e1)
 
 global f1 = { if 1 { } else 2 { } };
 ---
+
+
+======
+Lambda
+======
+
+global f1 = || 123;
+global f2 = || (x, y);
+
+global b1 = || { 123 };
+global b2 = || { 456; };
+
+---
+
+(source_file
+  (global_item
+    name: (identifier)
+    (lambda
+      parameters: (lambda_parameters)
+      body: (int_literal)))
+  (global_item
+    name: (identifier)
+    (lambda
+      parameters: (lambda_parameters)
+      body: (tuple_expression
+        (identifier)
+        (identifier))))
+
+  (global_item
+    name: (identifier)
+    (lambda
+      parameters: (lambda_parameters)
+      body: (block
+        (int_literal))))
+  (global_item
+    name: (identifier)
+    (lambda
+      parameters: (lambda_parameters)
+      body: (block
+        (expression_statement
+          (int_literal)))))
+)
+
+
+===================
+Lambda / Parameters
+===================
+
+global f1 = |x,| 123;
+global f2 = |x, y| 456;
+
+global b1 = |x: Field, y| 123;
+
+---
+
+(source_file
+  (global_item
+    name: (identifier)
+    (lambda
+      parameters: (lambda_parameters
+        (identifier))
+      body: (int_literal)))
+  (global_item
+    name: (identifier)
+    (lambda
+      parameters: (lambda_parameters
+        (identifier)
+        (identifier))
+      body: (int_literal)))
+
+  (global_item
+    name: (identifier)
+    (lambda
+      parameters: (lambda_parameters
+        (parameter
+          pattern: (identifier)
+          type: (primitive_type))
+        (identifier))
+      body: (int_literal)))
+)
+
+
+====================================
+Lambda / Parameters / Struct pattern
+:skip
+====================================
+
+global f1 = |a, A::B::Lorem{ foo }| { a + foo };
+
+---
+
+(source_file
+  (global_item
+    name: (identifier)
+    (lambda
+      parameters: (lambda_parameters
+        (identifier))
+        TODO STRUCT PATTERN CST HERE
+      body: (block
+        (binary_expression
+          left: (identifier)
+          right: (identifier)))))
+)
+
+
+====================
+Lambda / Return type
+====================
+
+global f1 = || -> Foo 123;
+global f2 = || -> Foo { 456 };
+global f3 = || -> Foo { 789; };
+
+---
+
+(source_file
+  (global_item
+    name: (identifier)
+    (lambda
+      parameters: (lambda_parameters)
+      return_type: (lambda_return_type
+        type: (identifier))
+      body: (int_literal)))
+  (global_item
+    name: (identifier)
+    (lambda
+      parameters: (lambda_parameters)
+      return_type: (lambda_return_type
+        type: (identifier))
+      body: (block
+        (int_literal))))
+  (global_item
+    name: (identifier)
+    (lambda
+      parameters: (lambda_parameters)
+      return_type: (lambda_return_type
+        type: (identifier))
+      body: (block
+        (expression_statement
+          (int_literal)))))
+)
+
+
+=============================
+Lambda / Body call expression
+:skip
+=============================
+
+global f1 = || assert_board_serial("BBDBVBXBAA");
+
+global b1 = |from, to| game.apply(Turn { piece, from, to, promotion_piece: 0 });
+
+---
+
+(source_file
+
+)
+
+
+============================
+Lambda / Solo delimiter (e1)
+:error
+============================
+
+global f1 = |,| 123;
+---

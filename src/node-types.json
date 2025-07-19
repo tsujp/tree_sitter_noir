@@ -40,6 +40,10 @@
           "named": true
         },
         {
+          "type": "lambda",
+          "named": true
+        },
+        {
           "type": "parenthesized_expression",
           "named": true
         },
@@ -150,6 +154,10 @@
           "named": true
         },
         {
+          "type": "lambda",
+          "named": true
+        },
+        {
           "type": "parenthesized_expression",
           "named": true
         },
@@ -229,6 +237,10 @@
             "named": true
           },
           {
+            "type": "lambda",
+            "named": true
+          },
+          {
             "type": "parenthesized_expression",
             "named": true
           },
@@ -300,6 +312,10 @@
           },
           {
             "type": "int_literal",
+            "named": true
+          },
+          {
+            "type": "lambda",
             "named": true
           },
           {
@@ -437,6 +453,10 @@
           },
           {
             "type": "int_literal",
+            "named": true
+          },
+          {
+            "type": "lambda",
             "named": true
           },
           {
@@ -588,6 +608,10 @@
             "named": true
           },
           {
+            "type": "lambda",
+            "named": true
+          },
+          {
             "type": "parenthesized_expression",
             "named": true
           },
@@ -640,11 +664,23 @@
       "required": false,
       "types": [
         {
+          "type": "array_expression",
+          "named": true
+        },
+        {
           "type": "assign_statement",
           "named": true
         },
         {
+          "type": "binary_expression",
+          "named": true
+        },
+        {
           "type": "block",
+          "named": true
+        },
+        {
+          "type": "bool_literal",
           "named": true
         },
         {
@@ -668,7 +704,15 @@
           "named": true
         },
         {
+          "type": "fmt_str_literal",
+          "named": true
+        },
+        {
           "type": "for_statement",
+          "named": true
+        },
+        {
+          "type": "identifier",
           "named": true
         },
         {
@@ -676,11 +720,55 @@
           "named": true
         },
         {
+          "type": "int_literal",
+          "named": true
+        },
+        {
+          "type": "lambda",
+          "named": true
+        },
+        {
           "type": "let_statement",
           "named": true
         },
         {
+          "type": "parenthesized_expression",
+          "named": true
+        },
+        {
+          "type": "path",
+          "named": true
+        },
+        {
+          "type": "raw_str_literal",
+          "named": true
+        },
+        {
           "type": "return_statement",
+          "named": true
+        },
+        {
+          "type": "slice_expression",
+          "named": true
+        },
+        {
+          "type": "str_literal",
+          "named": true
+        },
+        {
+          "type": "struct_expression",
+          "named": true
+        },
+        {
+          "type": "tuple_expression",
+          "named": true
+        },
+        {
+          "type": "unit_expression",
+          "named": true
+        },
+        {
+          "type": "unsafe_block",
           "named": true
         }
       ]
@@ -892,6 +980,10 @@
           "named": true
         },
         {
+          "type": "lambda",
+          "named": true
+        },
+        {
           "type": "parenthesized_expression",
           "named": true
         },
@@ -978,6 +1070,10 @@
           },
           {
             "type": "int_literal",
+            "named": true
+          },
+          {
+            "type": "lambda",
             "named": true
           },
           {
@@ -1093,6 +1189,10 @@
           },
           {
             "type": "int_literal",
+            "named": true
+          },
+          {
+            "type": "lambda",
             "named": true
           },
           {
@@ -1265,6 +1365,10 @@
           "named": true
         },
         {
+          "type": "lambda",
+          "named": true
+        },
+        {
           "type": "mutable_modifier",
           "named": true
         },
@@ -1363,6 +1467,10 @@
           },
           {
             "type": "int_literal",
+            "named": true
+          },
+          {
+            "type": "lambda",
             "named": true
           },
           {
@@ -1471,6 +1579,169 @@
     }
   },
   {
+    "type": "lambda",
+    "named": true,
+    "fields": {
+      "body": {
+        "multiple": false,
+        "required": true,
+        "types": [
+          {
+            "type": "array_expression",
+            "named": true
+          },
+          {
+            "type": "binary_expression",
+            "named": true
+          },
+          {
+            "type": "block",
+            "named": true
+          },
+          {
+            "type": "bool_literal",
+            "named": true
+          },
+          {
+            "type": "fmt_str_literal",
+            "named": true
+          },
+          {
+            "type": "identifier",
+            "named": true
+          },
+          {
+            "type": "if_expression",
+            "named": true
+          },
+          {
+            "type": "int_literal",
+            "named": true
+          },
+          {
+            "type": "lambda",
+            "named": true
+          },
+          {
+            "type": "parenthesized_expression",
+            "named": true
+          },
+          {
+            "type": "path",
+            "named": true
+          },
+          {
+            "type": "raw_str_literal",
+            "named": true
+          },
+          {
+            "type": "slice_expression",
+            "named": true
+          },
+          {
+            "type": "str_literal",
+            "named": true
+          },
+          {
+            "type": "struct_expression",
+            "named": true
+          },
+          {
+            "type": "tuple_expression",
+            "named": true
+          },
+          {
+            "type": "unit_expression",
+            "named": true
+          },
+          {
+            "type": "unsafe_block",
+            "named": true
+          }
+        ]
+      },
+      "parameters": {
+        "multiple": false,
+        "required": true,
+        "types": [
+          {
+            "type": "lambda_parameters",
+            "named": true
+          }
+        ]
+      },
+      "return_type": {
+        "multiple": false,
+        "required": false,
+        "types": [
+          {
+            "type": "lambda_return_type",
+            "named": true
+          }
+        ]
+      }
+    }
+  },
+  {
+    "type": "lambda_parameters",
+    "named": true,
+    "fields": {},
+    "children": {
+      "multiple": true,
+      "required": false,
+      "types": [
+        {
+          "type": "identifier",
+          "named": true
+        },
+        {
+          "type": "parameter",
+          "named": true
+        },
+        {
+          "type": "struct_pattern",
+          "named": true
+        },
+        {
+          "type": "tuple_pattern",
+          "named": true
+        }
+      ]
+    }
+  },
+  {
+    "type": "lambda_return_type",
+    "named": true,
+    "fields": {
+      "type": {
+        "multiple": false,
+        "required": true,
+        "types": [
+          {
+            "type": "identifier",
+            "named": true
+          },
+          {
+            "type": "path",
+            "named": true
+          },
+          {
+            "type": "primitive_type",
+            "named": true
+          },
+          {
+            "type": "tuple_type",
+            "named": true
+          },
+          {
+            "type": "unit_type",
+            "named": true
+          }
+        ]
+      }
+    }
+  },
+  {
     "type": "let_statement",
     "named": true,
     "fields": {
@@ -1556,6 +1827,10 @@
           },
           {
             "type": "int_literal",
+            "named": true
+          },
+          {
+            "type": "lambda",
             "named": true
           },
           {
@@ -1691,6 +1966,60 @@
     "fields": {}
   },
   {
+    "type": "parameter",
+    "named": true,
+    "fields": {
+      "pattern": {
+        "multiple": false,
+        "required": true,
+        "types": [
+          {
+            "type": "identifier",
+            "named": true
+          },
+          {
+            "type": "struct_pattern",
+            "named": true
+          },
+          {
+            "type": "tuple_pattern",
+            "named": true
+          }
+        ]
+      },
+      "type": {
+        "multiple": true,
+        "required": true,
+        "types": [
+          {
+            "type": ":",
+            "named": false
+          },
+          {
+            "type": "identifier",
+            "named": true
+          },
+          {
+            "type": "path",
+            "named": true
+          },
+          {
+            "type": "primitive_type",
+            "named": true
+          },
+          {
+            "type": "tuple_type",
+            "named": true
+          },
+          {
+            "type": "unit_type",
+            "named": true
+          }
+        ]
+      }
+    }
+  },
+  {
     "type": "parenthesized_expression",
     "named": true,
     "fields": {},
@@ -1728,6 +2057,10 @@
         },
         {
           "type": "int_literal",
+          "named": true
+        },
+        {
+          "type": "lambda",
           "named": true
         },
         {
@@ -1895,6 +2228,10 @@
           "named": true
         },
         {
+          "type": "lambda",
+          "named": true
+        },
+        {
           "type": "parenthesized_expression",
           "named": true
         },
@@ -1986,6 +2323,10 @@
         },
         {
           "type": "int_literal",
+          "named": true
+        },
+        {
+          "type": "lambda",
           "named": true
         },
         {
@@ -2374,6 +2715,10 @@
             "named": true
           },
           {
+            "type": "lambda",
+            "named": true
+          },
+          {
             "type": "parenthesized_expression",
             "named": true
           },
@@ -2527,6 +2872,10 @@
         },
         {
           "type": "int_literal",
+          "named": true
+        },
+        {
+          "type": "lambda",
           "named": true
         },
         {
@@ -2938,6 +3287,10 @@
   },
   {
     "type": "-=",
+    "named": false
+  },
+  {
+    "type": "->",
     "named": false
   },
   {

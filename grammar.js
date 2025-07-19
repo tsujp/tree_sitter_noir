@@ -442,18 +442,16 @@ module.exports = grammar({
             $.binary_expression,
             // Inlined Noirc: Atom.
             $.__literal,
-            // Inlined Noirc: ParenthesesExpression.
-            alias($.unit_type, $.unit_expression),
-            $.parenthesized_expression,
-            $.tuple_expression,
-            // ---/ End: ParenthesesExpression.
+              // Inlined Noirc: ParenthesesExpression.
+              alias($.unit_type, $.unit_expression),
+              $.parenthesized_expression,
+              $.tuple_expression,
             $.unsafe_block,
-            // Inlined Noirc: PathExpression.
-            $.path, // Inlined Noirc: VariableExpression.
-            $.struct_expression,
-            // ---/ End: PathExpression.
-            // TODO: The rest of the items, ParenthesesExpression, UnsafeExpression etc.
+              // Inlined Noirc: PathExpression.
+              $.path, // Inlined Noirc: VariableExpression.
+              $.struct_expression,
             $.if_expression,
+            $.lambda,
             // ---/ End: Atom.
             // TODO: SURELY identifier is allowed in expression, where's the concrete evidence though? Assuming it is for now.
             $.identifier,
@@ -509,6 +507,7 @@ module.exports = grammar({
         block: $ => seq(
             '{',
             repeat($._statement),
+            optional($._expression),
             '}',
         ),
         
@@ -549,17 +548,6 @@ module.exports = grammar({
             ')',
         ),
         
-        // [[file:noir_grammar.org::if_expression]]
-        if_expression: $ => seq(
-            'if',
-            field('condition', $._expression),
-            field('consequence', $.block),
-            optional(seq(
-                'else',
-                field('alternative', choice($.block, $.if_expression)),
-            )),
-        ),
-        
         // [[file:noir_grammar.org::unsafe_expression]]
         unsafe_block: $ => seq('unsafe', $.block),
         // VariableExpression is Path (see elsewhere).
@@ -586,6 +574,46 @@ module.exports = grammar({
                 ':',
                 field('value', $._expression),
             ),
+        ),
+        
+        // [[file:noir_grammar.org::if_expression]]
+        if_expression: $ => seq(
+            'if',
+            field('condition', $._expression),
+            field('consequence', $.block),
+            optional(seq(
+                'else',
+                field('alternative', choice($.block, $.if_expression)),
+            )),
+        ),
+        
+        // [[file:noir_grammar.org::lambda]]
+        lambda: $ => seq(
+            field('parameters', $.lambda_parameters),
+            field('return_type', optional($.lambda_return_type)),
+            field('body', $._expression),
+        ),
+        // [[file:noir_grammar.org::lambda_return_type]]
+        lambda_return_type: $ => seq(
+            '->',
+            field('type', $._type),
+        ),
+        // [[file:noir_grammar.org::lambda_parameters]]
+        lambda_parameters: $ => seq(
+            '|',
+            optional(seq(
+                sepBy1(choice(
+                    $._pattern,
+                    alias($.lambda_parameter, $.parameter),
+                ), ','),
+                optional(','),
+            )),
+            '|',
+        ),
+        // [[file:noir_grammar.org::lambda_parameter]]
+        lambda_parameter: $ => seq(
+            field('pattern', $._pattern),
+            field('type', $._type_annotation), // Inlined Noirc: OptionalTypeAnnotation (except required).
         ),
 
         // * * * * * * * * * * * * * * * * * * * * * * * * * TYPES

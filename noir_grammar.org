@@ -2691,7 +2691,7 @@ choice(
     // TODO: InternedPattern? It looks like a compiler-only internal though and not discrete syntax.
     <<r("tuple_pattern")>>,
     <<r("struct_pattern")>>,
-    $.identifier, // Noirc: IdentifierPattern.
+    <<r("identifier")>>, // Noirc: IdentifierPattern.
 )
 #+end_src
 
@@ -2913,18 +2913,16 @@ prec(1, choice(
     <<r("binary_expression")>>,
     // Inlined Noirc: Atom.
     <<r("literal")>>,
-    // Inlined Noirc: ParenthesesExpression.
-    alias(<<r("unit_type")>>, $.unit_expression),
-    <<r("parenthesised_expression")>>,
-    <<r("tuple_expression")>>,
-    // ---/ End: ParenthesesExpression.
+      // Inlined Noirc: ParenthesesExpression.
+      alias(<<r("unit_type")>>, $.unit_expression),
+      <<r("parenthesised_expression")>>,
+      <<r("tuple_expression")>>,
     <<r("unsafe_expression")>>,
-    // Inlined Noirc: PathExpression.
-    <<r("path")>>, // Inlined Noirc: VariableExpression.
-    <<r("constructor_expression")>>,
-    // ---/ End: PathExpression.
-    // TODO: The rest of the items, ParenthesesExpression, UnsafeExpression etc.
+      // Inlined Noirc: PathExpression.
+      <<r("path")>>, // Inlined Noirc: VariableExpression.
+      <<r("constructor_expression")>>,
     <<r("if_expression")>>,
+    <<r("lambda")>>,
     // ---/ End: Atom.
     // TODO: SURELY identifier is allowed in expression, where's the concrete evidence though? Assuming it is for now.
     <<r("identifier")>>,
@@ -3129,6 +3127,7 @@ Parser: [[file:noir/compiler/noirc_frontend/src/parser/parser/expression.rs::if 
 seq(
     '{',
     repeat(<<r("statement")>>),
+    optional(<<r("expression")>>),
     '}',
 )
 #+end_src
@@ -3962,6 +3961,9 @@ Looks to be akin to Rust struct expressions: https://doc.rust-lang.org/reference
 *************** TODO In parser UnresolvedType::from_path
 Does this mean OrderedGenerics are allowed in the Path? Investigate later.
 *************** END
+*************** TODO In parser callsite this thing about interned unresolved type data
+Does that represent anything we should realistically grab via tree-sitter? If so adjust as required. For current Noir 0.36.0 (I think) its in parser/expression.rs line 287 ([[file:noir/compiler/noirc_frontend/src/parser/parser/expression.rs::if matches!(self.token.token(), Token::InternedUnresolvedTypeData(..))][link]])
+*************** END
 
 ****** ConstructorFields
 :PROPERTIES:
@@ -3987,6 +3989,85 @@ CLOSED: [2025-07-19 Sat 17:30]
 Parser: [[file:noir/compiler/noirc_frontend/src/parser/parser/expression.rs::fn parse_constructor_field(&mut self)][parse_constructor_field()]]
 
 Parser technically allows === instead of =:= but it does raise a parse error so we'll ignore that in the tree-sitter grammar and only allow =:=.
+
+**** DONE Lambda
+CLOSED: [2025-07-19 Sat 20:26]
+:PROPERTIES:
+:CUSTOM_ID: h:5F28CD6F-4D91-40CD-81F1-D3BD63E77839
+:END:
+:LOGBOOK:
+- State "DONE"       from "TODO"       [2025-07-19 Sat 20:26]
+- State "TODO"       from              [2025-07-19 Sat 17:40]
+:END:
+
+#+name: lambda
+#+begin_src js :arg $ :ast Lambda
+seq(
+    field('parameters', <<r("lambda_parameters")>>),
+    field('return_type', optional(<<r("lambda_return_type")>>)),
+    field('body', <<r("expression")>>),
+)
+#+end_src
+
+#+name: lambda_return_type
+#+begin_src js :arg $
+seq(
+    '->',
+    field('type', <<r("type")>>),
+)
+#+end_src
+
+Parser: [[file:noir/compiler/noirc_frontend/src/parser/parser/lambda.rs::fn parse_lambda(&mut self)][parse_lambda()]]
+Types: [[file:noir/compiler/noirc_frontend/src/ast/expression.rs::pub struct Lambda {][Lambda struct]]
+Callsites:
+  - [[file:noir/compiler/noirc_frontend/src/parser/parser/expression.rs::if let Some(kind) = self.parse_lambda() {][in parse_atom_kind()]] (for: [[#h:14C02FBD-84BA-470B-92C3-8E9C55BCF375][Atom]])
+
+#+name: ,ebnf_lambda
+#+transclude: [[file:noir/compiler/noirc_frontend/src/parser/parser/lambda.rs::10][Lambda doc]] :lines 10-10 :src fundamental
+
+***** DONE LambdaParameters
+CLOSED: [2025-07-19 Sat 20:26]
+:LOGBOOK:
+- State "DONE"       from              [2025-07-19 Sat 20:26]
+:END:
+
+#+name: lambda_parameters
+#+begin_src js :arg $ :ast LambdaParameters
+seq(
+    '|',
+    optional(seq(
+        sepBy1(choice(
+            <<r("pattern")>>,
+            alias(<<r("lambda_parameter")>>, $.parameter),
+        ), ','),
+        optional(','),
+    )),
+    '|',
+)
+#+end_src
+
+Parser: [[file:noir/compiler/noirc_frontend/src/parser/parser/lambda.rs::fn parse_lambda_parameters(&mut self)][parse_lambda_parameters()]]
+
+Via [[#h:8E0DC05B-1ED6-47BE-9589-64DC06FAECCA][parse_many]] split at =,= until =|= call [[#h:947E0384-AC3E-4F56-9413-AD806BCCBBD7][LambdaParameter]].
+
+***** DONE LambdaParameter
+CLOSED: [2025-07-19 Sat 20:26]
+:PROPERTIES:
+:CUSTOM_ID: h:947E0384-AC3E-4F56-9413-AD806BCCBBD7
+:END:
+:LOGBOOK:
+- State "DONE"       from              [2025-07-19 Sat 20:26]
+:END:
+
+#+name: lambda_parameter
+#+begin_src js :arg $ :ast LambdaParameter
+seq(
+    field('pattern', <<r("pattern")>>),
+    field('type', <<r("type_annotation")>>), // Inlined Noirc: OptionalTypeAnnotation (except required).
+)
+#+end_src
+
+Parser: [[file:noir/compiler/noirc_frontend/src/parser/parser/lambda.rs::fn parse_lambda_parameter(&mut self)][parse_lambda_parameter()]]
 
 *** TODO Literals
 :PROPERTIES:
@@ -4949,10 +5030,11 @@ alias(<<r("generic_type_args")>>, $.type_parameters)
 // Ordered as at Atom.
 <<n("parenthesised_expression")>>
 <<n("tuple_expression")>>
-<<n("if_expression")>>
 <<n("unsafe_expression")>>
 // VariableExpression is Path (see elsewhere).
 <<c('("constructor_expression" "constructor_body" "constructor_field"))>>
+<<n("if_expression")>>
+<<c('("lambda" "lambda_return_type" "lambda_parameters" "lambda_parameter"))>>
 #+end_src
 
 ** Types
