@@ -4098,11 +4098,13 @@ Callsites:
 #+name: ,ebnf_comptime_expression
 #+transclude: [[file:noir/compiler/noirc_frontend/src/parser/parser/expression.rs::481][ComptimeExpression]] :lines 481-481 :src fundamental
 
-**** TODO UnquoteExpression
+**** DONE UnquoteExpression
+CLOSED: [2025-07-19 Sat 23:47]
 :PROPERTIES:
 :CUSTOM_ID: h:99953D79-E89B-49B8-B23D-E3CE1F8B4B0D
 :END:
 :LOGBOOK:
+- State "DONE"       from "TODO"       [2025-07-19 Sat 23:47]
 - State "TODO"       from              [2025-07-19 Sat 23:31]
 :END:
 
@@ -4123,7 +4125,6 @@ Callsites:
 
 *************** TODO EBNF update, identifier should be Path
 *************** END
-
 
 **** TODO TypePathExpression
 :LOGBOOK:
