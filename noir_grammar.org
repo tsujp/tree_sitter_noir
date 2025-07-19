@@ -1046,7 +1046,7 @@ When lexing [[file:noir/compiler/noirc_frontend/src/lexer/token.rs::fn lookup_ke
     - [ ] [[file:noir/compiler/noirc_frontend/src/parser/parser/generics.rs::fn parse_generic_type_args(&mut self)][parse_generic_type_args()]]
 :end:
 
-****** BLOCK PrimitiveType                                             :node:
+****** BLOCK PrimitiveType
 :PROPERTIES:
 :CUSTOM_ID: h:C23E374A-42EF-467D-AE3D-548D880712D8
 :END:
@@ -1073,6 +1073,7 @@ choice(
     <<r("bool_type")>>,
     <<r("str_type")>>,
     <<r("fmt_str_type")>>,
+    // TODO: ComptimeType (blocked for now).
 )
 #+end_src
 
@@ -1779,7 +1780,7 @@ seq('(', <<r("type_expr")>>, ')')
 :END:
 
 #+name: path
-#+begin_src js :rule path :arg $ :ast Path
+#+begin_src js :rule path :arg $ :ast "Path, TypePathExpression"
 seq(
     field('scope', choice(
         <<self()>>,
@@ -2925,7 +2926,8 @@ prec(1, choice(
     <<r("lambda")>>,
     <<r("comptime_block")>>,
     <<r("unquote_expression")>>,
-    // TypePathExpression
+    // TypePathExpression is Path.
+    
     // AsTraitPath
     // ResolvedExpression
     // InternedExpression
@@ -4126,14 +4128,25 @@ Callsites:
 *************** TODO EBNF update, identifier should be Path
 *************** END
 
-**** TODO TypePathExpression
+**** DONE TypePathExpression                                          :alias:
+CLOSED: [2025-07-20 Sun 00:14]
+:PROPERTIES:
+:CUSTOM_ID: h:B4802C06-9963-41FB-B929-95C82597FE3A
+:END:
 :LOGBOOK:
+- State "DONE"       from "TODO"       [2025-07-20 Sun 00:14]
 - State "TODO"       from              [2025-07-19 Sat 23:31]
 :END:
 
+No distinction made on primitive types in the Path, so this is already implemented at [[#h:07167116-EAE4-475B-8C87-DE9075BAF88D][Path]].
+
 Parser: [[file:noir/compiler/noirc_frontend/src/parser/parser/expression.rs::fn parse_type_path_expr(&mut self)][parse_type_path_expr()]]
+Types: [[file:noir/compiler/noirc_frontend/src/ast/statement.rs::pub struct TypePath {][TypePath struct]]
 Callsites:
   - [[file:noir/compiler/noirc_frontend/src/parser/parser/expression.rs::if let Some(kind) = self.parse_type_path_expr() {][in parse_atom_kind()]] (for: [[#h:14C02FBD-84BA-470B-92C3-8E9C55BCF375][Atom]])
+
+#+name: ,ebnf_type_path_expression
+#+transclude: [[file:noir/compiler/noirc_frontend/src/parser/parser/expression.rs::534][TypePathExpression doc]] :lines 534-534 :src fundamental
     
 **** TODO AsTraitPath
 :LOGBOOK:

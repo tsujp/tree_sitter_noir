@@ -455,7 +455,8 @@ module.exports = grammar({
             $.lambda,
             $.comptime,
             $.unquote_expression,
-            // TypePathExpression
+            // TypePathExpression is Path.
+            
             // AsTraitPath
             // ResolvedExpression
             // InternedExpression
@@ -659,6 +660,7 @@ module.exports = grammar({
             $.__bool_type,
             $.__string_type,
             $.__format_string_type,
+            // TODO: ComptimeType (blocked for now).
         ),
         // [[file:noir_grammar.org::field_type]]
         __field_type: _ => 'Field',
