@@ -256,14 +256,14 @@ global f3 = { comptime for i in 0..10 { } };
   (global_item
     name: (identifier)
     (block
-      (comptime_statement
+      (comptime
         (block
           (expression_statement
             (int_literal))))))
   (global_item
     name: (identifier)
     (block
-      (comptime_statement
+      (comptime
         (let_statement
           pattern: (identifier)
           value: (str_literal
@@ -271,7 +271,7 @@ global f3 = { comptime for i in 0..10 { } };
   (global_item
     name: (identifier)
     (block
-      (comptime_statement
+      (comptime
         (let_statement
           (mut_bound)
           pattern: (identifier)
@@ -279,7 +279,7 @@ global f3 = { comptime for i in 0..10 { } };
   (global_item
     name: (identifier)
     (block
-      (comptime_statement
+      (comptime
         (for_statement
           value: (identifier)
           range: (range_expression

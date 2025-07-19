@@ -714,7 +714,7 @@ global f1 = unsafe { 123; };
 (source_file
   (global_item
     name: (identifier)
-    (unsafe_block
+    (unsafe
       (block
         (expression_statement
           (int_literal)))))
@@ -1039,3 +1039,21 @@ Lambda / Solo delimiter (e1)
 
 global f1 = |,| 123;
 ---
+
+
+========
+Comptime
+========
+
+global f1 = comptime { 123; };
+
+---
+
+(source_file
+  (global_item
+    name: (identifier)
+    (comptime
+      (block
+        (expression_statement
+          (int_literal)))))
+)

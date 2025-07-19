@@ -1592,14 +1592,14 @@ global f3 = { comptime for i in 0..10 { } };
 (global_item
   name: (identifier)
   (block
-    (comptime_statement
+    (comptime
       (block
         (expression_statement
           (int_literal))))))
 (global_item
   name: (identifier)
   (block
-    (comptime_statement
+    (comptime
       (let_statement
         pattern: (identifier)
         value: (str_literal
@@ -1607,7 +1607,7 @@ global f3 = { comptime for i in 0..10 { } };
 (global_item
   name: (identifier)
   (block
-    (comptime_statement
+    (comptime
       (let_statement
         (mut_bound)
         pattern: (identifier)
@@ -1615,7 +1615,7 @@ global f3 = { comptime for i in 0..10 { } };
 (global_item
   name: (identifier)
   (block
-    (comptime_statement
+    (comptime
       (for_statement
         value: (identifier)
         range: (range_expression
@@ -2380,7 +2380,7 @@ global f1 = unsafe { 123; };
 
 (global_item
   name: (identifier)
-  (unsafe_block
+  (unsafe
     (block
       (expression_statement
         (int_literal)))))
@@ -2535,7 +2535,7 @@ Alternative =else= cannot have a condition, if a condition is required another i
 global f1 = { if 1 { } else 2 { } };
 #+end_test
 
-** TODO Lambda
+** Lambda
 #+begin_test
 global f1 = || 123;
 global f2 = || (x, y);
@@ -2682,6 +2682,20 @@ global b1 = |from, to| game.apply(Turn { piece, from, to, promotion_piece: 0 });
 *** Solo delimiter
 #+begin_test :error
 global f1 = |,| 123;
+#+end_test
+
+** Comptime
+#+begin_test
+global f1 = comptime { 123; };
+
+---
+
+(global_item
+  name: (identifier)
+  (comptime
+    (block
+      (expression_statement
+        (int_literal)))))
 #+end_test
 
 ** TODO Unary

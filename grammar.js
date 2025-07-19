@@ -367,7 +367,9 @@ module.exports = grammar({
                 $.return_statement,
                 $.let_statement,
                 $.constrain_statement,
-                $.comptime_statement,
+                $.comptime, // Inlined Noirc: ComptimeBlock.
+                // Inlined Noirc: ComptimeStatement sans ComptimeBlock.
+                alias($.comptime_statement__let_for, $.comptime),
                 $.for_statement,
                 $.if_expression,
                 $.block,
@@ -400,13 +402,12 @@ module.exports = grammar({
             field('arguments', $.arguments),
             ';',
         ),
-        // [[file:noir_grammar.org::comptime_statement]]
-        comptime_statement: $ => seq(
+        // [[file:noir_grammar.org::comptime_statement__let_for]]
+        comptime_statement__let_for: $ => seq(
             'comptime',
             choice(
-                $.block, // Noirc: ComptimeBlock
-                $.let_statement, // Noirc: ComptimeLet
-                $.for_statement, // Noirc: ComptimeFor
+                $.let_statement, // Inlined Noirc: ComptimeLet.
+                $.for_statement, // Inlined Noirc: ComptimeFor.
             ),
         ),
         // [[file:noir_grammar.org::for_statement]]
@@ -446,12 +447,19 @@ module.exports = grammar({
               alias($.unit_type, $.unit_expression),
               $.parenthesized_expression,
               $.tuple_expression,
-            $.unsafe_block,
+            $.unsafe,
               // Inlined Noirc: PathExpression.
               $.path, // Inlined Noirc: VariableExpression.
               $.struct_expression,
             $.if_expression,
             $.lambda,
+            $.comptime,
+            // UnquoteExpression
+            // TypePathExpression
+            // AsTraitPath
+            // ResolvedExpression
+            // InternedExpression
+            // InternedStatementExpression
             // ---/ End: Atom.
             // TODO: SURELY identifier is allowed in expression, where's the concrete evidence though? Assuming it is for now.
             $.identifier,
@@ -548,8 +556,8 @@ module.exports = grammar({
             ')',
         ),
         
-        // [[file:noir_grammar.org::unsafe_expression]]
-        unsafe_block: $ => seq('unsafe', $.block),
+        // [[file:noir_grammar.org::unsafe_block]]
+        unsafe: $ => seq('unsafe', $.block),
         // VariableExpression is Path (see elsewhere).
         
         // [[file:noir_grammar.org::constructor_expression]]
@@ -615,6 +623,9 @@ module.exports = grammar({
             field('pattern', $._pattern),
             field('type', $._type_annotation), // Inlined Noirc: OptionalTypeAnnotation (except required).
         ),
+        
+        // [[file:noir_grammar.org::comptime_block]]
+        comptime: $ => seq('comptime', $.block),
 
         // * * * * * * * * * * * * * * * * * * * * * * * * * TYPES
         

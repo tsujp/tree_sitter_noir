@@ -2917,12 +2917,19 @@ prec(1, choice(
       alias(<<r("unit_type")>>, $.unit_expression),
       <<r("parenthesised_expression")>>,
       <<r("tuple_expression")>>,
-    <<r("unsafe_expression")>>,
+    <<r("unsafe_block")>>,
       // Inlined Noirc: PathExpression.
       <<r("path")>>, // Inlined Noirc: VariableExpression.
       <<r("constructor_expression")>>,
     <<r("if_expression")>>,
     <<r("lambda")>>,
+    <<r("comptime_block")>>,
+    // UnquoteExpression
+    // TypePathExpression
+    // AsTraitPath
+    // ResolvedExpression
+    // InternedExpression
+    // InternedStatementExpression
     // ---/ End: Atom.
     // TODO: SURELY identifier is allowed in expression, where's the concrete evidence though? Assuming it is for now.
     <<r("identifier")>>,
@@ -3132,11 +3139,25 @@ seq(
 )
 #+end_src
 
+Modifiers for Block need to be their own CST rule since Block is so bare there's nowhere else to put a field or anonymous node for the modifier, unlike say Function.
+
+#+name: comptime_block
+#+begin_src js :rule comptime :arg $ :ast "ComptimeExpression, ComptimeBlock"
+seq('comptime', <<r("block")>>)
+#+end_src
+
+#+name: unsafe_block
+#+begin_src js :rule unsafe :arg $ :ast UnsafeExpression
+seq('unsafe', <<r("block")>>)
+#+end_src
+
 Parser: [[file:noir/compiler/noirc_frontend/src/parser/parser/expression.rs::fn parse_block(&mut self)][parse_block()]]
-Parent callsites:
-  - [[file:noir/compiler/noirc_frontend/src/parser/parser/expression.rs::if let Some(kind) = self.parse_block() {][parse_block() parent parse_literal()]] (for: [[#h:3446FD3E-4526-4DBF-80AB-64BD9078C4F5][Literals]])
-  - [[file:noir/compiler/noirc_frontend/src/parser/parser/function.rs::Some(self.parse_block().unwrap_or_else(empty_body))][parse_block() parent parse_function_definition_with_optional_body()]] (for: [[#h:B3C4609F-307A-42A1-B420-DBBAB6CDE6E5][Function]])
-Aliases: BlockExpression, BlockStatement
+Callsites:
+  - [[file:noir/compiler/noirc_frontend/src/parser/parser/expression.rs::if let Some(kind) = self.parse_block() {][in parse_literal()]] (for: [[#h:3446FD3E-4526-4DBF-80AB-64BD9078C4F5][Literals]], as: ~BlockExpression~)
+  - [[file:noir/compiler/noirc_frontend/src/parser/parser/function.rs::Some(self.parse_block().unwrap_or_else(empty_body))][in parse_function_definition_with_optional_body()]] (for: [[#h:B3C4609F-307A-42A1-B420-DBBAB6CDE6E5][Function]], as: ~BlockExpression~)
+  - [[file:noir/compiler/noirc_frontend/src/parser/parser/expression.rs::if let Some(block) = self.parse_block() {][in parse_unsafe_expr()]] (for: [[#h:AE41A3D6-2311-40DB-998F-1E15B5A0C07D][UnsafeExpression]], as: ~UnsafeExpression(BlockExpression)~)
+  - [[file:noir/compiler/noirc_frontend/src/parser/parser/expression.rs::let Some(block) = self.parse_block() else {][in parse_comptime_expr()]] (for: [[#h:6424BB7B-2E77-4E26-84EC-D574E74F0520][ComptimeExpression]], as: ~BlockExpression~)
+  - [[file:noir/compiler/noirc_frontend/src/parser/parser/statement.rs::if let Some(block) = self.parse_block() {][in parse_comptime_statement_kind()]] (for: [[#h:A0796B1B-462F-4DC6-BE7D-F1D87112AFD4][ComptimeStatement]], as: ~BlockExpression~)
 
 Via [[#h:8E0DC05B-1ED6-47BE-9589-64DC06FAECCA][parse_many]] split by nothing until =}= each parsed as a [[#h:788ECB8C-0A48-4255-B35E-F5850902AA32][Statement]] via [[file:noir/compiler/noirc_frontend/src/parser/parser/expression.rs::fn parse_statement_in_block(&mut self)][parse_statement_in_block()]].
 
@@ -3205,7 +3226,9 @@ seq(
         <<r("return_statement")>>,
         <<r("let_statement")>>,
         <<r("constrain_statement")>>,
-        <<r("comptime_statement")>>,
+        <<r("comptime_block")>>, // Inlined Noirc: ComptimeBlock.
+        // Inlined Noirc: ComptimeStatement sans ComptimeBlock.
+        alias(<<r("comptime_statement__let_for")>>, $.comptime),
         <<r("for_statement")>>,
         <<r("if_expression")>>,
         <<r("block")>>,
@@ -3422,7 +3445,7 @@ See [[#h:3F52F622-294C-463F-986F-DD38EB41EA89][add_semicolon]], ~StatementKind::
 
 #+transclude: [[file:noir/compiler/noirc_frontend/src/parser/parser/statement.rs::370][ConstrainStatement doc]] :lines 370-373 :src fundamental
 
-***** DONE ComptimeStatement                                           :node:
+***** DONE ComptimeStatement
 CLOSED: [2025-06-26 Thu 17:51]
 :PROPERTIES:
 :CUSTOM_ID: h:A0796B1B-462F-4DC6-BE7D-F1D87112AFD4
@@ -3434,16 +3457,15 @@ CLOSED: [2025-06-26 Thu 17:51]
 - State "TODO"       from              [2025-05-20 Tue 18:16]
 :END:
 
-+ [[#h:5092AC79-344E-465F-973E-70DC2ECF38FB][ComptimeBlock]] OR [[#h:46D5DE09-D9EB-4227-BB31-BA77B8B0063D][ComptimeLet]] OR [[#h:B0F78DC8-11C8-4D7E-A72C-7C3498574225][ComptimeFor]]
+ComptimeBlock inlined at [[#h:788ECB8C-0A48-4255-B35E-F5850902AA32][Statement]]. Also see [[#h:B34CADE5-71B4-41F2-AB54-00483EE593A6][BlockExpression]].
 
-#+name: comptime_statement
-#+begin_src js :arg $ :ast ComptimeStatement
+#+name: comptime_statement__let_for
+#+begin_src js :arg $ :ast "ComptimeStatement sans ComptimeBlock"
 seq(
     'comptime',
     choice(
-        <<r("block")>>, // Noirc: ComptimeBlock
-        <<r("let_statement")>>, // Noirc: ComptimeLet
-        <<r("for_statement")>>, // Noirc: ComptimeFor
+        <<r("let_statement")>>, // Inlined Noirc: ComptimeLet.
+        <<r("for_statement")>>, // Inlined Noirc: ComptimeFor.
     ),
 )
 #+end_src
@@ -3452,13 +3474,10 @@ Parser: [[file:noir/compiler/noirc_frontend/src/parser/parser/statement.rs::if s
 
 #+transclude: [[file:noir/compiler/noirc_frontend/src/parser/parser/statement.rs::291][ComptimeStatement ComptimeBlock ComptimeLet ComptimeFor doc]] :lines 291-300 :src fundamental
 
-****** ComptimeBlock                                                   :node:
+****** ComptimeBlock                                                  :alias:
 :PROPERTIES:
 :CUSTOM_ID: h:5092AC79-344E-465F-973E-70DC2ECF38FB
 :END:
-:pgd:
-+ =comptime= (kw) by [[#h:B34CADE5-71B4-41F2-AB54-00483EE593A6][BlockExpression]]
-:end:
 
 **Inlined unless something else references it in a way that requires otherwise**.
 
@@ -3466,9 +3485,6 @@ Parser: [[file:noir/compiler/noirc_frontend/src/parser/parser/statement.rs::if s
 :PROPERTIES:
 :CUSTOM_ID: h:46D5DE09-D9EB-4227-BB31-BA77B8B0063D
 :END:
-:pgd:
-+ =comptime= (kw) by [[#h:FD70AFA1-5D45-434E-A9D0-7E8F6DD38058][LetStatement]]
-:end:
 
 **Inlined unless something else references it in a way that requires otherwise**.
 
@@ -3476,9 +3492,6 @@ Parser: [[file:noir/compiler/noirc_frontend/src/parser/parser/statement.rs::if s
 :PROPERTIES:
 :CUSTOM_ID: h:B0F78DC8-11C8-4D7E-A72C-7C3498574225
 :END:
-:pgd:
-+ =comptime= (kw) by [[#h:F444339D-00F1-4553-ACF6-DE0B5E2EE35E][ForStatement]]
-:end:
 
 **Inlined unless something else references it in a way that requires otherwise**.
 
@@ -3853,7 +3866,7 @@ Parser: /in parent, see [[#h:DF57FFD8-C50B-406E-95E7-94C3BFC15DAC][ParenthesesEx
 #+name: ,ebnf_tuple_expression
 #+transclude: [[file:noir/compiler/noirc_frontend/src/parser/parser/expression.rs::689][TupleExpression doc]] :lines 689-689 :src fundamental
 
-**** DONE UnsafeExpression
+**** DONE UnsafeExpression                                            :alias:
 CLOSED: [2025-07-19 Sat 04:01]
 :PROPERTIES:
 :CUSTOM_ID: h:AE41A3D6-2311-40DB-998F-1E15B5A0C07D
@@ -3863,10 +3876,7 @@ CLOSED: [2025-07-19 Sat 04:01]
 - State "TODO"       from              [2025-07-19 Sat 03:55]
 :END:
 
-#+name: unsafe_expression
-#+begin_src js :rule unsafe_block :arg $ :ast UnsafeExpression
-seq('unsafe', <<r("block")>>)
-#+end_src
+Grammar rule defined in [[#h:B34CADE5-71B4-41F2-AB54-00483EE593A6][BlockExpression]] for clarity.
 
 Parser: [[file:noir/compiler/noirc_frontend/src/parser/parser/expression.rs::fn parse_unsafe_expr(&mut self)][parse_unsafe_expr()]]
 Callsites:
@@ -4068,6 +4078,25 @@ seq(
 #+end_src
 
 Parser: [[file:noir/compiler/noirc_frontend/src/parser/parser/lambda.rs::fn parse_lambda_parameter(&mut self)][parse_lambda_parameter()]]
+
+**** DONE ComptimeExpression                                          :alias:
+CLOSED: [2025-07-19 Sat 23:17]
+:PROPERTIES:
+:CUSTOM_ID: h:6424BB7B-2E77-4E26-84EC-D574E74F0520
+:END:
+:LOGBOOK:
+- State "DONE"       from "TODO"       [2025-07-19 Sat 23:17]
+- State "TODO"       from              [2025-07-19 Sat 20:30]
+:END:
+
+Alias of [[#h:5092AC79-344E-465F-973E-70DC2ECF38FB][ComptimeBlock]], also see [[#h:B34CADE5-71B4-41F2-AB54-00483EE593A6][BlockExpression]].
+
+Parser: [[file:noir/compiler/noirc_frontend/src/parser/parser/expression.rs::fn parse_comptime_expr(&mut self)][parse_comptime_expr()]]
+Callsites:
+  - [[file:noir/compiler/noirc_frontend/src/parser/parser/expression.rs::if let Some(kind) = self.parse_comptime_expr() {][in parse_atom_kind()]] (for: [[#h:14C02FBD-84BA-470B-92C3-8E9C55BCF375][Atom]])
+
+#+name: ,ebnf_comptime_expression
+#+transclude: [[file:noir/compiler/noirc_frontend/src/parser/parser/expression.rs::481][ComptimeExpression]] :lines 481-481 :src fundamental
 
 *** TODO Literals
 :PROPERTIES:
@@ -5011,7 +5040,7 @@ alias(<<r("generic_type_args")>>, $.type_parameters)
 #+name: grp__statements
 #+begin_src js :noweb yes
 <<n("statement")>>
-<<c('("break_statement" "continue_statement" "return_statement" "let_statement" "constrain_statement" "comptime_statement" "for_statement" "assign_statement" "expression_statement"))>>
+<<c('("break_statement" "continue_statement" "return_statement" "let_statement" "constrain_statement" "comptime_statement__let_for" "for_statement" "assign_statement" "expression_statement"))>>
 #+end_src
 
 ** Expressions
@@ -5030,11 +5059,12 @@ alias(<<r("generic_type_args")>>, $.type_parameters)
 // Ordered as at Atom.
 <<n("parenthesised_expression")>>
 <<n("tuple_expression")>>
-<<n("unsafe_expression")>>
+<<n("unsafe_block")>>
 // VariableExpression is Path (see elsewhere).
 <<c('("constructor_expression" "constructor_body" "constructor_field"))>>
 <<n("if_expression")>>
 <<c('("lambda" "lambda_return_type" "lambda_parameters" "lambda_parameter"))>>
+<<n("comptime_block")>>
 #+end_src
 
 ** Types

@@ -1253,7 +1253,16 @@
             },
             {
               "type": "SYMBOL",
-              "name": "comptime_statement"
+              "name": "comptime"
+            },
+            {
+              "type": "ALIAS",
+              "content": {
+                "type": "SYMBOL",
+                "name": "comptime_statement__let_for"
+              },
+              "named": true,
+              "value": "comptime"
             },
             {
               "type": "SYMBOL",
@@ -1421,7 +1430,7 @@
         }
       ]
     },
-    "comptime_statement": {
+    "comptime_statement__let_for": {
       "type": "SEQ",
       "members": [
         {
@@ -1431,10 +1440,6 @@
         {
           "type": "CHOICE",
           "members": [
-            {
-              "type": "SYMBOL",
-              "name": "block"
-            },
             {
               "type": "SYMBOL",
               "name": "let_statement"
@@ -1605,7 +1610,7 @@
           },
           {
             "type": "SYMBOL",
-            "name": "unsafe_block"
+            "name": "unsafe"
           },
           {
             "type": "SYMBOL",
@@ -1622,6 +1627,10 @@
           {
             "type": "SYMBOL",
             "name": "lambda"
+          },
+          {
+            "type": "SYMBOL",
+            "name": "comptime"
           },
           {
             "type": "SYMBOL",
@@ -2281,7 +2290,7 @@
         }
       ]
     },
-    "unsafe_block": {
+    "unsafe": {
       "type": "SEQ",
       "members": [
         {
@@ -2649,6 +2658,19 @@
             "type": "SYMBOL",
             "name": "_type_annotation"
           }
+        }
+      ]
+    },
+    "comptime": {
+      "type": "SEQ",
+      "members": [
+        {
+          "type": "STRING",
+          "value": "comptime"
+        },
+        {
+          "type": "SYMBOL",
+          "name": "block"
         }
       ]
     },
