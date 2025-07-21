@@ -1333,64 +1333,57 @@ pub comptime mut global foo: i32 = 1;
     type: (primitive_type)
     (int_literal))
   (global_item
-    (comptime_modifier)
+    (modifiers)
     name: (identifier)
     type: (primitive_type)
     (int_literal))
   (global_item
-    (mutable_modifier)
-    name: (identifier)
-    type: (primitive_type)
-    (int_literal))
-  (global_item
-    (visibility_modifier)
+    (modifiers)
     name: (identifier)
     type: (primitive_type)
     (int_literal))
   (global_item
     (visibility_modifier)
-    (comptime_modifier)
-    (mutable_modifier)
+    name: (identifier)
+    type: (primitive_type)
+    (int_literal))
+  (global_item
+    (visibility_modifier)
+    (modifiers)
     name: (identifier)
     type: (primitive_type)
     (int_literal))
 )
 
 
-
-======================
-Function / Definitions
-:skip
-======================
+=================
+Function / Simple
+=================
 
 fn hello_world() {}
-
 fn foo() {}
-
 fn before123four_five_678() {}
 
 ---
 
 (source_file
-  (function_definition
+  (function_item
     name: (identifier)
-    (parameter_list)
-    (block))
-
-  (function_definition
+    parameters: (parameters)
+    body: (block))
+  (function_item
     name: (identifier)
-    (parameter_list)
-    (block))
-
-  (function_definition
+    parameters: (parameters)
+    body: (block))
+  (function_item
     name: (identifier)
-    (parameter_list)
-    (block))
+    parameters: (parameters)
+    body: (block))
 )
 
 
 ===========================================================
-Function / Definitions / Starting with integer literal (e1)
+Function / Simple / Name starting with integer literal (e1)
 :error
 ===========================================================
 
@@ -1399,7 +1392,7 @@ fn 123_not_okay() {}
 
 
 =============================================================
-Function / Definitions / Starting with negation operator (e1)
+Function / Simple / Name starting with negation operator (e1)
 :error
 =============================================================
 
@@ -1407,27 +1400,153 @@ fn !nope() {}
 ---
 
 
-====================================================
-Function / Definitions / Missing parameter list (e1)
+===============================================
+Function / Simple / Missing parameter list (e1)
 :error
-====================================================
+===============================================
 
 fn nah {}
 ---
 
 
-======================================================
-Function / Definitions / Missing block expression (e1)
+=================================================
+Function / Simple / Missing block expression (e1)
 :error
-======================================================
+=================================================
 
 fn silly()
 ---
 
 
+===================
+Function / Generics
+===================
+
+fn foo<A>() {}
+
+---
+
+(source_file
+  (function_item
+    name: (identifier)
+    type_parameters: (type_parameters
+      (identifier))
+    parameters: (parameters)
+    body: (block))
+)
+
+
+=====================
+Function / Parameters
+=====================
+
+fn foo(x: Field, y: Field) {}
+fn foo(x: pub Field) {}
+fn foo(x: return_data Field) {}
+
+---
+
+(source_file
+  (function_item
+    name: (identifier)
+    parameters: (parameters
+      (parameter
+        pattern: (identifier)
+        type: (primitive_type))
+      (parameter
+        pattern: (identifier)
+        type: (primitive_type)))
+    body: (block))
+  (function_item
+    name: (identifier)
+    parameters: (parameters
+      (parameter
+        pattern: (identifier)
+        type: (visible_type
+          (visibility)
+          (primitive_type))))
+    body: (block))
+  (function_item
+    name: (identifier)
+    parameters: (parameters
+      (parameter
+        pattern: (identifier)
+        type: (visible_type
+          (visibility)
+          (primitive_type))))
+    body: (block))
+)
+
+
+=================================================================================================
+Function / Parameters / Apparently the call (underscore) data is making org-babel shit itself lol
+:skip
+=================================================================================================
+
+fn foo(x: call_data (42) Field) {}
+
+---
+
+(source_file
+
+)
+
+
+====================================================
+Function / Parameters / Unclosed parameter list (e1)
+:error
+====================================================
+
+fn foo(x: i32, {}
+---
+
+
+===================================================
+Function / Parameters / Missing parameter type (e1)
+:error
+===================================================
+
+fn foo(x, y: i32) {}
+---
+
+
+===================================================
+Function / Parameters / Missing parameter type (e2)
+:error
+===================================================
+
+fn foo(x: , y: i32) {}
+---
+
+
+=================
+Function / Return
+=================
+
+fn foo() -> Field {}
+fn foo() -> pub Field {}
+
+---
+
+(source_file
+  (function_item
+    name: (identifier)
+    parameters: (parameters)
+    return_type: (return_type
+      type: (primitive_type))
+    body: (block))
+  (function_item
+    name: (identifier)
+    parameters: (parameters)
+    return_type: (return_type
+      (visibility)
+      type: (primitive_type))
+    body: (block))
+)
+
+
 ====================
 Function / Modifiers
-:skip
 ====================
 
 pub fn one() {}
@@ -1446,59 +1565,59 @@ pub(crate) unconstrained comptime fn nine() {}
 ---
 
 (source_file
-  (function_definition
+  (function_item
     (visibility_modifier)
     name: (identifier)
-    (parameter_list)
-    (block))
-  (function_definition
+    parameters: (parameters)
+    body: (block))
+  (function_item
     (visibility_modifier)
     name: (identifier)
-    (parameter_list)
-    (block))
+    parameters: (parameters)
+    body: (block))
 
-  (function_definition
-    (function_modifiers)
+  (function_item
+    (modifiers)
     name: (identifier)
-    (parameter_list)
-    (block))
-  (function_definition
+    parameters: (parameters)
+    body: (block))
+  (function_item
     (visibility_modifier)
-    (function_modifiers)
+    (modifiers)
     name: (identifier)
-    (parameter_list)
-    (block))
-  (function_definition
+    parameters: (parameters)
+    body: (block))
+  (function_item
     (visibility_modifier)
-    (function_modifiers)
+    (modifiers)
     name: (identifier)
-    (parameter_list)
-    (block))
+    parameters: (parameters)
+    body: (block))
 
-  (function_definition
-    (function_modifiers)
+  (function_item
+    (modifiers)
     name: (identifier)
-    (parameter_list)
-    (block))
-  (function_definition
+    parameters: (parameters)
+    body: (block))
+  (function_item
     (visibility_modifier)
-    (function_modifiers)
+    (modifiers)
     name: (identifier)
-    (parameter_list)
-    (block))
+    parameters: (parameters)
+    body: (block))
 
-  (function_definition
+  (function_item
     (visibility_modifier)
-    (function_modifiers)
+    (modifiers)
     name: (identifier)
-    (parameter_list)
-    (block))
-  (function_definition
+    parameters: (parameters)
+    body: (block))
+  (function_item
     (visibility_modifier)
-    (function_modifiers)
+    (modifiers)
     name: (identifier)
-    (parameter_list)
-    (block))
+    parameters: (parameters)
+    body: (block))
 )
 
 

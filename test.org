@@ -1203,24 +1203,23 @@ pub comptime mut global foo: i32 = 1;
   type: (primitive_type)
   (int_literal))
 (global_item
-  (comptime_modifier)
+  (modifiers)
   name: (identifier)
   type: (primitive_type)
   (int_literal))
 (global_item
-  (mutable_modifier)
-  name: (identifier)
-  type: (primitive_type)
-  (int_literal))
-(global_item
-  (visibility_modifier)
+  (modifiers)
   name: (identifier)
   type: (primitive_type)
   (int_literal))
 (global_item
   (visibility_modifier)
-  (comptime_modifier)
-  (mutable_modifier)
+  name: (identifier)
+  type: (primitive_type)
+  (int_literal))
+(global_item
+  (visibility_modifier)
+  (modifiers)
   name: (identifier)
   type: (primitive_type)
   (int_literal))
@@ -1231,60 +1230,146 @@ x
 
 ** Function
 
-*************** TODO The Functions subtree can be flattened out so modifiers test all things modifiers are applicable to instead of ONLY in the context of functions
-*************** END
-
-Need to test:
-  - Return visibility (i.e. Visibility headline)
-
-*** Definitions
-#+begin_test :extract :skip
+*** Simple
+#+begin_test
 fn hello_world() {}
-
 fn foo() {}
-
 fn before123four_five_678() {}
 
 ---
 
-(function_definition
+(function_item
   name: (identifier)
-  (parameter_list)
-  (block))
-
-(function_definition
+  parameters: (parameters)
+  body: (block))
+(function_item
   name: (identifier)
-  (parameter_list)
-  (block))
-
-(function_definition
+  parameters: (parameters)
+  body: (block))
+(function_item
   name: (identifier)
-  (parameter_list)
-  (block))
+  parameters: (parameters)
+  body: (block))
 #+end_test
 
-**** Starting with integer literal
-#+begin_test :error :extract
+**** Name starting with integer literal
+#+begin_test :error
 fn 123_not_okay() {}
 #+end_test
 
-**** Starting with negation operator
-#+begin_test :error :extract
+**** Name starting with negation operator
+#+begin_test :error
 fn !nope() {}
 #+end_test
 
 **** Missing parameter list
-#+begin_test :error :extract
+#+begin_test :error
 fn nah {}
 #+end_test
 
 **** Missing block expression
-#+begin_test :error :extract
+#+begin_test :error
 fn silly()
 #+end_test
 
-*** Modifiers
+*** Generics
+#+begin_test
+fn foo<A>() {}
+
+---
+
+(function_item
+  name: (identifier)
+  type_parameters: (type_parameters
+    (identifier))
+  parameters: (parameters)
+  body: (block))
+#+end_test
+
+*** Parameters
+#+begin_test
+fn foo(x: Field, y: Field) {}
+fn foo(x: pub Field) {}
+fn foo(x: return_data Field) {}
+
+---
+
+(function_item
+  name: (identifier)
+  parameters: (parameters
+    (parameter
+      pattern: (identifier)
+      type: (primitive_type))
+    (parameter
+      pattern: (identifier)
+      type: (primitive_type)))
+  body: (block))
+(function_item
+  name: (identifier)
+  parameters: (parameters
+    (parameter
+      pattern: (identifier)
+      type: (visible_type
+        (visibility)
+        (primitive_type))))
+  body: (block))
+(function_item
+  name: (identifier)
+  parameters: (parameters
+    (parameter
+      pattern: (identifier)
+      type: (visible_type
+        (visibility)
+        (primitive_type))))
+  body: (block))
+#+end_test
+
+**** TODO Apparently the call (underscore) data is making org-babel shit itself lol
 #+begin_test :skip
+fn foo(x: call_data (42) Field) {}
+#+end_test
+
+**** Unclosed parameter list
+#+begin_test :error
+fn foo(x: i32, {}
+#+end_test
+
+**** Missing parameter type
+
+Completely absent type and colon.
+#+begin_test :error
+fn foo(x, y: i32) {}
+#+end_test
+
+Colon but no type.
+#+begin_test :error
+fn foo(x: , y: i32) {}
+#+end_test
+
+*** Return
+#+begin_test
+fn foo() -> Field {}
+fn foo() -> pub Field {}
+
+---
+
+(function_item
+  name: (identifier)
+  parameters: (parameters)
+  return_type: (return_type
+    type: (primitive_type))
+  body: (block))
+(function_item
+  name: (identifier)
+  parameters: (parameters)
+  return_type: (return_type
+    (visibility)
+    type: (primitive_type))
+  body: (block))
+#+end_test
+
+*** Modifiers
+#+begin_test
 pub fn one() {}
 pub(crate) fn two() {}
 
@@ -1300,59 +1385,59 @@ pub(crate) unconstrained comptime fn nine() {}
 
 ---
 
-(function_definition
+(function_item
   (visibility_modifier)
   name: (identifier)
-  (parameter_list)
-  (block))
-(function_definition
+  parameters: (parameters)
+  body: (block))
+(function_item
   (visibility_modifier)
   name: (identifier)
-  (parameter_list)
-  (block))
+  parameters: (parameters)
+  body: (block))
 
-(function_definition
-  (function_modifiers)
+(function_item
+  (modifiers)
   name: (identifier)
-  (parameter_list)
-  (block))
-(function_definition
+  parameters: (parameters)
+  body: (block))
+(function_item
   (visibility_modifier)
-  (function_modifiers)
+  (modifiers)
   name: (identifier)
-  (parameter_list)
-  (block))
-(function_definition
+  parameters: (parameters)
+  body: (block))
+(function_item
   (visibility_modifier)
-  (function_modifiers)
+  (modifiers)
   name: (identifier)
-  (parameter_list)
-  (block))
+  parameters: (parameters)
+  body: (block))
 
-(function_definition
-  (function_modifiers)
+(function_item
+  (modifiers)
   name: (identifier)
-  (parameter_list)
-  (block))
-(function_definition
+  parameters: (parameters)
+  body: (block))
+(function_item
   (visibility_modifier)
-  (function_modifiers)
+  (modifiers)
   name: (identifier)
-  (parameter_list)
-  (block))
+  parameters: (parameters)
+  body: (block))
 
-(function_definition
+(function_item
   (visibility_modifier)
-  (function_modifiers)
+  (modifiers)
   name: (identifier)
-  (parameter_list)
-  (block))
-(function_definition
+  parameters: (parameters)
+  body: (block))
+(function_item
   (visibility_modifier)
-  (function_modifiers)
+  (modifiers)
   name: (identifier)
-  (parameter_list)
-  (block))
+  parameters: (parameters)
+  body: (block))
 #+end_test
 
 **** Visibility position

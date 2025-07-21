@@ -265,7 +265,7 @@ CLOSED: [2025-07-14 Mon 14:54]
 
 #+name: modifier_comptime
 #+begin_src js :rule comptime_modifier
-'comptime'
+'comptimez'
 #+end_src
 
 #+name: modifier_mut
@@ -963,7 +963,7 @@ CLOSED: [2025-07-14 Mon 14:30]
 #+begin_src js :rule global_item :arg $ :ast Global
 seq(
     optional(<<r("item_visibility")>>),
-    repeat(choice(<<r("modifier_mut")>>, <<r("modifier_comptime")>>)),
+    optional(alias(<<r("global_item_modifiers")>>, $.modifiers)),
     'global',
     field('name', <<r("identifier")>>),
     <<field__type_annotation>>,
@@ -971,6 +971,14 @@ seq(
     <<r("expression")>>,
     ';',
 )
+#+end_src
+
+#+name: global_item_modifiers
+#+begin_src js
+repeat1(choice(
+    'mut',
+    'comptime',
+))
 #+end_src
 
 Parser: [[file:noir/compiler/noirc_frontend/src/parser/parser/item.rs::if self.eat_keyword(Keyword::Global) {][parse_global() parent callsite]], [[file:noir/compiler/noirc_frontend/src/parser/parser/global.rs::fn parse_global(][parse_global()]]
@@ -1558,7 +1566,7 @@ No trailing comma here either right?
 It feels pretty generic, so we should put it somewhere in grammar.js that reflects that (as appropriate).
 *************** END
 
-****** BLOCK TraitAsType                                               :node:
+****** BLOCK TraitAsType
 :PROPERTIES:
 :CUSTOM_ID: h:08118263-BDC8-4589-8EF9-1F0490B62F34
 :END:
@@ -1566,11 +1574,10 @@ It feels pretty generic, so we should put it somewhere in grammar.js that reflec
 - State "BLOCK"      from "TODO"       [2024-11-16 Sat 17:48] \\
   PathNoTurbofish and GenericTypeArgs completion.
 :END:
-:pgd:
+
 + =impl= (kw).
 + [[#h:A051D0D5-7007-4DF8-83B7-FB4EFF9C383E][PathNoTurbofish]].
 + [[#h:3267D7A4-7AA4-49FB-91FA-A9601BC6868A][GenericTypeArgs]].
-:end:
 
 Parser: [[file:noir/compiler/noirc_frontend/src/parser/parser/types.rs::fn parse_trait_as_type(&mut self)][parse_trait_as_type()]]
 
@@ -1582,7 +1589,7 @@ Return: ~AST::UnresolvedTypeData::TraitAsType~.
 Because here its required that PathNoTurbofish is Some and _not_ None (which IIRC is how/why Path is implied optional elsewhere).
 *************** END
 
-****** BLOCK AsTraitPathType                                           :node:
+****** BLOCK AsTraitPathType
 :PROPERTIES:
 :CUSTOM_ID: h:5B4FDF39-09B2-4C07-A2B5-3A3D6BEDD4B7
 :END:
@@ -1590,9 +1597,8 @@ Because here its required that PathNoTurbofish is Some and _not_ None (which IIR
 - State "BLOCK"      from "TODO"       [2024-11-16 Sat 18:10] \\
   AsTraitPath completion.
 :END:
-:pgd:
-+ [[#h:348C4ABC-3FC0-46EC-95A0-7F4B238BB86A][AsTraitPath]].
-:end:
+
++ [[#h:348C4ABC-3FC0-46EC-95A0-7F4B238BB86A][AsTraitPath]]
 
 This just wraps AsTraitPath.
 
@@ -1600,7 +1606,7 @@ Parser: [[file:noir/compiler/noirc_frontend/src/parser/parser/types.rs::fn parse
 
 Return: ~AST::UnresolvedTypeData::AsTraitPath~.
 
-****** BLOCK UnresolvedNamedType                                       :node:
+****** BLOCK UnresolvedNamedType
 :PROPERTIES:
 :CUSTOM_ID: h:F2E3D7E1-0978-44DF-A49E-EBE348F9D973
 :END:
@@ -1608,10 +1614,9 @@ Return: ~AST::UnresolvedTypeData::AsTraitPath~.
 - State "BLOCK"      from "TODO"       [2024-11-16 Sat 18:22] \\
   PathNoTurbofish completion.
 :END:
-:pgd:
-+ [[#h:A051D0D5-7007-4DF8-83B7-FB4EFF9C383E][PathNoTurbofish]].
-+ (opt) [[#h:3267D7A4-7AA4-49FB-91FA-A9601BC6868A][GenericTypeArgs]].
-:end:
+
++ [[#h:A051D0D5-7007-4DF8-83B7-FB4EFF9C383E][PathNoTurbofish]]
++ (opt) [[#h:3267D7A4-7AA4-49FB-91FA-A9601BC6868A][GenericTypeArgs]]
 
 Parser: /within slice of parent/
 #+transclude: [[file:noir/compiler/noirc_frontend/src/parser/parser/types.rs::58][parent parser slice]] :lines 58-61 :src rust
@@ -2049,25 +2054,47 @@ By ignoring it this subheading has no rule, simply use GenericTypeArgs directly.
 As the parsing function for PathGenerics shows, any NamedArgs will return a parser error.
 *************** END
 
-***** TODO Function
+***** DONE Function
+CLOSED: [2025-07-22 Tue 02:50]
 :PROPERTIES:
 :CUSTOM_ID: h:B3C4609F-307A-42A1-B420-DBBAB6CDE6E5
+:END:
+:LOGBOOK:
+- State "DONE"       from "TODO"       [2025-07-22 Tue 02:50]
 :END:
 
 #+name: function
 #+begin_src js :rule function_item :arg $ :ast Function
 seq(
     optional(<<r("item_visibility")>>),
-    repeat(choice(<<r("modifier_comptime")>>, <<r("modifier_unconstrained")>>)),
+    optional(alias(<<r("function_item_modifiers")>>, $.modifiers)),
     'fn',
     field('name', <<r("identifier")>>),
     field('type_parameters', optional(<<r("generic_parameters")>>)),
     field('parameters', <<r("function_parameters")>>),
-    optional(seq('->', optional(<<r("visibility")>>), <<r("type")>>)),
+    field('return_type', optional(<<r("function_return_type")>>)),
+    // TODO: Field name for where clause like on Traits and so forth?
     optional(<<r("where")>>),
     // No optional body allowed at this locus.
     field('body', <<r("block")>>),
 )
+#+end_src
+
+#+name: function_return_type
+#+begin_src js :rule return_type :arg $
+seq(
+    '->',
+    optional(<<r("visibility")>>),
+    field('type', <<r("type")>>),
+)
+#+end_src
+
+#+name: function_item_modifiers
+#+begin_src js
+repeat1(choice(
+    'comptime',
+    'unconstrained',
+))
 #+end_src
 
 Parser: [[file:noir/compiler/noirc_frontend/src/parser/parser/item.rs::if self.eat_keyword(Keyword::Fn) {][parse_function() parent callsite]], [[file:noir/compiler/noirc_frontend/src/parser/parser/function.rs::fn parse_function(][parse_function()]]
@@ -2105,22 +2132,24 @@ See the function.rs file top struct and also what parse_function_definition retu
 TraitFunction is a new type (in Noirc).
 *************** END
 
-***** TODO FunctionParameters                                          :node:
+****** DONE FunctionParameters
+CLOSED: [2025-07-22 Tue 02:49]
 :PROPERTIES:
 :CUSTOM_ID: h:B635EAF3-0AE1-47E0-8817-7174186912D8
 :END:
-:pgd:
-+ =(=
-+ (opt) [[#h:D94BC382-4224-4FB5-8332-4C5CCF285946][FunctionParametersList]]
-+ =)=
-:end:
+:LOGBOOK:
+- State "DONE"       from "TODO"       [2025-07-22 Tue 02:49]
+:END:
 
 #+name: function_parameters
-#+begin_src js :arg $ :ast FunctionParameters
+#+begin_src js :rule parameters :arg $ :ast FunctionParameters
 seq(
     '(',
-    sepBy(<<r("function_parameter")>>, ','), // Inlined Noirc: FunctionParametersList
-    optional(','),
+    optional(seq(
+        // Inlined Noirc: FunctionParametersList.
+        sepBy1(alias(<<r("function_parameter")>>, $.parameter), ','),
+        optional(','),
+    )),
     ')',
 )
 #+end_src
@@ -2130,53 +2159,65 @@ Parser: [[file:noir/compiler/noirc_frontend/src/parser/parser/function.rs::fn pa
 #+name: ,ebnf_function_parameters
 #+transclude: [[file:noir/compiler/noirc_frontend/src/parser/parser/function.rs::134][FunctionParameters doc]] :lines 129-133 :src fundamental
 
-****** FunctionParametersList                                          :node:
+****** FunctionParametersList
 :PROPERTIES:
 :CUSTOM_ID: h:D94BC382-4224-4FB5-8332-4C5CCF285946
 :END:
-:pgd:
-+ [[#h:9554D746-C88F-4E3D-B065-B1A5C5F9B57B][FunctionParameter]]
-+ (rep0 grp) =,= by [[#h:9554D746-C88F-4E3D-B065-B1A5C5F9B57B][FunctionParameter]]
-+ (opt) =,=
-:end:
 
 **Inlined this unless something else references it in a way that requires otherwise**.
 
 Via [[#h:8E0DC05B-1ED6-47BE-9589-64DC06FAECCA][parse_many]] in parent, split by =,= until =)=, each parsed as [[#h:9554D746-C88F-4E3D-B065-B1A5C5F9B57B][FunctionParameter]].
 
-****** TODO FunctionParameter                                          :node:
+****** DONE FunctionParameter
+CLOSED: [2025-07-22 Tue 02:48]
 :PROPERTIES:
 :CUSTOM_ID: h:9554D746-C88F-4E3D-B065-B1A5C5F9B57B
 :END:
-:pgd:
-+ [[#h:17BBA21C-65D3-447D-93DE-2F13E16575C5][Visibility]]
-+ [[#h:464E9BE0-4EC7-4D73-A1F2-F9C581DFD8E3][PatternOrSelf]]
-+ =:=
-+ [[#h:B3490B7C-F387-49C7-BF94-DC9CE8AC3581][Type]]
-:end:
+:LOGBOOK:
+- State "DONE"       from "TODO"       [2025-07-22 Tue 02:48]
+:END:
 
 #+name: function_parameter
 #+begin_src js :arg $ :ast FunctionParameter
 seq(
     optional(<<r("visibility")>>),
-    $._pattern_or_self,
+    field('pattern', <<r("pattern_or_self")>>),
+    field('type', choice(
+        <<r("type_annotation")>>,
+        <<r("function_parameter_type")>>,
+    )),
+)
+#+end_src
+
+Because visibility is after =:= and before Type we need another CST node so it can have the children Visibility/Type in the event Visibility is present.
+
+#+name: function_parameter_type
+#+begin_src js :rule visible_type :arg $
+seq(
     ':',
-    $._type,
+    <<r("visibility")>>,
+    <<r("type")>>,
 )
 #+end_src
 
 Parser: [[file:noir/compiler/noirc_frontend/src/parser/parser/function.rs::fn parse_function_parameter(&mut self, allow_self: bool)][parse_function_parameter()]]
 Types: [[file:noir/compiler/noirc_frontend/src/ast/expression.rs::pub struct Param {][Param struct]]
 
+*************** TODO EBNF Visibility goes after : next to Type
+fn parse_function_parameters
+*************** END
+
 *************** TODO Deeper parameter parsing functions
 Tired, perhaps parse_function_parameter, pattern_param, self_pattern_param have things of consequence in them (or not). It has ~self~ vs ~Self~ in it which is a straight identifier in the former case and a path to an identifier in the latter.
 *************** END
 
-***** SPEC Visibility
+***** DONE Visibility
+CLOSED: [2025-07-22 Tue 02:48]
 :PROPERTIES:
 :CUSTOM_ID: h:17BBA21C-65D3-447D-93DE-2F13E16575C5
 :END:
 :LOGBOOK:
+- State "DONE"       from "SPEC"       [2025-07-22 Tue 02:48]
 - State "SPEC"       from "SPEC"       [2025-07-14 Mon 15:16] \\
   Re-mark spec after fixing accidental inline of =call_data(= instead of =call_data=. Plus reviewing Function downwards now that significant progress made elsewhere.
 - State "SPEC"       from "TOIMPL"     [2025-06-10 Tue 20:09]
@@ -2205,10 +2246,6 @@ Original EBNF: [[file:noir/compiler/noirc_frontend/src/parser/parser/function.rs
 
 *************** TODO Update Visibility EBNF
 *************** END
-
-***** TODO Expression
-
-Types: [[file:noir/compiler/noirc_frontend/src/ast/expression.rs::pub enum ExpressionKind {][ExpressionKind enum]].
 
 ***** DONE Generics
 CLOSED: [2025-07-14 Mon 02:30]
@@ -2597,16 +2634,15 @@ A ~TraitBound~ is a single type path used to constrain a trait.
 #+name: ,ebnf_trait_bound
 #+transclude: [[file:noir/compiler/noirc_frontend/src/parser/parser/where_clause.rs::85][TraitBound doc]] :lines 85-85 :src fundamental
 
-*** SPEC PatternOrSelf                                                 :node:
+*** SPEC PatternOrSelf
 :PROPERTIES:
 :CUSTOM_ID: h:464E9BE0-4EC7-4D73-A1F2-F9C581DFD8E3
 :END:
 :LOGBOOK:
 - State "SPEC"       from "TODO"       [2025-06-12 Thu 17:36]
 :END:
-:pgd:
+
 + [[#h:D349E307-F033-4D2A-A729-F2EE5B483065][Pattern]] OR [[#h:5B14A337-12EC-477C-8269-961094FAB41B][SelfPattern]]
-:end:
 
 #+name: pattern_or_self
 #+begin_src js :rule _pattern_or_self :arg $ :ast PatternOrSelf
@@ -3237,7 +3273,6 @@ seq(
 )
 #+end_src
 
-
 Parser: [[file:noir/compiler/noirc_frontend/src/parser/parser/statement.rs::fn parse_statement(&mut self)][parse_statement()]]
 Types: [[file:noir/compiler/noirc_frontend/src/ast/statement.rs::pub enum StatementKind {][StatementKind enum]]
 
@@ -3306,8 +3341,6 @@ _block_ending_statements: ($) => choice(
     // $.if_statement, // TODO: Commented temporarily.
 )
 #+end_src
-
-
 
 ***** DONE BreakStatement
 CLOSED: [2025-06-24 Tue 17:43]
@@ -3563,7 +3596,7 @@ Quick glance looks like no constructors means no paths or a function call, look 
 UPDATE: Constructor pattern here looks to be like =Foo {}= i.e. the braces, which I guess makes sense. So the parsing rule is expression except something that looks like it has braces and is for a Struct which would .'. be a constructor, HOWEVER block-scoped expressions should be fine, like ={1 + 1 }=, because they don't have a leading identifier =Foo { 1 + 1 }= making them NOT constructors.
 *************** END
 
-***** DONE IfStatement                                                 :node:
+***** DONE IfStatement
 CLOSED: [2025-06-26 Thu 17:58]
 :PROPERTIES:
 :CUSTOM_ID: h:BB36CCC8-4FE6-4529-A365-69F0011CEC2A
@@ -3582,7 +3615,7 @@ Parser: [[file:noir/compiler/noirc_frontend/src/parser/parser/statement.rs::if l
 
 #+transclude: [[file:noir/compiler/noirc_frontend/src/parser/parser/statement.rs::78][IfStatement doc]] :lines 78-78 :src fundamental
 
-***** DONE BlockStatement                                              :node:
+***** DONE BlockStatement
 CLOSED: [2025-06-29 Sun 20:16]
 :PROPERTIES:
 :CUSTOM_ID: h:B305BFF3-A865-4292-A8E5-5448D38CE872
@@ -5044,6 +5077,8 @@ module.exports = grammar({
         [<<r("path")>>, <<r("path_no_turbofish")>>],
         // XXX: slice_expression is causing unresolved sequences error because the '&' of the slice sequence is also a character in binary expression. No attempt to set precedences worked and had to add conflict. This feels wrong.. try and fix without a conflict later?
         // [<<r("statement_kind")>>, <<r("literal")>>],
+        // XXX: Temporary or required?
+        [<<r("function_item_modifiers")>>, <<r("global_item_modifiers")>>],
     ],
 
     // TODO: Need to document (for myself) keyword extraction to check we're doing it properly.
@@ -5068,7 +5103,7 @@ module.exports = grammar({
             <<r("trait")>>,
             <<r("global")>>,
             // TODO: TypeAlias.
-            //r("function")>>,
+            <<r("function")>>,
         ),
 
         item_list: ($) => seq(
@@ -5145,9 +5180,9 @@ alias(<<r("generic_type_args")>>, $.type_parameters)
 <<c('("struct" "struct_field" "struct_field_list"))>>
 <<c('("impl" "trait_impl"))>>
 <<c('("trait"  "trait_bounds" "trait_bound" "trait_body" "trait_type" "trait_constant" "trait_function"))>>
-<<n("global")>>
+<<c('("global" "global_item_modifiers"))>>
 // TODO: TypeAlias
-<<c('("function" "function_parameters" "function_parameter"))>>
+<<c('("function" "function_item_modifiers" "function_return_type" "function_parameters" "function_parameter" "function_parameter_type"))>>
 <<c('("where" "where_clause"))>>
 #+end_src
 

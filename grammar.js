@@ -88,6 +88,8 @@ module.exports = grammar({
         [$.path, $.__path_no_turbofish],
         // XXX: slice_expression is causing unresolved sequences error because the '&' of the slice sequence is also a character in binary expression. No attempt to set precedences worked and had to add conflict. This feels wrong.. try and fix without a conflict later?
         // [nil, $.__literal],
+        // XXX: Temporary or required?
+        [$.function_item_modifiers, $.global_item_modifiers],
     ],
 
     // TODO: Need to document (for myself) keyword extraction to check we're doing it properly.
@@ -112,7 +114,7 @@ module.exports = grammar({
             $.trait_item,
             $.global_item,
             // TODO: TypeAlias.
-            //r("function")>>,
+            $.function_item,
         ),
 
         item_list: ($) => seq(
@@ -304,7 +306,7 @@ module.exports = grammar({
         // [[file:noir_grammar.org::global]]
         global_item: $ => seq(
             optional($.visibility_modifier),
-            repeat(choice($.mutable_modifier, $.comptime_modifier)),
+            optional(alias($.global_item_modifiers, $.modifiers)),
             'global',
             field('name', $.identifier),
             field('type', optional($._type_annotation)), // Inlined Noirc: OptionalTypeAnnotation.,
@@ -312,33 +314,61 @@ module.exports = grammar({
             $._expression,
             ';',
         ),
+        // [[file:noir_grammar.org::global_item_modifiers]]
+        global_item_modifiers: _ => repeat1(choice(
+            'mut',
+            'comptime',
+        )),
         // TODO: TypeAlias
         
         // [[file:noir_grammar.org::function]]
         function_item: $ => seq(
             optional($.visibility_modifier),
-            repeat(choice($.comptime_modifier, $.unconstrained_modifier)),
+            optional(alias($.function_item_modifiers, $.modifiers)),
             'fn',
             field('name', $.identifier),
             field('type_parameters', optional($._generic_parameters)),
-            field('parameters', $.function_parameters),
-            optional(seq('->', optional($.visibility), $._type)),
+            field('parameters', $.parameters),
+            field('return_type', optional($.return_type)),
+            // TODO: Field name for where clause like on Traits and so forth?
             optional($.where_clause),
             // No optional body allowed at this locus.
             field('body', $.block),
         ),
+        // [[file:noir_grammar.org::function_item_modifiers]]
+        function_item_modifiers: _ => repeat1(choice(
+            'comptime',
+            'unconstrained',
+        )),
+        // [[file:noir_grammar.org::function_return_type]]
+        return_type: $ => seq(
+            '->',
+            optional($.visibility),
+            field('type', $._type),
+        ),
         // [[file:noir_grammar.org::function_parameters]]
-        function_parameters: $ => seq(
+        parameters: $ => seq(
             '(',
-            sepBy($.function_parameter, ','), // Inlined Noirc: FunctionParametersList
-            optional(','),
+            optional(seq(
+                // Inlined Noirc: FunctionParametersList.
+                sepBy1(alias($.function_parameter, $.parameter), ','),
+                optional(','),
+            )),
             ')',
         ),
         // [[file:noir_grammar.org::function_parameter]]
         function_parameter: $ => seq(
             optional($.visibility),
-            $._pattern_or_self,
+            field('pattern', $._pattern_or_self),
+            field('type', choice(
+                $._type_annotation,
+                $.visible_type,
+            )),
+        ),
+        // [[file:noir_grammar.org::function_parameter_type]]
+        visible_type: $ => seq(
             ':',
+            $.visibility,
             $._type,
         ),
         
@@ -457,10 +487,7 @@ module.exports = grammar({
             $.unquote_expression,
             // TypePathExpression is Path.
             alias($.trait_path_alias, $.path),
-            // AsTraitPath
-            // ResolvedExpression
-            // InternedExpression
-            // InternedStatementExpression
+            // Blocked: ResolvedExpression, InternedExpression, InternedStatementExpression.
             // ---/ End: Atom.
             // TODO: SURELY identifier is allowed in expression, where's the concrete evidence though? Assuming it is for now.
             $.identifier,
@@ -1032,7 +1059,7 @@ module.exports = grammar({
         // [[file:noir_grammar.org::modifier_mut]]
         mutable_modifier: _ => 'mut',
         // [[file:noir_grammar.org::modifier_comptime]]
-        comptime_modifier: _ => 'comptime',
+        comptime_modifier: _ => 'comptimez',
         // [[file:noir_grammar.org::modifier_unconstrained]]
         unconstrained_modifier: _ => 'unconstrained',
 

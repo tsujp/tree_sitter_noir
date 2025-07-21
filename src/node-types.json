@@ -891,11 +891,6 @@
     }
   },
   {
-    "type": "comptime_modifier",
-    "named": true,
-    "fields": {}
-  },
-  {
     "type": "constrain_statement",
     "named": true,
     "fields": {
@@ -1326,6 +1321,80 @@
     }
   },
   {
+    "type": "function_item",
+    "named": true,
+    "fields": {
+      "body": {
+        "multiple": false,
+        "required": true,
+        "types": [
+          {
+            "type": "block",
+            "named": true
+          }
+        ]
+      },
+      "name": {
+        "multiple": false,
+        "required": true,
+        "types": [
+          {
+            "type": "identifier",
+            "named": true
+          }
+        ]
+      },
+      "parameters": {
+        "multiple": false,
+        "required": true,
+        "types": [
+          {
+            "type": "parameters",
+            "named": true
+          }
+        ]
+      },
+      "return_type": {
+        "multiple": false,
+        "required": false,
+        "types": [
+          {
+            "type": "return_type",
+            "named": true
+          }
+        ]
+      },
+      "type_parameters": {
+        "multiple": false,
+        "required": false,
+        "types": [
+          {
+            "type": "type_parameters",
+            "named": true
+          }
+        ]
+      }
+    },
+    "children": {
+      "multiple": true,
+      "required": false,
+      "types": [
+        {
+          "type": "modifiers",
+          "named": true
+        },
+        {
+          "type": "visibility_modifier",
+          "named": true
+        },
+        {
+          "type": "where_clause",
+          "named": true
+        }
+      ]
+    }
+  },
+  {
     "type": "generic",
     "named": true,
     "fields": {
@@ -1425,10 +1494,6 @@
           "named": true
         },
         {
-          "type": "comptime_modifier",
-          "named": true
-        },
-        {
           "type": "fmt_str_literal",
           "named": true
         },
@@ -1449,7 +1514,7 @@
           "named": true
         },
         {
-          "type": "mutable_modifier",
+          "type": "modifiers",
           "named": true
         },
         {
@@ -1645,6 +1710,10 @@
       "types": [
         {
           "type": "attribute_item",
+          "named": true
+        },
+        {
+          "type": "function_item",
           "named": true
         },
         {
@@ -2023,6 +2092,11 @@
     }
   },
   {
+    "type": "modifiers",
+    "named": true,
+    "fields": {}
+  },
+  {
     "type": "module_or_contract_item",
     "named": true,
     "fields": {
@@ -2064,11 +2138,6 @@
     "fields": {}
   },
   {
-    "type": "mutable_modifier",
-    "named": true,
-    "fields": {}
-  },
-  {
     "type": "outer_doc_style",
     "named": true,
     "fields": {}
@@ -2083,6 +2152,10 @@
         "types": [
           {
             "type": "identifier",
+            "named": true
+          },
+          {
+            "type": "self_pattern",
             "named": true
           },
           {
@@ -2122,9 +2195,38 @@
           {
             "type": "unit_type",
             "named": true
+          },
+          {
+            "type": "visible_type",
+            "named": true
           }
         ]
       }
+    },
+    "children": {
+      "multiple": false,
+      "required": false,
+      "types": [
+        {
+          "type": "visibility",
+          "named": true
+        }
+      ]
+    }
+  },
+  {
+    "type": "parameters",
+    "named": true,
+    "fields": {},
+    "children": {
+      "multiple": true,
+      "required": false,
+      "types": [
+        {
+          "type": "parameter",
+          "named": true
+        }
+      ]
     }
   },
   {
@@ -2535,6 +2637,67 @@
     }
   },
   {
+    "type": "return_type",
+    "named": true,
+    "fields": {
+      "type": {
+        "multiple": false,
+        "required": true,
+        "types": [
+          {
+            "type": "identifier",
+            "named": true
+          },
+          {
+            "type": "path",
+            "named": true
+          },
+          {
+            "type": "primitive_type",
+            "named": true
+          },
+          {
+            "type": "tuple_type",
+            "named": true
+          },
+          {
+            "type": "unit_type",
+            "named": true
+          }
+        ]
+      }
+    },
+    "children": {
+      "multiple": false,
+      "required": false,
+      "types": [
+        {
+          "type": "visibility",
+          "named": true
+        }
+      ]
+    }
+  },
+  {
+    "type": "self_pattern",
+    "named": true,
+    "fields": {},
+    "children": {
+      "multiple": true,
+      "required": true,
+      "types": [
+        {
+          "type": "mut_bound",
+          "named": true
+        },
+        {
+          "type": "self",
+          "named": true
+        }
+      ]
+    }
+  },
+  {
     "type": "slice_expression",
     "named": true,
     "fields": {},
@@ -2560,6 +2723,10 @@
       "types": [
         {
           "type": "attribute_item",
+          "named": true
+        },
+        {
+          "type": "function_item",
           "named": true
         },
         {
@@ -3417,9 +3584,59 @@
     }
   },
   {
+    "type": "visibility",
+    "named": true,
+    "fields": {},
+    "children": {
+      "multiple": false,
+      "required": false,
+      "types": [
+        {
+          "type": "int_literal",
+          "named": true
+        }
+      ]
+    }
+  },
+  {
     "type": "visibility_modifier",
     "named": true,
     "fields": {}
+  },
+  {
+    "type": "visible_type",
+    "named": true,
+    "fields": {},
+    "children": {
+      "multiple": true,
+      "required": true,
+      "types": [
+        {
+          "type": "identifier",
+          "named": true
+        },
+        {
+          "type": "path",
+          "named": true
+        },
+        {
+          "type": "primitive_type",
+          "named": true
+        },
+        {
+          "type": "tuple_type",
+          "named": true
+        },
+        {
+          "type": "unit_type",
+          "named": true
+        },
+        {
+          "type": "visibility",
+          "named": true
+        }
+      ]
+    }
   },
   {
     "type": "where_clause",
@@ -3679,6 +3896,10 @@
     "named": false
   },
   {
+    "type": "call_data",
+    "named": false
+  },
+  {
     "type": "comptime",
     "named": false
   },
@@ -3716,6 +3937,10 @@
   },
   {
     "type": "fmtstr",
+    "named": false
+  },
+  {
+    "type": "fn",
     "named": false
   },
   {
@@ -3783,6 +4008,14 @@
     "named": false
   },
   {
+    "type": "return_data",
+    "named": false
+  },
+  {
+    "type": "self",
+    "named": true
+  },
+  {
     "type": "str",
     "named": false
   },
@@ -3832,6 +4065,10 @@
   },
   {
     "type": "u8",
+    "named": false
+  },
+  {
+    "type": "unconstrained",
     "named": false
   },
   {
