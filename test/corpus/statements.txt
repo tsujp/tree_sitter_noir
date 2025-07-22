@@ -223,16 +223,10 @@ Constrain / Degenerate
 ======================
 
 global f1 = { assert(); };
-global f2 = { assert(,); };
 
 ---
 
 (source_file
-  (global_item
-    name: (identifier)
-    (block
-      (constrain_statement
-        arguments: (arguments))))
   (global_item
     name: (identifier)
     (block

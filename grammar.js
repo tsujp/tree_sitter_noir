@@ -19,7 +19,12 @@ const INTEGER_TYPES = [
 ]
 
 const PRECEDENCE = {
-    // TODO: Term's even-higher precedence items.
+    // Term and children.
+    call: 20,
+    access: 19,
+    cast: 18,
+    index: 17,
+    // From EqualOrNotEqualExpression before it eventually calls to Term (latter thus /higher/ precedence).
     unary: 10,
     multiplicitive: 9,
     additive: 8,
@@ -534,6 +539,10 @@ module.exports = grammar({
             alias($.trait_path_alias, $.path),
             // Blocked: ResolvedExpression, InternedExpression, InternedStatementExpression.
             // ---/ End: Atom.
+            $.call_expression,
+            $.access_expression,
+            $.cast_expression,
+            $.index_expression,
             // TODO: SURELY identifier is allowed in expression, where's the concrete evidence though? Assuming it is for now.
             $.identifier,
         )),
@@ -592,15 +601,23 @@ module.exports = grammar({
             '}',
         ),
         
+        // [[file:noir_grammar.org::call_expression]]
+        call_expression: $ => prec(PRECEDENCE.call, seq(
+            field('function', $._expression),
+            field('arguments', $.__call_arguments),
+        )),
         // [[file:noir_grammar.org::arguments]]
         arguments: $ => seq(
             '(',
-            sepBy($._expression, ','), // Inlined Noirc: ArgumentsList.
-            optional(','),
+            optional(seq(
+                // Inlined Noirc: ArgumentsList.
+                sepBy1($._expression, ','),
+                optional(','),
+            )),
             ')',
         ),
         // [[file:noir_grammar.org::call_arguments]]
-        call_arguments: $ => seq(
+        __call_arguments: $ => seq(
             optional('!'),
             $.arguments,
         ),
@@ -612,6 +629,27 @@ module.exports = grammar({
             optional(token.immediate('=')),
             $._expression,
         ),
+        
+        
+        // [[file:noir_grammar.org::member_access_expression]]
+        access_expression: $ => prec(PRECEDENCE.access, seq(
+            field('scope', $._expression),
+            '.',
+            field('name', $.identifier),
+        )),
+        // [[file:noir_grammar.org::cast_expression]]
+        cast_expression: $ => prec(PRECEDENCE.cast, seq(
+            field('value', $._expression),
+            'as',
+            field('type', $._type),
+        )),
+        // [[file:noir_grammar.org::index_expression]]
+        index_expression: $ => prec(PRECEDENCE.cast, seq(
+            field('collection', $._expression),
+            '[',
+            field('index', $._expression),
+            ']',
+        )),
         
         // Ordered as at Atom.
         

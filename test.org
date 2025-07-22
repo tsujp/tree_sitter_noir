@@ -1895,15 +1895,9 @@ global f1 = { assert(true, 1, x); };
 *** Degenerate
 #+begin_test
 global f1 = { assert(); };
-global f2 = { assert(,); };
 
 ---
 
-(global_item
-  name: (identifier)
-  (block
-    (constrain_statement
-      arguments: (arguments))))
 (global_item
   name: (identifier)
   (block
@@ -3109,6 +3103,133 @@ global f2 = <Field as lorem::ipsum<X, Y>>::foo;
 
 ** TODO Unary
 TODO: Also where does it go in terms of ordering
+
+** Call
+
+*** Function
+#+begin_test
+global f = foo(1, 2);
+
+---
+
+(global_item
+  name: (identifier)
+  (call_expression
+    function: (identifier)
+    arguments: (arguments
+      (int_literal)
+      (int_literal))))
+#+end_test
+
+**** Turbofish
+#+begin_test
+global f = foo::<T>(1, 2);
+
+---
+
+(global_item
+  name: (identifier)
+  (call_expression
+    function: (path
+      scope: (identifier)
+      type_parameters: (type_parameters
+        (identifier)))
+    arguments: (arguments
+      (int_literal)
+      (int_literal))))
+#+end_test
+
+*** Method
+#+begin_test
+global f1 = foo.bar(1, 2);
+global f2 = lorem.ipsum.foo.bar("x", "y");
+
+---
+
+(global_item
+  name: (identifier)
+  (call_expression
+    function: (access_expression
+      scope: (identifier)
+      name: (identifier))
+    arguments: (arguments
+      (int_literal)
+      (int_literal))))
+(global_item
+  name: (identifier)
+  (call_expression
+    function: (access_expression
+      scope: (access_expression
+        scope: (access_expression
+          scope: (identifier)
+          name: (identifier))
+        name: (identifier))
+      name: (identifier))
+    arguments: (arguments
+      (str_literal
+        (str_content))
+      (str_literal
+        (str_content)))))
+#+end_test
+
+**** TODO Turbofish
+
+Some kind of conflict or a misconfigured rule, it wont parse without error currently.
+
+#+begin_test :skip
+global f = foo.bar::<T, U>(1, 2);
+#+end_test
+
+*** Solo delimiter
+#+begin_test :error
+global f = foo(,);
+#+end_test
+
+#+begin_test :error
+global f = foo.bar(,);
+#+end_test
+
+** Index
+
+Collection '1', index '2'
+
+#+begin_test
+global f = 1[2];
+
+---
+
+(global_item
+  name: (identifier)
+  (index_expression
+    collection: (int_literal)
+    index: (int_literal)))
+#+end_test
+
+** Cast
+#+begin_test
+global f = 1 as u8;
+
+---
+
+(global_item
+  name: (identifier)
+  (cast_expression
+    value: (int_literal)
+    type: (primitive_type)))
+#+end_test
+
+** Member
+#+begin_test
+global f = foo.bar;
+
+---
+
+(global_item
+  name: (identifier)
+  (access_expression
+    scope: (identifier)
+    name: (identifier)))
+#+end_test
 
 * Types
 :PROPERTIES:

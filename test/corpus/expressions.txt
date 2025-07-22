@@ -1134,3 +1134,164 @@ global f2 = <Field as lorem::ipsum<X, Y>>::foo;
           (identifier)))
       name: (identifier)))
 )
+
+
+===============
+Call / Function
+===============
+
+global f = foo(1, 2);
+
+---
+
+(source_file
+  (global_item
+    name: (identifier)
+    (call_expression
+      function: (identifier)
+      arguments: (arguments
+        (int_literal)
+        (int_literal))))
+)
+
+
+===========================
+Call / Function / Turbofish
+===========================
+
+global f = foo::<T>(1, 2);
+
+---
+
+(source_file
+  (global_item
+    name: (identifier)
+    (call_expression
+      function: (path
+        scope: (identifier)
+        type_parameters: (type_parameters
+          (identifier)))
+      arguments: (arguments
+        (int_literal)
+        (int_literal))))
+)
+
+
+=============
+Call / Method
+=============
+
+global f1 = foo.bar(1, 2);
+global f2 = lorem.ipsum.foo.bar("x", "y");
+
+---
+
+(source_file
+  (global_item
+    name: (identifier)
+    (call_expression
+      function: (access_expression
+        scope: (identifier)
+        name: (identifier))
+      arguments: (arguments
+        (int_literal)
+        (int_literal))))
+  (global_item
+    name: (identifier)
+    (call_expression
+      function: (access_expression
+        scope: (access_expression
+          scope: (access_expression
+            scope: (identifier)
+            name: (identifier))
+          name: (identifier))
+        name: (identifier))
+      arguments: (arguments
+        (str_literal
+          (str_content))
+        (str_literal
+          (str_content)))))
+)
+
+
+=========================
+Call / Method / Turbofish
+:skip
+=========================
+
+global f = foo.bar::<T, U>(1, 2);
+
+---
+
+(source_file
+
+)
+
+
+==========================
+Call / Solo delimiter (e1)
+:error
+==========================
+
+global f = foo(,);
+---
+
+
+==========================
+Call / Solo delimiter (e2)
+:error
+==========================
+
+global f = foo.bar(,);
+---
+
+
+=====
+Index
+=====
+
+global f = 1[2];
+
+---
+
+(source_file
+  (global_item
+    name: (identifier)
+    (index_expression
+      collection: (int_literal)
+      index: (int_literal)))
+)
+
+
+====
+Cast
+====
+
+global f = 1 as u8;
+
+---
+
+(source_file
+  (global_item
+    name: (identifier)
+    (cast_expression
+      value: (int_literal)
+      type: (primitive_type)))
+)
+
+
+======
+Member
+======
+
+global f = foo.bar;
+
+---
+
+(source_file
+  (global_item
+    name: (identifier)
+    (access_expression
+      scope: (identifier)
+      name: (identifier)))
+)
