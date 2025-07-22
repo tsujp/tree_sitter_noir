@@ -1458,7 +1458,21 @@ pub comptime mut global foo: i32 = 1;
 #+end_test
 
 ** TypeAlias
-x
+#+begin_test
+type Foo = Field;
+type Foo<A> = Field;
+
+---
+
+(type_item
+  name: (identifier)
+  type: (primitive_type))
+(type_item
+  name: (identifier)
+  type_parameters: (type_parameters
+    (identifier))
+  type: (primitive_type))
+#+end_test
 
 ** Function
 

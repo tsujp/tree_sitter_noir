@@ -1817,6 +1817,10 @@
           "named": true
         },
         {
+          "type": "type_item",
+          "named": true
+        },
+        {
           "type": "use_item",
           "named": true
         }
@@ -2839,6 +2843,10 @@
           "named": true
         },
         {
+          "type": "type_item",
+          "named": true
+        },
+        {
           "type": "use_item",
           "named": true
         }
@@ -3480,6 +3488,58 @@
           "named": true
         }
       ]
+    }
+  },
+  {
+    "type": "type_item",
+    "named": true,
+    "fields": {
+      "name": {
+        "multiple": false,
+        "required": true,
+        "types": [
+          {
+            "type": "identifier",
+            "named": true
+          }
+        ]
+      },
+      "type": {
+        "multiple": false,
+        "required": true,
+        "types": [
+          {
+            "type": "identifier",
+            "named": true
+          },
+          {
+            "type": "path",
+            "named": true
+          },
+          {
+            "type": "primitive_type",
+            "named": true
+          },
+          {
+            "type": "tuple_type",
+            "named": true
+          },
+          {
+            "type": "unit_type",
+            "named": true
+          }
+        ]
+      },
+      "type_parameters": {
+        "multiple": false,
+        "required": false,
+        "types": [
+          {
+            "type": "type_parameters",
+            "named": true
+          }
+        ]
+      }
     }
   },
   {

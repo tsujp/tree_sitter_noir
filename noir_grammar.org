@@ -164,7 +164,7 @@ Parser: [[file:noir/compiler/noirc_frontend/src/parser/parser/item.rs::fn parse_
 - [[#h:954A182F-703F-48FC-85D3-37C11EC959A3][Implementation]]
 - [[#h:6C38714F-76B7-4472-A776-36023EB84873][Trait]]
 - [[#h:C21A19F9-DC0C-4F17-9739-B92412D0C4FF][Global]]
-- TypeAlias
+- [[#h:220925BB-96BF-4D6F-B7E1-EA39B98A8F05][TypeAlias]]
 - [[#h:B3C4609F-307A-42A1-B420-DBBAB6CDE6E5][Function]]
 
 Parser: [[file:noir/compiler/noirc_frontend/src/parser/parser/item.rs::fn parse_item_kind(&mut self)][parse_item_kind()]]
@@ -2102,6 +2102,32 @@ By ignoring it this subheading has no rule, simply use GenericTypeArgs directly.
 *************** TODO Document in-code Noir that only OrderedGenerics are allowed, update EBNF accordingly
 As the parsing function for PathGenerics shows, any NamedArgs will return a parser error.
 *************** END
+
+***** DONE TypeAlias
+CLOSED: [2025-07-23 Wed 00:24]
+:PROPERTIES:
+:CUSTOM_ID: h:220925BB-96BF-4D6F-B7E1-EA39B98A8F05
+:END:
+:LOGBOOK:
+- State "DONE"       from "TODO"       [2025-07-23 Wed 00:24]
+- State "TODO"       from              [2025-07-22 Tue 23:44]
+:END:
+
+#+name: type_alias
+#+begin_src js :rule type_item :arg $ :ast TypeAlias
+seq(
+    'type',
+    field('name', <<r("identifier")>>),
+    field('type_parameters', optional(<<r("generic_parameters")>>)),
+    '=',
+    field('type', <<r("type")>>),
+    ';',
+)
+#+end_src
+
+Parser: [[file:noir/compiler/noirc_frontend/src/parser/parser/type_alias.rs::fn parse_type_alias(][parse_type_alias()]]
+Types: [[file:noir/compiler/noirc_frontend/src/ast/type_alias.rs::pub struct NoirTypeAlias {][NoirTypeAlias struct]]
+Only [[#h:F5A79701-65C9-4FEA-83D8-2413C585A5FA][ItemVisibility]] modifier applicable, all other [[#h:2A9D09A5-2E52-4B8C-ABA1-0B3B953F093C][Modifiers]] are parse errors ([[#h:14698757-D7C8-4966-B84E-5DA1CAE3011E][see more]]).
 
 ***** DONE Function
 CLOSED: [2025-07-22 Tue 02:50]
@@ -5151,10 +5177,9 @@ module.exports = grammar({
             <<r("mod_or_contract")>>,
             <<r("struct")>>,
             <<r("impl")>>,
-            // TODO: Relink impl.
             <<r("trait")>>,
             <<r("global")>>,
-            // TODO: TypeAlias.
+            <<r("type_alias")>>,
             <<r("function")>>,
         ),
 
@@ -5233,7 +5258,7 @@ alias(<<r("generic_type_args")>>, $.type_parameters)
 <<c('("impl" "trait_impl_body" "trait_impl_type" "trait_impl_constant"))>>
 <<c('("trait"  "trait_bounds" "trait_bound" "trait_body" "trait_type" "trait_constant" "trait_function"))>>
 <<c('("global" "global_item_modifiers"))>>
-// TODO: TypeAlias
+<<n("type_alias")>>
 <<c('("function" "function_item_modifiers" "function_return_type" "function_parameters" "function_parameter" "function_parameter_type"))>>
 <<c('("where" "where_clause"))>>
 #+end_src

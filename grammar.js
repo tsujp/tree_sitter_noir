@@ -111,10 +111,9 @@ module.exports = grammar({
             $.module_or_contract_item,
             $.struct_item,
             $.impl_item,
-            // TODO: Relink impl.
             $.trait_item,
             $.global_item,
-            // TODO: TypeAlias.
+            $.type_item,
             $.function_item,
         ),
 
@@ -354,7 +353,16 @@ module.exports = grammar({
             'mut',
             'comptime',
         )),
-        // TODO: TypeAlias
+        
+        // [[file:noir_grammar.org::type_alias]]
+        type_item: $ => seq(
+            'type',
+            field('name', $.identifier),
+            field('type_parameters', optional($._generic_parameters)),
+            '=',
+            field('type', $._type),
+            ';',
+        ),
         
         // [[file:noir_grammar.org::function]]
         function_item: $ => seq(
