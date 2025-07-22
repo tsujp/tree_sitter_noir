@@ -110,6 +110,7 @@ module.exports = grammar({
             $.use_item,
             $.module_or_contract_item,
             $.struct_item,
+            $.impl_item,
             // TODO: Relink impl.
             $.trait_item,
             $.global_item,
@@ -232,20 +233,54 @@ module.exports = grammar({
         // [[file:noir_grammar.org::impl]]
         impl_item: $ => seq(
             'impl',
-            // TODO: Generics
-            // TODO: Path
-        
-            // TODO: Choice between TypeImpl or TraitImpl
-            // $.trait_impl,
-            $.trait_impl,
+            field('type_parameters', optional($._generic_parameters)),
+            // If this optional matches it's a TraitImpl, otherwise a TypeImpl.
+            optional(seq(
+                field('trait', choice(
+                    $.identifier_or_path_no_turbofish,
+                    $.generic,
+                )),
+                'for',
+            )),
+            field('type', $._type),
+            optional($.where_clause),
+            // TODO: Rename and reduce trait_impl_body rule name.
+            field('body', $.trait_impl_body),
         ),
-        // [[file:noir_grammar.org::trait_impl]]
-        trait_impl: $ => seq(
-            // TODO: Path
-            $._generic_type_args,
-            'for',
-            $._type,
-            // optional($.where_clause), // Temp commented for now due to prec error.
+        // [[file:noir_grammar.org::trait_impl_body]]
+        trait_impl_body: $ => seq(
+            // TODO: Rename this CST rule?
+            '{',
+            // Inlined Noirc: TraitImplItem.
+            repeat(choice(
+                // OuterDocComments are extras.
+                // Attributes only (strictly) associated with TraitImplFunction but that's too narrow for the raw grammar.
+                $.attribute_item,
+                $.trait_impl_type,
+                alias($.trait_impl_constant, $.let_statement),
+                $.function_item, // TraitImplFunction.
+            )),
+            '}',
+        ),
+        // [[file:noir_grammar.org::trait_impl_type]]
+        trait_impl_type: $ => seq(
+            // TODO: Rename this CST rule?
+            'type',
+            field('name', $.identifier),
+            '=',
+            // TODO: What name for this CST node? It's not an associated type surely?
+            field('alias', $._type),
+            ';',
+        ),
+        // [[file:noir_grammar.org::trait_impl_constant]]
+        trait_impl_constant: $ => seq(
+            // TODO: Rename this CST rule?
+            'let',
+            field('name', $.identifier),
+            field('type', optional($._type_annotation)), // Inlined Noirc: OptionalTypeAnnotation.,
+            '=',
+            field('value', $._expression),
+            ';',
         ),
         
         // [[file:noir_grammar.org::trait]]
@@ -351,15 +386,17 @@ module.exports = grammar({
             '(',
             optional(seq(
                 // Inlined Noirc: FunctionParametersList.
-                sepBy1(alias($.function_parameter, $.parameter), ','),
+                sepBy1(choice(
+                    alias($.function_parameter, $.parameter),
+                    $.self_pattern,
+                ), ','),
                 optional(','),
             )),
             ')',
         ),
         // [[file:noir_grammar.org::function_parameter]]
         function_parameter: $ => seq(
-            optional($.visibility),
-            field('pattern', $._pattern_or_self),
+            field('pattern', $._pattern),
             field('type', choice(
                 $._type_annotation,
                 $.visible_type,
@@ -843,7 +880,7 @@ module.exports = grammar({
         // [[file:noir_grammar.org::self_pattern]]
         self_pattern: $ => seq(
             optional('&'),
-            optional($.mut_bound),
+            optional($.mutable_modifier),
             $.self,
         ),
         

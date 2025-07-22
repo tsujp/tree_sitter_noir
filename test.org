@@ -1,11 +1,11 @@
+Top-level test under a subheading will either be the simple case or a combination of all it's children. This means when diagnosing errors it's easier to run child-specific tests and then "a mix of" those combinations without creating temporary tests.
+
 * Declarations
 :PROPERTIES:
 :export_file_name: declarations.txt
 :END:
 
 Including definitions, and items.
-
-Top-level test under a subheading will either be the simple case or a combination of all it's children. This means when diagnosing errors it's easier to run child-specific tests and then "a mix of" those combinations without creating temporary tests.
 
 ** Attributes
 
@@ -617,15 +617,247 @@ struct foo {
 #+end_test
 
 ** Impl
-
-*** Simple
-#+begin_test :skip
-impl foo {}
+#+begin_test
+impl (u32, x::y) {}
 
 ---
 
 (impl_item
-  name: (identifier))
+  type: (tuple_type
+    (primitive_type)
+    (path
+      scope: (identifier)
+      name: (identifier)))
+  body: (trait_impl_body))
+#+end_test
+
+*** Simple
+#+begin_test
+impl Foo {}
+
+---
+
+(impl_item
+  type: (identifier)
+  body: (trait_impl_body))
+#+end_test
+
+**** Unclosed body
+#+begin_test :error
+impl Foo {
+#+end_test
+
+*** Generics
+#+begin_test
+impl <A, B> Foo {}
+impl <T> Foo for Field {}
+impl <let x: u32> Foo for Field {}
+
+---
+
+(impl_item
+  type_parameters: (type_parameters
+    (identifier)
+    (identifier))
+  type: (identifier)
+  body: (trait_impl_body))
+(impl_item
+  type_parameters: (type_parameters
+    (identifier))
+  trait: (identifier)
+  type: (primitive_type)
+  body: (trait_impl_body))
+(impl_item
+  type_parameters: (type_parameters
+    (constrained_type
+      name: (identifier)
+      type: (primitive_type)))
+  trait: (identifier)
+  type: (primitive_type)
+  body: (trait_impl_body))
+#+end_test
+
+*** Methods
+
+**** Visibility
+#+begin_test
+impl Foo { unconstrained fn foo() {} pub comptime fn bar() {} }
+
+---
+
+(impl_item
+  type: (identifier)
+  body: (trait_impl_body
+    (function_item
+      (modifiers)
+      name: (identifier)
+      parameters: (parameters)
+      body: (block))
+    (function_item
+      (visibility_modifier)
+      (modifiers)
+      name: (identifier)
+      parameters: (parameters)
+      body: (block))))
+#+end_test
+
+**** Parameters
+#+begin_test
+impl Foo { fn foo(self) {} }
+impl Foo { fn foo(mut self) {} }
+impl Foo { fn foo(&mut self) {} }
+
+---
+
+(impl_item
+  type: (identifier)
+  body: (trait_impl_body
+    (function_item
+      name: (identifier)
+      parameters: (parameters
+        (self_pattern
+          (self)))
+      body: (block))))
+(impl_item
+  type: (identifier)
+  body: (trait_impl_body
+    (function_item
+      name: (identifier)
+      parameters: (parameters
+        (self_pattern
+          (mutable_modifier)
+          (self)))
+      body: (block))))
+(impl_item
+  type: (identifier)
+  body: (trait_impl_body
+    (function_item
+      name: (identifier)
+      parameters: (parameters
+        (self_pattern
+          (mutable_modifier)
+          (self)))
+      body: (block))))
+#+end_test
+
+**** TODO Amiguous self parameter
+
+This should pass but is currently an error
+
+#+begin_test :skip
+impl Foo { fn foo(self: Foo) {} }
+
+---
+
+(impl_item
+  type: (identifier)
+  body: (trait_impl_body
+    (function_item
+      name: (identifier)
+      parameters: (parameters
+        (parameter
+          pattern: (identifier)
+          type: (identifier_type)))
+      body: (block))))
+#+end_test
+
+**** Incorrect method signature
+
+Name given first instead of 'fn'
+#+begin_test :error
+impl Foo { hello fn foo() {} }
+#+end_test
+
+*** Trait
+
+'Foo' is the /trait/ name, 'Field' is the /type/ name.
+
+#+begin_test
+impl Foo for Field {}
+impl Foo::Bar for Field {}
+
+---
+
+(impl_item
+  trait: (identifier)
+  type: (primitive_type)
+  body: (trait_impl_body))
+(impl_item
+  trait: (path
+    scope: (identifier)
+    name: (identifier))
+  type: (primitive_type)
+  body: (trait_impl_body))
+#+end_test
+
+**** Generics
+#+begin_test
+impl Foo<i32, X = Field> for Field { }
+
+---
+
+(impl_item
+  trait: (generic
+    trait: (identifier)
+    type_parameters: (type_parameters
+      (primitive_type)
+      (associated_type
+        name: (identifier)
+        type: (primitive_type))))
+  type: (primitive_type)
+  body: (trait_impl_body))
+#+end_test
+
+**** Constants
+#+begin_test
+impl Foo for Field { let x: Field = 1; }
+
+---
+
+(impl_item
+  trait: (identifier)
+  type: (primitive_type)
+  body: (trait_impl_body
+    (let_statement
+      name: (identifier)
+      type: (primitive_type)
+      value: (int_literal))))
+#+end_test
+
+**** Functions
+#+begin_test
+impl Foo for Field { fn foo() {} }
+
+---
+
+(impl_item
+  trait: (identifier)
+  type: (primitive_type)
+  body: (trait_impl_body
+    (function_item
+      name: (identifier)
+      parameters: (parameters)
+      body: (block))))
+#+end_test
+
+**** Type
+#+begin_test
+impl Foo for Field { type Foo = i32; }
+
+---
+
+(impl_item
+  trait: (identifier)
+  type: (primitive_type)
+  body: (trait_impl_body
+    (trait_impl_type
+      name: (identifier)
+      alias: (primitive_type))))
+#+end_test
+
+**** No turbofish name
+#+begin_test :error
+impl Foo::Bar::<X> for Field {}
 #+end_test
 
 ** Trait

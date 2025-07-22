@@ -587,130 +587,147 @@ Since [[#h:8E0DC05B-1ED6-47BE-9589-64DC06FAECCA][parse_many]] is used, and our c
 Parses item visibility. Update at remote after grammar is done.
 *************** END
 
-***** BLOCK Implementation                                     :node:cluster:
+***** DONE Implementation
+CLOSED: [2025-07-22 Tue 23:40]
 :PROPERTIES:
 :CUSTOM_ID: h:954A182F-703F-48FC-85D3-37C11EC959A3
 :END:
 :LOGBOOK:
+- State "DONE"       from "BLOCK"      [2025-07-22 Tue 23:40]
 - State "BLOCK"      from "TODO"       [2025-06-10 Tue 16:59] \\
   One child depends on Function and Function is also a top-level ItemKind so BLOCK until Function is done.
 :END:
-:pgd:
-- [[#h:2C79F6AF-9B0D-4246-809D-D5D91C742F09][TypeImpl]]
-- [[#h:EBF1C149-1814-4314-AAFB-C5CF198DA61D][TraitImpl]]
-:end:
+
+#+begin_example
+impl <generics> object_type<generics> where where_clauses { ... methods ... }
+impl <generics> trait_name<trait_generics> for object_type where where_clauses { ... items ... }
+#+end_example
 
 #+name: impl
 #+begin_src js :rule impl_item :arg $
 seq(
     'impl',
-    // TODO: Generics
-    // TODO: Path
-
-    // TODO: Choice between TypeImpl or TraitImpl
-    // $.trait_impl,
-    <<r("trait_impl")>>,
+    field('type_parameters', optional(<<r("generic_parameters")>>)),
+    // If this optional matches it's a TraitImpl, otherwise a TypeImpl.
+    optional(seq(
+        field('trait', choice(
+            <<r("identifier_or_path_no_turbofish")>>,
+            <<r("generic_type")>>,
+        )),
+        'for',
+    )),
+    field('type', <<r("type")>>),
+    optional(<<r("where")>>),
+    // TODO: Rename and reduce trait_impl_body rule name.
+    field('body', <<r("trait_impl_body")>>),
 )
 #+end_src
 
-Parser: [[file:noir/compiler/noirc_frontend/src/parser/parser/item.rs::if self.eat_keyword(Keyword::Impl) {][parse_impl() parent callsite]], [[file:noir/compiler/noirc_frontend/src/parser/parser/impls.rs::pub(crate) fn parse_impl(&mut self)][parse_impl()]]
+Parser: [[file:noir/compiler/noirc_frontend/src/parser/parser/item.rs::if self.eat_keyword(Keyword::Impl) {][parse_impl() parent callsite]], [[file:noir/compiler/noirc_frontend/src/parser/parser/impls.rs::fn parse_impl(&mut self)][parse_impl()]]
 Types: [[file:noir/compiler/noirc_frontend/src/parser/parser/impls.rs::pub(crate) enum Impl {][Impl enum]], [[file:noir/compiler/noirc_frontend/src/ast/traits.rs::pub struct TypeImpl {][TypeImpl struct]], [[file:noir/compiler/noirc_frontend/src/ast/traits.rs::pub struct NoirTraitImpl {][NoirTraitImpl struct]]
 Only the [[#h:F5A79701-65C9-4FEA-83D8-2413C585A5FA][ItemVisibility]] modifier is applicable, all other [[#h:2A9D09A5-2E52-4B8C-ABA1-0B3B953F093C][Modifiers]] are parse errors.
 
 =impl= eaten before parse_impl called, within ~parse_impl~: ~parse_generics~, ~parse_type_or_error~ then eat =for= (kw). If eaten try and parse TraitImpl, otherwise TypeImpl. For immediate children {Type,Trait}Impl their Generics are parsed here as is Path and GenericTypeArgs but the latter two indirectly via Type. Return type ~UnresolvedTypeData::Named~ from ~parse_type_or_error~ is unwrapped if =for= is eaten. That enumerant captures Path and GenericTypeArgs ([[file:noir/compiler/noirc_frontend/src/ast/mod.rs::Named(Path, GenericTypeArgs, /*is_synthesized*/ bool),][src]]).
 
-****** TOIMPL TypeImpl                                                 :node:
+In ~parse_impl~: variable =generics= (Generics) is at the 'impl' item level, =object_type= (Type) depends on whether TypeImpl or TraitImpl.
+
+If =for= keyword is eaten and a pattern match on an ~UnresolvedType::Named~ can be made then the Path, and GenericTypeArgs that form that enum are destructured into variables =trait_name= and =trait_generics= respectively and TraitImpl's parser is called.
+
+~UnresolvedType::Named~ ([[file:noir/compiler/noirc_frontend/src/ast/mod.rs::Named(Path, GenericTypeArgs, /*is_synthesized*/ bool),][src]]): struct type, or a type variable. Full enum: ~Named(Path, GenericTypeArgs)~.
+
+****** DONE TypeImpl
+CLOSED: [2025-07-22 Tue 23:40]
 :PROPERTIES:
 :CUSTOM_ID: h:2C79F6AF-9B0D-4246-809D-D5D91C742F09
 :END:
 :LOGBOOK:
+- State "DONE"       from "TOIMPL"     [2025-07-22 Tue 23:40]
 - State "TOIMPL"     from "TODO"       [2025-06-09 Mon 14:34] \\
   Simple wrapper function.
 :END:
-:pgd:
-+ =impl= (kw) by [[#h:BA1422E4-AB97-4099-8346-5845CA9223A1][Generics]] by [[#h:B3490B7C-F387-49C7-BF94-DC9CE8AC3581][Type]]
-+ (opt) [[#h:ED279BDF-F033-4C47-9105-6AC549CE7C31][WhereClause]]
-+ [[#h:4E657C7B-45FD-45D0-84B2-DB55C1D09192][TypeImplBody]]
-:end:
 
 Parser: [[file:noir/compiler/noirc_frontend/src/parser/parser/impls.rs::fn parse_type_impl(][parse_type_impl()]]
 
 *************** TODO BNF error, whereclause is missing?
 *************** END
 
-******* TOIMPL TypeImplBody                                            :node:
+******* DONE TypeImplBody
+CLOSED: [2025-07-22 Tue 23:40]
 :PROPERTIES:
 :CUSTOM_ID: h:4E657C7B-45FD-45D0-84B2-DB55C1D09192
 :END:
 :LOGBOOK:
+- State "DONE"       from "TOIMPL"     [2025-07-22 Tue 23:40]
 - State "TOIMPL"     from "TODO"       [2025-06-09 Mon 14:41]
 :END:
-:pgd:
-+ ={= by (rep0) [[#h:268CE151-7A1D-48ED-A6ED-40219D809438][TypeImplItem]] by =}=
-:end:
 
 Parser: [[file:noir/compiler/noirc_frontend/src/parser/parser/impls.rs::fn parse_type_impl_body(&mut self)][parse_type_impl_body()]]
 
 Via [[#h:8E0DC05B-1ED6-47BE-9589-64DC06FAECCA][parse_many]] inline split without separator until =}= calls [[file:noir/compiler/noirc_frontend/src/parser/parser/impls.rs::fn parse_type_impl_method(&mut self)][parse_type_impl_method()]] which is a parser utility function for error recovery, there a lambda defines the parsing for each TypeImplItem.
 
-******* TODO TypeImplItem                                              :node:
+******* DONE TypeImplItem
+CLOSED: [2025-07-22 Tue 23:39]
 :PROPERTIES:
 :CUSTOM_ID: h:268CE151-7A1D-48ED-A6ED-40219D809438
 :END:
-:pgd:
-+ [[#h:FB5478BF-5E66-4686-931B-733349F83FD8][OuterDocComments]] by [[id:DA6150E7-E986-4749-A481-A95FF1368B74][Attributes]] by [[#h:2A9D09A5-2E52-4B8C-ABA1-0B3B953F093C][Modifiers]] by [[#h:B3C4609F-307A-42A1-B420-DBBAB6CDE6E5][Function]]
-:end:
+:LOGBOOK:
+- State "DONE"       from "TODO"       [2025-07-22 Tue 23:39]
+:END:
 
 Parser: [[file:noir/compiler/noirc_frontend/src/parser/parser/impls.rs::fn parse_type_impl_method(&mut self)][parse_type_impl_method()]]
 
 Parser is a lambda on call to ~parse_item_in_list~. Modifiers parsed here allow all except mutable ([[file:noir/compiler/noirc_frontend/src/parser/parser/impls.rs::let modifiers = parser.parse_modifiers(][src]]).
 
-JORDAN: This looks done, need to do ts grammar for this node up. Calls to function ends this, the parsed attributes are associated with the function though right?
-
-****** TODO TraitImpl                                                  :node:
+****** DONE TraitImpl
+CLOSED: [2025-07-22 Tue 23:39]
 :PROPERTIES:
 :CUSTOM_ID: h:EBF1C149-1814-4314-AAFB-C5CF198DA61D
 :END:
-:pgd:
-+ =impl= (kw) by [[#h:BA1422E4-AB97-4099-8346-5845CA9223A1][Generics]] by [[#h:07167116-EAE4-475B-8C87-DE9075BAF88D][Path]] by [[#h:3267D7A4-7AA4-49FB-91FA-A9601BC6868A][GenericTypeArgs]] by =for= (kw) by [[#h:B3490B7C-F387-49C7-BF94-DC9CE8AC3581][Type]]
-+ (opt) [[#h:ED279BDF-F033-4C47-9105-6AC549CE7C31][WhereClause]]
-+ [[#h:AE12BD3E-D350-4D0C-88E7-2FC471E9FB9C][TraitImplBody]]
-:end:
-
-#+name: trait_impl
-#+begin_src js :arg $
-seq(
-    // TODO: Path
-    <<r("generic_type_args")>>,
-    'for',
-    $._type,
-    // optional($.where_clause), // Temp commented for now due to prec error.
-)
-#+end_src
+:LOGBOOK:
+- State "DONE"       from "TODO"       [2025-07-22 Tue 23:39]
+:END:
 
 Parser: [[file:noir/compiler/noirc_frontend/src/parser/parser/impls.rs::return Impl::TraitImpl(self.parse_trait_impl(][parse_trait_impl() parent callsite]], [[file:noir/compiler/noirc_frontend/src/parser/parser/impls.rs::fn parse_trait_impl(][parse_trait_impl()]]
-
-Parent parses Generics, Path, and GeenricTypeArgs before we're reached so here we parse from Type.
-
-?? -> indeed in ~parse_trait_impl~ a Type is parsed first followed by TraitImplBody.
 
 *************** TODO BNF mistake in TraitImpl?
 Is the where clause meant to be absent there?
 *************** END
 
-******* TODO TraitImplBody                                             :node:
+******* DONE TraitImplBody
+CLOSED: [2025-07-22 Tue 23:39]
 :PROPERTIES:
 :CUSTOM_ID: h:AE12BD3E-D350-4D0C-88E7-2FC471E9FB9C
 :END:
-:pgd:
-+ ={= by (rep0) [[#h:E070D1E3-2377-4041-96A0-C4DA104E9A9C][TraitImplItem]] by =}=
-:end:
+:LOGBOOK:
+- State "DONE"       from "TODO"       [2025-07-22 Tue 23:39]
+:END:
+
+#+name: trait_impl_body
+#+begin_src js :arg $ :ast TraitImplBody
+seq(
+    // TODO: Rename this CST rule?
+    '{',
+    // Inlined Noirc: TraitImplItem.
+    repeat(choice(
+        // OuterDocComments are extras.
+        // Attributes only (strictly) associated with TraitImplFunction but that's too narrow for the raw grammar.
+        <<r("attribute")>>,
+        <<r("trait_impl_type")>>,
+        alias(<<r("trait_impl_constant")>>, <<r("let_statement")>>),
+        <<r("function")>>, // TraitImplFunction.
+    )),
+    '}',
+)
+#+end_src
 
 Parser: [[file:noir/compiler/noirc_frontend/src/parser/parser/impls.rs::fn parse_trait_impl_body(&mut self)][parse_trait_impl_body()]]
 
 Via [[#h:8E0DC05B-1ED6-47BE-9589-64DC06FAECCA][parse_many]] inline split without separator until =}= calls [[file:noir/compiler/noirc_frontend/src/parser/parser/impls.rs::fn parse_trait_impl_item(&mut self)][parse_trait_impl_item()]] which is a parser utility function for error recovery, calls to [[file:noir/compiler/noirc_frontend/src/parser/parser/impls.rs::fn parse_trait_impl_item_kind(&mut self)][parse_trait_impl_item_kind()]] which /is/ [[#h:E070D1E3-2377-4041-96A0-C4DA104E9A9C][TraitImplItem]].
 
-******* TOIMPL TraitImplItem                                           :node:
+*************** TODO Rename this CST rule?
+*************** END
+
+******* TraitImplItem
 :PROPERTIES:
 :CUSTOM_ID: h:E070D1E3-2377-4041-96A0-C4DA104E9A9C
 :END:
@@ -718,59 +735,92 @@ Via [[#h:8E0DC05B-1ED6-47BE-9589-64DC06FAECCA][parse_many]] inline split without
 - State "TOIMPL"     from "SPEC"       [2025-06-09 Mon 01:48]
 - State "SPEC"       from "TODO"       [2025-06-09 Mon 01:48]
 :END:
-:pgd:
-- [[#h:D3AE715D-AC3E-494A-9E32-0BAD666C2302][TraitImplType]]
-- [[#h:400F4495-94E9-4549-9E85-9FECC5F69E7A][TraitImplConstant]]
-- [[#h:668ACDEF-C6C3-46B2-AF64-3907253E7EA6][TraitImplFunction]]
-:end:
 
 Parser: [[file:noir/compiler/noirc_frontend/src/parser/parser/impls.rs::fn parse_trait_impl_item_kind(&mut self)][parse_trait_impl_item_kind()]]
-Returns: [[file:noir/compiler/noirc_frontend/src/ast/traits.rs::pub enum TraitImplItemKind {][TraitImplItemKind enum]]
+Types: [[file:noir/compiler/noirc_frontend/src/ast/traits.rs::pub enum TraitImplItemKind {][TraitImplItemKind enum]]
 
 Simple wrapper which calls parsers for pgd types in order.
 
-******* TODO TraitImplType                                             :node:
+******* DONE TraitImplType
+CLOSED: [2025-07-22 Tue 23:38]
 :PROPERTIES:
 :CUSTOM_ID: h:D3AE715D-AC3E-494A-9E32-0BAD666C2302
 :END:
-:pgd:
-+ =type= (kw)
-+ [[#h:65B0176B-B46F-4679-8535-C504870AC048][ident]] (token)
-+ (opt grp) =:= by [[#h:B3490B7C-F387-49C7-BF94-DC9CE8AC3581][Type]]
-+ =;=
-:end:
+:LOGBOOK:
+- State "DONE"       from "SPEC"       [2025-07-22 Tue 23:38]
+- State "SPEC"       from "TODO"       [2025-07-22 Tue 19:04] \\
+  Parser examined
+:END:
+
+#+name: trait_impl_type
+#+begin_src js :arg $ :ast TraitImplType
+seq(
+    // TODO: Rename this CST rule?
+    'type',
+    field('name', <<r("identifier")>>),
+    '=',
+    // TODO: What name for this CST node? It's not an associated type surely?
+    field('alias', <<r("type")>>),
+    ';',
+)
+#+end_src
 
 Parser: [[file:noir/compiler/noirc_frontend/src/parser/parser/impls.rs::fn parse_trait_impl_type(&mut self)][parse_trait_impl_type()]]
 
-******* TODO TraitImplConstant                                         :node:
+*************** TODO Rename CST rule?
+*************** END
+*************** TODO EBNF is wrong it looks like?
+Parser says it can eat an assign so it should be === and not =:=.
+*************** END
+
+******* DONE TraitImplConstant
+CLOSED: [2025-07-22 Tue 23:38]
 :PROPERTIES:
 :CUSTOM_ID: h:400F4495-94E9-4549-9E85-9FECC5F69E7A
 :END:
-:pgd:
-+ =let= (kw)
-+ [[#h:65B0176B-B46F-4679-8535-C504870AC048][ident]] (token)
-+ [[#h:644406F7-BDEE-414D-85D6-0B016CA0C929][OptionalTypeAnnotation]]
-+ =;=
-:end:
-
-******* TODO OptionalTypeAnnotation                                    :node:
-:PROPERTIES:
-:CUSTOM_ID: h:644406F7-BDEE-414D-85D6-0B016CA0C929
+:LOGBOOK:
+- State "DONE"       from "SPEC"       [2025-07-22 Tue 23:38]
+- State "SPEC"       from "TODO"       [2025-07-22 Tue 19:17] \\
+  Parser examined.
 :END:
 
-*************** TODO Put this node elsewhere, its only here for now
-Cos I am lazy while going through Impl for ts grammar
+#+name: trait_impl_constant
+#+begin_src js :arg $ :ast TraitImplConstant
+seq(
+    // TODO: Rename this CST rule?
+    'let',
+    field('name', <<r("identifier")>>),
+    <<field__type_annotation>>,
+    '=',
+    field('value', <<r("expression")>>),
+    ';',
+)
+#+end_src
+
+Parser: [[file:noir/compiler/noirc_frontend/src/parser/parser/impls.rs::fn parse_trait_impl_constant(&mut self)][parse_trait_impl_constant()]]
+
+Extremely similar to [[#h:FD70AFA1-5D45-434E-A9D0-7E8F6DD38058][LetStatement]] and [[#h:02355489-DDCD-4E67-BB39-5DF3F0BC0A8A][TraitConstant]]. In the former's case we don't allow =mut= here and it's an identifier not a pattern; in the latter's case the type annotation is optional and not required.
+
+*************** TODO Rename this CST rule?
+*************** END
+*************** TODO EBNF is wrong
+Parser states it requires an assignment so need ='=' Expression= in the EBNF.
 *************** END
 
-******* TODO TraitImplFunction                                         :node:
+******* DONE TraitImplFunction
+CLOSED: [2025-07-22 Tue 19:33]
 :PROPERTIES:
 :CUSTOM_ID: h:668ACDEF-C6C3-46B2-AF64-3907253E7EA6
 :END:
-:pgd:
-+ [[id:DA6150E7-E986-4749-A481-A95FF1368B74][Attributes]]
-+ [[#h:2A9D09A5-2E52-4B8C-ABA1-0B3B953F093C][Modifiers]]
-+ [[#h:B3C4609F-307A-42A1-B420-DBBAB6CDE6E5][Function]]
-:end:
+:LOGBOOK:
+- State "DONE"       from "TODO"       [2025-07-22 Tue 19:33]
+:END:
+
+This rule can be reduced to just [[#h:B3C4609F-307A-42A1-B420-DBBAB6CDE6E5][Function]] because:
+  1. We put [[id:DA6150E7-E986-4749-A481-A95FF1368B74][Attributes]] at the containing rule instead, same as we do elsewhere, otherwise an entire CST node would be required to wrap them (and we can query direct adjacents anyway).
+  2. Even though the parser says use of the [[#h:F5A79701-65C9-4FEA-83D8-2413C585A5FA][ItemVisibility]] modifier is a parse error we just call Function since the alternative is duplicating multiple complex rules just to remove the optional ItemVisibility. Probably not worth it in the long run.
+
+Parser: [[file:noir/compiler/noirc_frontend/src/parser/parser/impls.rs::fn parse_trait_impl_function(&mut self)][parse_trait_impl_function()]]
 
 ***** DONE Trait
 CLOSED: [2025-07-14 Mon 02:33]
@@ -996,14 +1046,14 @@ Parsing of identifier, only in this case, uses [[file:noir/compiler/noirc_fronte
 If no ident is eaten but a semicolon follows a LetStatement is returned from parse_global
 *************** END
 
-***** TOIMPL Type                                              :node:cluster:
+***** TOIMPL Type
 :PROPERTIES:
 :CUSTOM_ID: h:B3490B7C-F387-49C7-BF94-DC9CE8AC3581
 :END:
 :LOGBOOK:
 - State "TOIMPL"     from "TODO"       [2024-11-16 Sat 18:26]
 :END:
-:pgd:
+
 - [[#h:C23E374A-42EF-467D-AE3D-548D880712D8][PrimitiveType]]
 - [[#h:39A2690C-319F-4F34-A139-8549D70FCF26][ParenthesesType]]
 - [[#h:FAB3845D-97FD-454B-B8C8-09FEEB41FC3D][ArrayOrSliceType]]
@@ -1012,7 +1062,6 @@ If no ident is eaten but a semicolon follows a LetStatement is returned from par
 - [[#h:08118263-BDC8-4589-8EF9-1F0490B62F34][TraitAsType]]
 - [[#h:5B4FDF39-09B2-4C07-A2B5-3A3D6BEDD4B7][AsTraitPathType]]
 - [[#h:F2E3D7E1-0978-44DF-A49E-EBE348F9D973][UnresolvedNamedType]]
-:end:
 
 #+name: type
 #+begin_src js :rule _type :arg $
@@ -2147,7 +2196,10 @@ seq(
     '(',
     optional(seq(
         // Inlined Noirc: FunctionParametersList.
-        sepBy1(alias(<<r("function_parameter")>>, $.parameter), ','),
+        sepBy1(choice(
+            alias(<<r("function_parameter")>>, $.parameter),
+            <<r("self_pattern")>>,
+        ), ','),
         optional(','),
     )),
     ')',
@@ -2180,8 +2232,7 @@ CLOSED: [2025-07-22 Tue 02:48]
 #+name: function_parameter
 #+begin_src js :arg $ :ast FunctionParameter
 seq(
-    optional(<<r("visibility")>>),
-    field('pattern', <<r("pattern_or_self")>>),
+    field('pattern', <<r("pattern")>>),
     field('type', choice(
         <<r("type_annotation")>>,
         <<r("function_parameter_type")>>,
@@ -2913,7 +2964,7 @@ Parser: [[file:noir/compiler/noirc_frontend/src/parser/parser/pattern.rs::fn par
 #+begin_src js :arg $ :ast SelfPattern
 seq(
     optional('&'),
-    optional($.mut_bound),
+    optional(<<r("modifier_mut")>>),
     $.self,
 )
 #+end_src
@@ -5099,6 +5150,7 @@ module.exports = grammar({
             <<r("use")>>,
             <<r("mod_or_contract")>>,
             <<r("struct")>>,
+            <<r("impl")>>,
             // TODO: Relink impl.
             <<r("trait")>>,
             <<r("global")>>,
@@ -5178,7 +5230,7 @@ alias(<<r("generic_type_args")>>, $.type_parameters)
 <<c('("use" "use_variants" "use_variants_scoped" "use_list"))>>
 <<n("mod_or_contract")>>
 <<c('("struct" "struct_field" "struct_field_list"))>>
-<<c('("impl" "trait_impl"))>>
+<<c('("impl" "trait_impl_body" "trait_impl_type" "trait_impl_constant"))>>
 <<c('("trait"  "trait_bounds" "trait_bound" "trait_body" "trait_type" "trait_constant" "trait_function"))>>
 <<c('("global" "global_item_modifiers"))>>
 // TODO: TypeAlias
