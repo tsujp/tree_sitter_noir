@@ -3112,8 +3112,42 @@ global f2 = <Field as lorem::ipsum<X, Y>>::foo;
 
 ** TODO InternedStatement
 
-** TODO Unary
-TODO: Also where does it go in terms of ordering
+** Unary
+#+begin_test
+global a = !foo;
+global b = *foo;
+global c = -foo;
+global d = &mut foo;
+
+---
+
+(global_item
+  name: (identifier)
+  (unary_expression
+    (identifier)))
+(global_item
+  name: (identifier)
+  (unary_expression
+    (identifier)))
+(global_item
+  name: (identifier)
+  (unary_expression
+    (identifier)))
+(global_item
+  name: (identifier)
+  (unary_expression
+    (identifier)))
+#+end_test
+
+*** Solo ampersand
+#+begin_test :error
+global f = & foo;
+#+end_test
+
+*** Solo mut
+#+begin_test :error
+global f = mut foo;
+#+end_test
 
 ** Call
 

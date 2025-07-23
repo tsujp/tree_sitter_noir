@@ -1136,6 +1136,55 @@ global f2 = <Field as lorem::ipsum<X, Y>>::foo;
 )
 
 
+=====
+Unary
+=====
+
+global a = !foo;
+global b = *foo;
+global c = -foo;
+global d = &mut foo;
+
+---
+
+(source_file
+  (global_item
+    name: (identifier)
+    (unary_expression
+      (identifier)))
+  (global_item
+    name: (identifier)
+    (unary_expression
+      (identifier)))
+  (global_item
+    name: (identifier)
+    (unary_expression
+      (identifier)))
+  (global_item
+    name: (identifier)
+    (unary_expression
+      (identifier)))
+)
+
+
+===========================
+Unary / Solo ampersand (e1)
+:error
+===========================
+
+global f = & foo;
+---
+
+
+=====================
+Unary / Solo mut (e1)
+:error
+=====================
+
+global f = mut foo;
+---
+
+
 ===============
 Call / Function
 ===============

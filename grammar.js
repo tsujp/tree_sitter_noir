@@ -541,10 +541,12 @@ module.exports = grammar({
             alias($.trait_path_alias, $.path),
             // Blocked: ResolvedExpression, InternedExpression, InternedStatementExpression.
             // ---/ End: Atom.
-            $.call_expression,
-            $.access_expression,
-            $.cast_expression,
-            $.index_expression,
+            $.unary_expression,
+            // Inlined Noirc: UnaryRightExpression.
+              $.call_expression,
+              $.access_expression,
+              $.cast_expression,
+              $.index_expression,
             // TODO: SURELY identifier is allowed in expression, where's the concrete evidence though? Assuming it is for now.
             $.identifier,
         )),
@@ -632,6 +634,12 @@ module.exports = grammar({
             $._expression,
         ),
         
+        
+        // [[file:noir_grammar.org::unary_op]]
+        unary_expression: $ => prec(PRECEDENCE.unary, seq(
+            choice(seq('&', 'mut'), '-', '!', '*'),
+            $._expression,
+        )),
         
         // [[file:noir_grammar.org::member_access_expression]]
         access_expression: $ => prec(PRECEDENCE.access, seq(

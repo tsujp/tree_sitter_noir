@@ -1670,6 +1670,10 @@ Return: ~AST::UnresolvedTypeData::AsTraitPath~.
   PathNoTurbofish completion.
 :END:
 
+*************** TODO DELETE THIS SUBHEADING
+This is from very early on and 'UnresolvedNamedType' isn't an actual thing, I've just added GenericTypeArgs to Type (what this actually is) and probably missed doing that due to this (innacurate subheading).
+*************** END
+
 + [[#h:A051D0D5-7007-4DF8-83B7-FB4EFF9C383E][PathNoTurbofish]]
 + (opt) [[#h:3267D7A4-7AA4-49FB-91FA-A9601BC6868A][GenericTypeArgs]]
 
@@ -1679,14 +1683,6 @@ Parser: /within slice of parent/
 Return: ~AST::UnresolvedTypeData::Named~.
 
 #+transclude: [[file:noir/compiler/noirc_frontend/src/ast/mod.rs::121][UnresolvedTypeData::Named doc]] :lines 121-122 :src rust
-
-*************** TODO Unsure of the exact syntax here, should be a path (no turbofish) with generics after it per the method calls.
-Really deep in syntax spaghetti right now, I expect this will be clear when finally some tests are written and what not.
-
-Also I named this node since it doesn't appear to canonically have one.
-
-I also ASSUME the generic type args are optional (test concretely).
-*************** END
 
 ***** TODO TypeOrTypeExpression
 :PROPERTIES:
@@ -3049,10 +3045,12 @@ prec(1, choice(
     alias(<<r("trait_path_alias")>>, $.path),
     // Blocked: ResolvedExpression, InternedExpression, InternedStatementExpression.
     // ---/ End: Atom.
-    <<r("call_expression")>>,
-    <<r("member_access_expression")>>,
-    <<r("cast_expression")>>,
-    <<r("index_expression")>>,
+    <<r("unary_op")>>,
+    // Inlined Noirc: UnaryRightExpression.
+      <<r("call_expression")>>,
+      <<r("member_access_expression")>>,
+      <<r("cast_expression")>>,
+      <<r("index_expression")>>,
     // TODO: SURELY identifier is allowed in expression, where's the concrete evidence though? Assuming it is for now.
     <<r("identifier")>>,
 ))
@@ -3136,8 +3134,25 @@ Parser: [[file:noir/compiler/noirc_frontend/src/parser/parser/expression.rs::fn 
 **** TODO AtomOrUnaryRightExpression
 2025/07/23 TODO
 
-**** TODO UnaryOp
-2025/07/23 TODO
+**** SPEC UnaryOp
+:PROPERTIES:
+:CUSTOM_ID: h:4C18FF90-351E-43E9-95BA-F81704718B2F
+:END:
+:LOGBOOK:
+- State "SPEC"       from "TODO"       [2025-07-24 Thu 01:57] \\
+  Parser examined
+:END:
+
+#+name: unary_op
+#+begin_src js :rule unary_expression :arg $ :ast UnaryOp
+prec(PRECEDENCE.unary, seq(
+    choice(seq('&', 'mut'), '-', '!', '*'),
+    <<r("expression")>>,
+))
+#+end_src
+
+Parser: [[file:noir/compiler/noirc_frontend/src/parser/parser/expression.rs::fn parse_unary_op(&mut self)][parse_unary_op()]]
+Types: [[file:noir/compiler/noirc_frontend/src/ast/expression.rs::pub enum UnaryOp {][UnaryOp enum]]
 
 **** DONE CallExpression
 CLOSED: [2025-07-23 Wed 01:10]
@@ -5393,6 +5408,7 @@ alias(<<r("generic_type_args")>>, $.type_parameters)
 <<c('("call_expression" "arguments" "call_arguments"))>>
 <<n("for_range")>>
 
+<<n("unary_op")>>
 <<c('("member_access_expression" "cast_expression" "index_expression"))>>
 
 // Ordered as at Atom.
