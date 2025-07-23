@@ -3385,6 +3385,20 @@ type f = fn[Field](Field, ) -> Field;
       type: (primitive_type))))
 #+end_test
 
+** Fmtstr
+#+begin_test
+type f = fmtstr<10, T>;
+
+---
+
+(type_item
+  name: (identifier)
+  type: (primitive_type
+    type_arguments: (type_arguments
+      value: (int_literal)
+      type: (identifier))))
+#+end_test
+
 ** TODO Unit
 #+begin_test :skip
 type Foo = ();

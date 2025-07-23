@@ -787,6 +787,15 @@ module.exports = grammar({
         // [[file:noir_grammar.org::type_annotation]]
         _type_annotation: $ => seq(':', $._type),
         
+        // [[file:noir_grammar.org::type_arguments]]
+        type_arguments: $ => seq(
+            '<',
+            field('value', $._type_expr),
+            ',',
+            field('type', $._type),
+            '>',
+        ),
+        
         // [[file:noir_grammar.org::primitive_type]]
         primitive_type: $ => choice(
             $.__field_type,
@@ -810,7 +819,10 @@ module.exports = grammar({
             '>',
         ),
         // [[file:noir_grammar.org::fmt_str_type]]
-        __format_string_type: _ => 'fmtstr',
+        __format_string_type: $ => seq(
+            'fmtstr',
+            field('type_arguments', $.type_arguments),
+        ),
         
         // [[file:noir_grammar.org::parentheses_type]]
         _parentheses_type: $ => choice(

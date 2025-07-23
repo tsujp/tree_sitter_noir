@@ -94,6 +94,24 @@ type f = fn[Field](Field, ) -> Field;
 )
 
 
+======
+Fmtstr
+======
+
+type f = fmtstr<10, T>;
+
+---
+
+(source_file
+  (type_item
+    name: (identifier)
+    type: (primitive_type
+      type_arguments: (type_arguments
+        value: (int_literal)
+        type: (identifier))))
+)
+
+
 ====
 Unit
 :skip
