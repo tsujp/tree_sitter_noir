@@ -1786,6 +1786,39 @@ fn foo(x: return_data Field) {}
 )
 
 
+===============================
+Function / Parameters / Closure
+===============================
+
+fn foo<Env>(f: fn[Env]() -> Field) -> Field {
+ f()
+}
+
+---
+
+(source_file
+  (function_item
+    name: (identifier)
+    type_parameters: (type_parameters
+      (identifier))
+    parameters: (parameters
+      (parameter
+        pattern: (identifier)
+        type: (function_type
+          environment: (capture_environment
+            (identifier))
+          parameters: (parameters)
+          return_type: (return_type
+            type: (primitive_type)))))
+    return_type: (return_type
+      type: (primitive_type))
+    body: (block
+      (call_expression
+        function: (identifier)
+        arguments: (arguments))))
+)
+
+
 =================================================================================================
 Function / Parameters / Apparently the call (underscore) data is making org-babel shit itself lol
 :skip

@@ -1581,6 +1581,35 @@ fn foo(x: return_data Field) {}
   body: (block))
 #+end_test
 
+**** Closure
+#+begin_test
+fn foo<Env>(f: fn[Env]() -> Field) -> Field {
+ f()
+}
+
+---
+
+(function_item
+  name: (identifier)
+  type_parameters: (type_parameters
+    (identifier))
+  parameters: (parameters
+    (parameter
+      pattern: (identifier)
+      type: (function_type
+        environment: (capture_environment
+          (identifier))
+        parameters: (parameters)
+        return_type: (return_type
+          type: (primitive_type)))))
+  return_type: (return_type
+    type: (primitive_type))
+  body: (block
+    (call_expression
+      function: (identifier)
+      arguments: (arguments))))
+#+end_test
+
 **** TODO Apparently the call (underscore) data is making org-babel shit itself lol
 #+begin_test :skip
 fn foo(x: call_data (42) Field) {}
@@ -3281,7 +3310,82 @@ global f = foo.bar;
 :export_file_name: types.txt
 :END:
 
-** Unit
+** Function
+#+begin_test
+type f = unconstrained fn() -> Field;
+
+---
+
+(type_item
+  name: (identifier)
+  type: (function_type
+    (modifiers)
+    parameters: (parameters)
+    return_type: (return_type
+      type: (primitive_type))))
+#+end_test
+
+*** Simple
+#+begin_test
+type f = fn() -> Field;
+
+---
+
+(type_item
+  name: (identifier)
+  type: (function_type
+    parameters: (parameters)
+    return_type: (return_type
+      type: (primitive_type))))
+#+end_test
+
+*** Parameters
+#+begin_test
+type f = fn(Field, bool, ) -> Field;
+
+---
+
+(type_item
+  name: (identifier)
+  type: (function_type
+    parameters: (parameters
+      (primitive_type)
+      (primitive_type))
+    return_type: (return_type
+      type: (primitive_type))))
+#+end_test
+
+**** No names
+
+Parameters are not allowed to have names here.
+#+begin_test :error
+type f = fn(no_names: Field) -> Field
+#+end_test
+
+**** Solo delimiter
+#+begin_test :error
+type f = fn(,) -> Field
+#+end_test
+
+
+*** Closure
+#+begin_test
+type f = fn[Field](Field, ) -> Field;
+
+---
+
+(type_item
+  name: (identifier)
+  type: (function_type
+    environment: (capture_environment
+      (primitive_type))
+    parameters: (parameters
+      (primitive_type))
+    return_type: (return_type
+      type: (primitive_type))))
+#+end_test
+
+** TODO Unit
 #+begin_test :skip
 type Foo = ();
 
@@ -3291,7 +3395,7 @@ type Foo = ();
   (unit_type))
 #+end_test
 
-** Type expressions
+** TODO Type expressions
 
 *** Literal
 #+begin_test :skip

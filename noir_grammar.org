@@ -1072,9 +1072,10 @@ If no ident is eaten but a semicolon follows a LetStatement is returned from par
 choice(
     <<r("primitive_type")>>,
     $._parentheses_type,
+    // TODO: array or slice type, mutable reference type
     // $.array_or_slice_type,
     // $.mutable_reference_type,
-    // $.function_type,
+    <<r("function_type")>>,
     // TODO: TraitAsType, AsTraitPathType, UnresolvedNamedType
     <<r("identifier_or_path_no_turbofish")>>,
     // parser/types.rs:58-61
@@ -1516,74 +1517,88 @@ Parser: [[file:noir/compiler/noirc_frontend/src/parser/parser/types.rs::fn parse
 
 Return: ~AST::UnresolvedTypeData::MutableReference~.
 
-****** SPEC FunctionType                                               :node:
+****** DONE FunctionType
+CLOSED: [2025-07-24 Thu 03:20]
 :PROPERTIES:
 :CUSTOM_ID: h:96043AA8-9EC3-4E80-AA5D-CBFFE60A9072
 :END:
 :LOGBOOK:
+- State "DONE"       from "SPEC"       [2025-07-24 Thu 03:20]
 - State "SPEC"       from "BLOCK"      [2025-05-24 Sat 23:13] \\
   More complete alongside Type.
 - State "BLOCK"      from "TODO"       [2024-11-16 Sat 17:37] \\
   Type completion.
 :END:
-:pgd:
-+ (opt) =unconstrained= (kw)
-+ =fn= (kw)
-+ (opt) [[#h:4E68CB10-4122-4C09-B99F-DE7F57651E02][CaptureEnvironment]]
-+ [[#h:FC1E33B7-033B-4F6F-9EFD-2CDC784E572C][Parameter]]
-+ =->=
-+ [[#h:B3490B7C-F387-49C7-BF94-DC9CE8AC3581][Type]]
-:end:
 
-#+begin_src js :treesit t
-function_type: ($) => seq(
-    'unconstrained',
+#+name: function_type
+#+begin_src js :arg $ :ast "Ours: FunctionType"
+seq(
+    alias(optional('unconstrained'), $.modifiers),
     'fn',
-    optional($.capture_environment),
-    $.parameter_list,
-    '->',
-    $._type,
+    field('environment', optional(<<r("capture_environment")>>)),
+    // TODO: Condense in source; TupleType has the same parse logic that we need here so use that.
+    field('parameters', alias(<<r("function_type_parameters")>>, $.parameters)),
+    // TODO: Condense in source; LambdaReturnType has the same parse logic we need here so use that.
+    field('return_type', alias(<<r("lambda_return_type")>>, <<r("function_return_type")>>)),
+)
+#+end_src
+
+#+name: function_type_parameters
+#+begin_src js :arg $ :ast "Ours: FunctionTypeParameters"
+seq(
+    '(',
+    optional(seq(
+        sepBy1(<<r("type")>>, ','),
+        optional(','),
+    )),
+    ')',
 )
 #+end_src
 
 Parser: [[file:noir/compiler/noirc_frontend/src/parser/parser/types.rs::fn parse_function_type(&mut self)][parse_function_type()]]
+Callsites:
+  - [[file:noir/compiler/noirc_frontend/src/parser/parser/types.rs::if let Some(typ) = self.parse_function_type() {][in parse_unresolved_type_data()]] (for: [[#h:B3490B7C-F387-49C7-BF94-DC9CE8AC3581][Type]])
+
+Parameters at this locus parsed at: [[file:noir/compiler/noirc_frontend/src/parser/parser/types.rs::fn parse_parameter(&mut self)][parse_parameter()]] i.e. comma delimited list of Type.
+Return type parsed at line 277 parser/types.rs
 
 Return: ~AST::UnresolvedTypeData::Function~.
 
-*************** TODO So this is specifically NOT a function DECLARATION? It's either an inline function e.g. a lambda, or calling another pre-declared function?
-Because there's already a function for parsing a function declaration in the compiler frontend as far as I can see and that function does not support environment capture. It's been a while but I believe I have some environment capture stuff in Tikan from old noir, see how that's used and if that pattern is still valid in current Noir (as well as consulting the compiler tests) to determine what is valid now if there's still uncertainty once all frontend paths are documented.
+*************** TODO Make an EBNF doc for this
+Nothing in Noirc exists for this yet
 *************** END
 
-******* SPEC CaptureEnvironment                                        :node:
+******* DONE CaptureEnvironment
+CLOSED: [2025-07-24 Thu 03:19]
 :PROPERTIES:
 :CUSTOM_ID: h:4E68CB10-4122-4C09-B99F-DE7F57651E02
 :END:
 :LOGBOOK:
+- State "DONE"       from "SPEC"       [2025-07-24 Thu 03:19]
 - State "SPEC"       from "BLOCK"      [2025-05-24 Sat 23:22] \\
   More complete alongside Type.
 - State "BLOCK"      from "TODO"       [2024-11-16 Sat 17:34] \\
   Type completion.
 :END:
-:pgd:
-+ =[=
-+ [[#h:B3490B7C-F387-49C7-BF94-DC9CE8AC3581][Type]]
-+ =]=
-:end:
 
-#+begin_src js :treesit t
-capture_environment: ($) => seq(
+#+name: capture_environment
+#+begin_src js :arg $ :ast "Ours: CaptureEnvironment"
+seq(
     '[',
-    $._type,
+    <<r("type")>>,
     ']',
 )
 #+end_src
+
+*************** TODO EBNF doc for this in Noirc
+*************** END
 
 Function capture environment syntax, e.g. =fn foo[Env]()= where =[Env]= is the environment specifier valid for the function to be called within.
 
 Parser: /within slice of parent/
 #+transclude: [[file:noir/compiler/noirc_frontend/src/parser/parser/types.rs::252][FunctionType CaptureEnvironment]] :lines 252-258 :src rust
 
-******* SPEC Parameter                                                 :node:
+******* SPEC Parameter
 :PROPERTIES:
 :CUSTOM_ID: h:FC1E33B7-033B-4F6F-9EFD-2CDC784E572C
 :END:
@@ -1593,11 +1608,9 @@ Parser: /within slice of parent/
 - State "BLOCK"      from "TODO"       [2024-11-16 Sat 17:34] \\
   Type completion.
 :END:
-:pgd:
-+ =(=
-+ (rep0 grp) [[#h:B3490B7C-F387-49C7-BF94-DC9CE8AC3581][Type]] by =,=
-+ =)=
-:end:
+
+*************** TODO Delete this subheading and/or rename so it's clear it's for FunctionType only
+*************** END
 
 #+begin_src js :treesit t
 parameter_list: ($) => seq(
@@ -1609,17 +1622,6 @@ parameter_list: ($) => seq(
 
 Parser: /within slice of parent/ and [[file:noir/compiler/noirc_frontend/src/parser/parser/types.rs::fn parse_parameter(&mut self)][parse_parameter()]]
 #+transclude: [[file:noir/compiler/noirc_frontend/src/parser/parser/types.rs::271][parse_many()]] :lines 271-275 :src rust
-
-*************** TODO Are parameters here required? Surely not but until all paths explored they might be?
-Could easily validate with a concrete syntax test however.
-
-The documentation for (rep0 grp) here differs from other lsits because in those other cases at least one element was required before the optional repeating, as this TODO states unsure if the "at least one" is required here.
-
-No trailing comma here either right?
-*************** END
-*************** TODO Move this node parameter_list elsewhere?
-It feels pretty generic, so we should put it somewhere in grammar.js that reflects that (as appropriate).
-*************** END
 
 ****** BLOCK TraitAsType
 :PROPERTIES:
@@ -5432,6 +5434,9 @@ alias(<<r("generic_type_args")>>, $.type_parameters)
 <<n("type_annotation")>>
 <<c('("primitive_type" "field_type" "int_type" "bool_type" "str_type" "fmt_str_type"))>>
 <<c('("parentheses_type" "unit_type" "tuple_type"))>>
+// TODO: ArrayOrSliceType, MutableReferenceType
+<<c('("function_type" "function_type_parameters" "capture_environment"))>>
+// TODO: TraitAsType? AsTraitPathType?
 <<c('("generics" "generic" "constrained_type"))>>
 <<n("generic_type")>>
 <<c('("generic_type_args" "generic_type_arg" "named_type_arg" "ordered_type_arg"))>>

@@ -774,9 +774,10 @@ module.exports = grammar({
         _type: $ => choice(
             $.primitive_type,
             $._parentheses_type,
+            // TODO: array or slice type, mutable reference type
             // $.array_or_slice_type,
             // $.mutable_reference_type,
-            // $.function_type,
+            $.function_type,
             // TODO: TraitAsType, AsTraitPathType, UnresolvedNamedType
             $.identifier_or_path_no_turbofish,
             // parser/types.rs:58-61
@@ -825,6 +826,34 @@ module.exports = grammar({
             optional(','),
             ')',
         ),
+        // TODO: ArrayOrSliceType, MutableReferenceType
+        
+        // [[file:noir_grammar.org::function_type]]
+        function_type: $ => seq(
+            alias(optional('unconstrained'), $.modifiers),
+            'fn',
+            field('environment', optional($.capture_environment)),
+            // TODO: Condense in source; TupleType has the same parse logic that we need here so use that.
+            field('parameters', alias($.function_type_parameters, $.parameters)),
+            // TODO: Condense in source; LambdaReturnType has the same parse logic we need here so use that.
+            field('return_type', alias($.lambda_return_type, $.return_type)),
+        ),
+        // [[file:noir_grammar.org::function_type_parameters]]
+        function_type_parameters: $ => seq(
+            '(',
+            optional(seq(
+                sepBy1($._type, ','),
+                optional(','),
+            )),
+            ')',
+        ),
+        // [[file:noir_grammar.org::capture_environment]]
+        capture_environment: $ => seq(
+            '[',
+            $._type,
+            ']',
+        ),
+        // TODO: TraitAsType? AsTraitPathType?
         
         // [[file:noir_grammar.org::generics]]
         _generics: $ => seq(

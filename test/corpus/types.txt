@@ -1,3 +1,99 @@
+========
+Function
+========
+
+type f = unconstrained fn() -> Field;
+
+---
+
+(source_file
+  (type_item
+    name: (identifier)
+    type: (function_type
+      (modifiers)
+      parameters: (parameters)
+      return_type: (return_type
+        type: (primitive_type))))
+)
+
+
+=================
+Function / Simple
+=================
+
+type f = fn() -> Field;
+
+---
+
+(source_file
+  (type_item
+    name: (identifier)
+    type: (function_type
+      parameters: (parameters)
+      return_type: (return_type
+        type: (primitive_type))))
+)
+
+
+=====================
+Function / Parameters
+=====================
+
+type f = fn(Field, bool, ) -> Field;
+
+---
+
+(source_file
+  (type_item
+    name: (identifier)
+    type: (function_type
+      parameters: (parameters
+        (primitive_type)
+        (primitive_type))
+      return_type: (return_type
+        type: (primitive_type))))
+)
+
+
+=====================================
+Function / Parameters / No names (e1)
+:error
+=====================================
+
+type f = fn(no_names: Field) -> Field
+---
+
+
+===========================================
+Function / Parameters / Solo delimiter (e1)
+:error
+===========================================
+
+type f = fn(,) -> Field
+---
+
+
+==================
+Function / Closure
+==================
+
+type f = fn[Field](Field, ) -> Field;
+
+---
+
+(source_file
+  (type_item
+    name: (identifier)
+    type: (function_type
+      environment: (capture_environment
+        (primitive_type))
+      parameters: (parameters
+        (primitive_type))
+      return_type: (return_type
+        type: (primitive_type))))
+)
+
+
 ====
 Unit
 :skip
