@@ -3257,6 +3257,10 @@
         {
           "type": "SYMBOL",
           "name": "identifier_or_path_no_turbofish"
+        },
+        {
+          "type": "SYMBOL",
+          "name": "generic"
         }
       ]
     },
@@ -4749,6 +4753,10 @@
     [
       "function_item_modifiers",
       "global_item_modifiers"
+    ],
+    [
+      "_type",
+      "generic"
     ]
   ],
   "precedences": [],

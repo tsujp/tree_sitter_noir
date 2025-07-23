@@ -591,6 +591,10 @@
         "required": true,
         "types": [
           {
+            "type": "generic",
+            "named": true
+          },
+          {
             "type": "identifier",
             "named": true
           },
@@ -1228,6 +1232,10 @@
         "required": true,
         "types": [
           {
+            "type": "generic",
+            "named": true
+          },
+          {
             "type": "identifier",
             "named": true
           },
@@ -1410,6 +1418,10 @@
         "multiple": false,
         "required": true,
         "types": [
+          {
+            "type": "generic",
+            "named": true
+          },
           {
             "type": "identifier",
             "named": true
@@ -1981,6 +1993,10 @@
             "named": false
           },
           {
+            "type": "generic",
+            "named": true
+          },
+          {
             "type": "identifier",
             "named": true
           },
@@ -2282,6 +2298,10 @@
         "multiple": false,
         "required": true,
         "types": [
+          {
+            "type": "generic",
+            "named": true
+          },
           {
             "type": "identifier",
             "named": true
@@ -2767,6 +2787,10 @@
         "required": true,
         "types": [
           {
+            "type": "generic",
+            "named": true
+          },
+          {
             "type": "identifier",
             "named": true
           },
@@ -2829,6 +2853,10 @@
           {
             "type": ":",
             "named": false
+          },
+          {
+            "type": "generic",
+            "named": true
           },
           {
             "type": "identifier",
@@ -3084,6 +3112,10 @@
             "named": false
           },
           {
+            "type": "generic",
+            "named": true
+          },
+          {
             "type": "identifier",
             "named": true
           },
@@ -3317,6 +3349,10 @@
         "multiple": false,
         "required": false,
         "types": [
+          {
+            "type": "generic",
+            "named": true
+          },
           {
             "type": "identifier",
             "named": true
@@ -3594,6 +3630,10 @@
         "required": true,
         "types": [
           {
+            "type": "generic",
+            "named": true
+          },
+          {
             "type": "identifier",
             "named": true
           },
@@ -3773,6 +3813,10 @@
         "required": true,
         "types": [
           {
+            "type": "generic",
+            "named": true
+          },
+          {
             "type": "identifier",
             "named": true
           },
@@ -3947,6 +3991,10 @@
         "required": true,
         "types": [
           {
+            "type": "generic",
+            "named": true
+          },
+          {
             "type": "identifier",
             "named": true
           },
@@ -4107,6 +4155,10 @@
         "multiple": false,
         "required": true,
         "types": [
+          {
+            "type": "generic",
+            "named": true
+          },
           {
             "type": "identifier",
             "named": true
@@ -4356,6 +4408,10 @@
       "required": true,
       "types": [
         {
+          "type": "generic",
+          "named": true
+        },
+        {
           "type": "identifier",
           "named": true
         },
@@ -4396,6 +4452,10 @@
         "multiple": false,
         "required": true,
         "types": [
+          {
+            "type": "generic",
+            "named": true
+          },
           {
             "type": "identifier",
             "named": true
@@ -4448,6 +4508,10 @@
         },
         {
           "type": "constrained_type",
+          "named": true
+        },
+        {
+          "type": "generic",
           "named": true
         },
         {
@@ -4738,6 +4802,10 @@
       "required": true,
       "types": [
         {
+          "type": "generic",
+          "named": true
+        },
+        {
           "type": "identifier",
           "named": true
         },
@@ -4797,6 +4865,10 @@
         "multiple": false,
         "required": true,
         "types": [
+          {
+            "type": "generic",
+            "named": true
+          },
           {
             "type": "identifier",
             "named": true

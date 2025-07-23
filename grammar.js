@@ -95,6 +95,8 @@ module.exports = grammar({
         // [nil, $.__literal],
         // XXX: Temporary or required?
         [$.function_item_modifiers, $.global_item_modifiers],
+        // XXX: Temporary or required? When adding generic_type to Type AST.
+        [$._type, $.generic],
     ],
 
     // TODO: Need to document (for myself) keyword extraction to check we're doing it properly.
@@ -769,6 +771,8 @@ module.exports = grammar({
             // $.function_type,
             // TODO: TraitAsType, AsTraitPathType, UnresolvedNamedType
             $.identifier_or_path_no_turbofish,
+            // parser/types.rs:58-61
+            $.generic,
         ),
         
         // [[file:noir_grammar.org::type_annotation]]
