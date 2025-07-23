@@ -106,21 +106,80 @@ mk_ts_lib_base := join(node_modules_dir, 'tree-sitter' / 'vendor' / 'tree-sitter
 
 # Debug parser execution using the gdb command-line debugger.
 [group: 'debug']
-debug: (generate '--debug')
-    echo 'bingbong'
+debug:
+    gcc \
+    -g -O0 \
+    -I{{mk_ts_lib_base}}/include/tree_sitter \
+    -I{{mk_ts_lib_base}}/src \
+    {{mk_ts_lib_base}}/src/lib.c \
+    -I{{gen_dir}} \
+    {{gen_dir}}/parser.c \
+    {{gen_dir}}/scanner.c \
+    -o sample \
+    debug_parser.c
 
 # Debug parser execution using the tree-sitter-cli's debug logging flags.
 [group: 'debug']
-debug-log:
-    echo 'foo'
+debug-log *args: (build '--debug' args)
+
+# Find probably EBNF comments in Noirc sources.
+[group: 'debug']
+fd-ebnf rule *args:
+    ugrep -r '///.*{{rule}}' -t rust noir -n {{args}}
+
+# Run ugrep over Noirc sources, searching for a fixed string.
+[group: 'debug']
+fd term *args:
+    ugrep -r -F {{quote(term)}} -t rust noir -n {{args}}
+
+# Parse a test case and display it's CST.
+[group: 'debug']
+@parse test_number='':
+    # Running test command since it's the easiest way to get the list of test cases as tree-sitter would render them versus constructing that list ourselves.
+    {{ if test_number == '' { \
+        'NO_COLOR=1 ' + ts_cmd + ' test --overview-only |' + \
+        ''' \
+        awk '$1 ~ /[0-9]/ { $2=""; print $0 }' | \
+        fzy --show-info --lines=20 | \
+        tee /dev/tty | \
+        cut -f1 -d '.' \
+        ''' \
+    } else { \
+        'echo ' + test_number \
+    } }} | xargs {{ts_cmd}} parse --cst --test-number
+
+# Parse a given Noir source file.
+[group: 'debug']
+@parse-file file_path='':
+    # Running test command since it's the easiest way to get the list of test cases as tree-sitter would render them versus constructing that list ourselves.
+    {{ if file_path == '' { \
+        ''' \
+        find noir/noir_stdlib/src -name *.nr | \
+        fzy --show-info --lines=20 | \
+        tee /dev/tty \
+        ''' \
+    } else { \
+        'echo ' + file_path \
+    } }} | xargs {{ts_cmd}} parse --quiet --stat --time --cst
 
 
 # Test all parser functionality: parse, tags, highlight.
 [group: 'test']
 test _dbg='' *args: sanity-check-ts-lib-cache
     {{ts_cmd}} test --stat=all --show-fields \
-        {{ if _dbg == '--debug' { '--debug' } else { '' } }} \
+        {{ if _dbg == '--debug' { '--debug' } else { _dbg } }} \
         {{args}}
+
+# Test parser generally works against gamut of language vocabulary.
+[group: 'test']
+@test-vocab:
+    echo '{{BOLD + MAGENTA}}Nargo sanity check Noir stdlib syntax...{{NORMAL}}'
+    (cd noir/noir_stdlib; nargo check --silence-warnings && echo 'ok')
+
+    echo '{{BOLD + MAGENTA}}Parse with tree-sitter...{{NORMAL}}'
+    find noir/noir_stdlib/src -name *.nr | xargs {{ts_cmd}} parse --quiet --stat --time
+    @# TODO JORDAN: Two commands from same stdout (file list) then interweave results for line count since noir parser doesnt spit that out (or make a PR for nargo that spits out the line count for the file since that's kinda important).
+    @#find noir/noir_stdlib/src -name *.nr | tee >(wc -l) | xargs {{ts_cmd}} parse --quiet --stat --time
 
 [group: 'test']
 fuzz: sanity-check-ts-lib-cache
