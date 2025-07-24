@@ -3425,6 +3425,23 @@ type f = fmtstr<10, T>;
       (identifier))))
 #+end_test
 
+** Str
+#+begin_test
+pub fn static_assert(message: str<N>) {}
+
+---
+
+(function_item
+  (visibility_modifier)
+  name: (identifier)
+  parameters: (parameters
+    (parameter
+      pattern: (identifier)
+      type: (primitive_type
+        (identifier))))
+  body: (block))
+#+end_test
+
 ** ArrayOrSlice
 #+begin_test
 pub fn verify_proof(

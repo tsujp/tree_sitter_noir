@@ -814,7 +814,7 @@ module.exports = grammar({
         __string_type: $ => seq(
             'str',
             '<',
-            // TODO: TypeExpression goes here.
+            $._type_expr,
             '>',
         ),
         // [[file:noir_grammar.org::fmt_str_type]]

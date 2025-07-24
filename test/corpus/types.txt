@@ -112,6 +112,27 @@ type f = fmtstr<10, T>;
 )
 
 
+===
+Str
+===
+
+pub fn static_assert(message: str<N>) {}
+
+---
+
+(source_file
+  (function_item
+    (visibility_modifier)
+    name: (identifier)
+    parameters: (parameters
+      (parameter
+        pattern: (identifier)
+        type: (primitive_type
+          (identifier))))
+    body: (block))
+)
+
+
 ============
 ArrayOrSlice
 ============

@@ -1239,44 +1239,36 @@ Parser: [[file:noir/compiler/noirc_frontend/src/parser/parser/types.rs::fn parse
 
 Parses the literal /keyword/ =bool= *and not* literal words =true= or =false=.
 
-******* BLOCK StringType                                               :node:
+******* DONE StringType
+CLOSED: [2025-07-25 Fri 01:30]
 :PROPERTIES:
 :CUSTOM_ID: h:C405DA7F-97A3-4DCF-8946-7480E43D2CC2
 :END:
 :LOGBOOK:
+- State "DONE"       from "BLOCK"      [2025-07-25 Fri 01:30]
 - State "BLOCK"      from "TODO"       [2024-11-16 Sat 18:26] \\
   TypeExpression completion.
 :END:
-:pgd:
-+ =str= (kw)
-+ =<=
-+ [[#h:0DEF3192-4840-41B3-A941-714798677092][TypeExpression]]
-+ =>=
-:end:
 
 #+name: str_type
 #+begin_src js :rule __string_type :arg $
 seq(
     'str',
     '<',
-    // TODO: TypeExpression goes here.
+    <<r("type_expr")>>,
     '>',
 )
 #+end_src
 
 Parser: [[file:noir/compiler/noirc_frontend/src/parser/parser/types.rs::fn parse_str_type(&mut self)][parse_str_type()]]
 
-*************** TODO How does the first check on eat_less in parse_str_type work?
-What's going on here specifically when it returns Some(UnresolvedTypeExpression)? Is that important later on? Check `str` syntax with concrete tests in Noir, like is str allowed or does it always have to be str<123>.
-
-It looks like it _is_ a parser error so..?
-*************** END
-
-******* SPEC FormatStringType
+******* DONE FormatStringType
+CLOSED: [2025-07-25 Fri 01:30]
 :PROPERTIES:
 :CUSTOM_ID: h:12C0CC82-5210-45ED-97F4-0266E1CAA6F1
 :END:
 :LOGBOOK:
+- State "DONE"       from "SPEC"       [2025-07-25 Fri 01:30]
 - State "SPEC"       from "TOIMPL"     [2025-05-24 Sat 22:16]
 - State "TOIMPL"     from "TODO"       [2024-11-16 Sat 18:24]
 :END:
@@ -1462,11 +1454,13 @@ If only one Type and no trailing comma return ~AST::UnresolvedTypeData::Parenthe
 Is there a meaningful difference here for tree-sitter purposes?
 *************** END
 
-****** SPEC ArrayOrSliceType
+****** DONE ArrayOrSliceType
+CLOSED: [2025-07-25 Fri 01:23]
 :PROPERTIES:
 :CUSTOM_ID: h:FAB3845D-97FD-454B-B8C8-09FEEB41FC3D
 :END:
 :LOGBOOK:
+- State "DONE"       from "SPEC"       [2025-07-25 Fri 01:23]
 - State "SPEC"       from "BLOCK"      [2025-05-24 Sat 23:05] \\
   More complete as Type/TypeExpression increase in completeness.
 - State "BLOCK"      from "TODO"       [2024-11-16 Sat 17:09] \\

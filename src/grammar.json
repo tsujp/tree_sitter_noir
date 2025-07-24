@@ -3451,6 +3451,10 @@
           "value": "<"
         },
         {
+          "type": "SYMBOL",
+          "name": "_type_expr"
+        },
+        {
           "type": "STRING",
           "value": ">"
         }
