@@ -1,4 +1,5 @@
 set dotenv-load
+set shell := ['bash', '-uc']
 
 js_bin := 'bun'
 # js_cmd := js_bin + ' ' + '--bun'
@@ -6,7 +7,7 @@ js_cmd := 'bun'
 
 ts_bin := 'tree-sitter'
 ts_abi := '15'
-ts_cmd := js_cmd + ' ' + ts_bin
+ts_cmd := js_cmd + ' --silent ' + ts_bin
 
 ts_lib_dir := justfile_directory() / env('TREE_SITTER_LIBDIR')
 
@@ -162,6 +163,55 @@ fd term *args:
         'echo ' + file_path \
     } }} | xargs {{ts_cmd}} parse --quiet --stat --time --cst
 
+# Print the file CST of the next error in gamut of Noir vocabulary files.
+# [group: 'debug']
+# @parse-error:
+#     echo '{{BOLD + MAGENTA}}Reporting first parse error (if any)...{{NORMAL}}'
+#     rg -m1 'foo' \
+#       --no-line-number --only-matching \
+#       <(sleep 1; echo 'foo'; sleep 1; echo 'foo'; sleep 1; echo 'done'); kill "$!"
+
+# Print the file CST of the next error in gamut of Noir vocabulary files.
+[group: 'debug']
+[no-exit-message]
+@parse-error:
+    # Need to force stderr onto stdout via 2>&1 because Bun has default stderr output for the status of the command 'error: "tree-sitter" exited with code 1' and that output coming over stderr does something wacky to calling shell whereby arrow keys etc produce escape sequences now. Passing --silent to bun fixes it, as does this stderr/out merge approach.
+    echo '{{BOLD + MAGENTA}}Reporting first parse error (if any)...{{NORMAL}}'
+
+    # 0 = file ; 1 = starting line ; 2 = column in starting line ; 3, 4 = but for ending line
+    declare -i ctx_lns=5; \
+    \
+    readarray -t err_info <<< "$(\
+      rg -m1 --engine=auto '(.*?)[\s]+Parse.*ERROR \[(\d+),\s(\d+)\]\s-\s\[(\d+),\s(\d+)\]' \
+        --color never --no-line-number --only-matching --replace=$'$1\n$2\n$3\n$4\n$5' \
+        <(just --justfile {{justfile()}} test-vocab); kill "$!" \
+        )" \
+      && \
+    \
+    printf -- '--> {{YELLOW}}CST slice{{NORMAL}}\n'; \
+    just --justfile {{justfile()}} parse-file "${err_info[0]}" 2> /dev/null | \
+      rg --engine=auto -C5 "(${err_info[1]}|${err_info[3]}):" \
+      && \
+    \
+    (( err_info[1]++ )); \
+    (( err_info[3]++ )); \
+    \
+    declare -a slice_range; \
+      slice_range[0]=$(( err_info[1] + ctx_lns )); \
+      slice_range[1]=$(( err_info[3] < ctx_lns ? 0 : err_info[3] - ctx_lns )); \
+    \
+    printf -- '\n--> {{YELLOW}}Source code slice{{NORMAL}}    {{BOLD + BLACK}}(sanity: %s < (%s - %s) < %s){{NORMAL}}\n' "${slice_range[0]}" "${err_info[1]}" "${err_info[3]}" "${slice_range[1]}"; \
+    sed "$(( 1 + ctx_lns )),$(( 1 + ctx_lns + err_info[3] - err_info[1] )) \
+        s/^\(.*\)$/{{RED}}\1{{NORMAL}}/" \
+          <(head -n +"${slice_range[0]}" "${err_info[0]}" | tail -n +"${slice_range[1]}") \
+      && \
+    \
+    printf -- '\n--> {{YELLOW}}Locus{{NORMAL}}\n%s\t%s,%s - %s,%s\n' "${err_info[@]}"
+# echo "$err_info" | cut -f1 -d$'\t' | xargs just --justfile {{justfile()}} parse-file
+# grep 'foo' -m1 <((sleep 5); sleep 1; echo 'foo'; sleep 1; echo 'foo'; sleep 1; echo 'done') && kill "$!"
+# (.*?)[\s]+Parse.*ERROR \[(\d+),\s(\d+)\]\s-\s\[(\d+),\s(\d+)\]
+# just test-vocab | ugrep -m1 -P 'ERROR \[(\d+),\s(\d+)\]\s-\s\[(\d+),\s(\d+)\]' --format='%1:%2 - %3:%4'
+
 
 # Test all parser functionality: parse, tags, highlight.
 [group: 'test']
@@ -174,12 +224,12 @@ test _dbg='' *args: sanity-check-ts-lib-cache
 [group: 'test']
 @test-vocab:
     echo '{{BOLD + MAGENTA}}Nargo sanity check Noir stdlib syntax...{{NORMAL}}'
-    (cd noir/noir_stdlib; nargo check --silence-warnings && echo 'ok')
+    cd noir/noir_stdlib; nargo check --silence-warnings && echo 'ok'
 
     echo '{{BOLD + MAGENTA}}Parse with tree-sitter...{{NORMAL}}'
     find noir/noir_stdlib/src -name *.nr | xargs {{ts_cmd}} parse --quiet --stat --time
-    @# TODO JORDAN: Two commands from same stdout (file list) then interweave results for line count since noir parser doesnt spit that out (or make a PR for nargo that spits out the line count for the file since that's kinda important).
-    @#find noir/noir_stdlib/src -name *.nr | tee >(wc -l) | xargs {{ts_cmd}} parse --quiet --stat --time
+    # TODO JORDAN: Two commands from same stdout (file list) then interweave results for line count since noir parser doesnt spit that out (or make a PR for nargo that spits out the line count for the file since that's kinda important).
+    #find noir/noir_stdlib/src -name *.nr | tee >(wc -l) | xargs {{ts_cmd}} parse --quiet --stat --time
 
 [group: 'test']
 fuzz: sanity-check-ts-lib-cache
