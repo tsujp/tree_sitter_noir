@@ -469,7 +469,7 @@ module.exports = grammar({
         // [[file:noir_grammar.org::let_statement]]
         let_statement: $ => seq(
             'let',
-            optional($.mut_bound),
+            optional($.mutable_modifier),
             field('pattern', $._pattern),
             field('type', optional($._type_annotation)), // Inlined Noirc: OptionalTypeAnnotation.,
             '=',
@@ -986,10 +986,10 @@ module.exports = grammar({
             $._pattern,
         ),
         // [[file:noir_grammar.org::pattern]]
-        _pattern: $ => seq(
-            // alias(seq($.mut_bound, $._pattern_no_mut), $.mut_pattern),
-            // optional($.mut_bound),
+        _pattern: $ => choice(
             $._pattern_no_mut,
+            $.mut_pattern,
+            // alias(seq($.mut_bound, $._pattern_no_mut), $.mut_pattern),
         ),
         // [[file:noir_grammar.org::pattern_no_mut]]
         _pattern_no_mut: $ => choice(
@@ -998,6 +998,11 @@ module.exports = grammar({
             $.struct_pattern,
             $.identifier, // Noirc: IdentifierPattern.
         ),
+        // [[file:noir_grammar.org::pattern_mut]]
+        mut_pattern: $ => prec(-1, seq(
+            $.mutable_modifier,
+            $._pattern_no_mut,
+        )),
         // [[file:noir_grammar.org::self_pattern]]
         self_pattern: $ => seq(
             optional('&'),
@@ -1221,8 +1226,6 @@ module.exports = grammar({
         // [[file:noir_grammar.org::modifier_unconstrained]]
         unconstrained_modifier: _ => 'unconstrained',
 
-        // TODO: Delete mut_bound in favour of modifier_mut.
-        mut_bound: _ => 'mut',
         self: _ => 'self',
 
         crate: _ => 'crate',

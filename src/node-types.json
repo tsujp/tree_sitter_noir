@@ -3059,6 +3059,10 @@
           "named": true
         },
         {
+          "type": "mut_pattern",
+          "named": true
+        },
+        {
           "type": "parameter",
           "named": true
         },
@@ -3141,6 +3145,10 @@
         "types": [
           {
             "type": "identifier",
+            "named": true
+          },
+          {
+            "type": "mut_pattern",
             "named": true
           },
           {
@@ -3311,7 +3319,7 @@
       "required": false,
       "types": [
         {
-          "type": "mut_bound",
+          "type": "mutable_modifier",
           "named": true
         }
       ]
@@ -3390,9 +3398,31 @@
     }
   },
   {
-    "type": "mut_bound",
+    "type": "mut_pattern",
     "named": true,
-    "fields": {}
+    "fields": {},
+    "children": {
+      "multiple": true,
+      "required": true,
+      "types": [
+        {
+          "type": "identifier",
+          "named": true
+        },
+        {
+          "type": "mutable_modifier",
+          "named": true
+        },
+        {
+          "type": "struct_pattern",
+          "named": true
+        },
+        {
+          "type": "tuple_pattern",
+          "named": true
+        }
+      ]
+    }
   },
   {
     "type": "mutable_modifier",
@@ -3414,6 +3444,10 @@
         "types": [
           {
             "type": "identifier",
+            "named": true
+          },
+          {
+            "type": "mut_pattern",
             "named": true
           },
           {
@@ -4446,6 +4480,10 @@
           "named": true
         },
         {
+          "type": "mut_pattern",
+          "named": true
+        },
+        {
           "type": "struct_pattern",
           "named": true
         },
@@ -4925,6 +4963,10 @@
       "types": [
         {
           "type": "identifier",
+          "named": true
+        },
+        {
+          "type": "mut_pattern",
           "named": true
         },
         {

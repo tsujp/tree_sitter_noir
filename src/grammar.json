@@ -1690,7 +1690,7 @@
           "members": [
             {
               "type": "SYMBOL",
-              "name": "mut_bound"
+              "name": "mutable_modifier"
             },
             {
               "type": "BLANK"
@@ -4170,11 +4170,15 @@
       ]
     },
     "_pattern": {
-      "type": "SEQ",
+      "type": "CHOICE",
       "members": [
         {
           "type": "SYMBOL",
           "name": "_pattern_no_mut"
+        },
+        {
+          "type": "SYMBOL",
+          "name": "mut_pattern"
         }
       ]
     },
@@ -4194,6 +4198,23 @@
           "name": "identifier"
         }
       ]
+    },
+    "mut_pattern": {
+      "type": "PREC",
+      "value": -1,
+      "content": {
+        "type": "SEQ",
+        "members": [
+          {
+            "type": "SYMBOL",
+            "name": "mutable_modifier"
+          },
+          {
+            "type": "SYMBOL",
+            "name": "_pattern_no_mut"
+          }
+        ]
+      }
     },
     "self_pattern": {
       "type": "SEQ",
@@ -5014,10 +5035,6 @@
     "unconstrained_modifier": {
       "type": "STRING",
       "value": "unconstrained"
-    },
-    "mut_bound": {
-      "type": "STRING",
-      "value": "mut"
     },
     "self": {
       "type": "STRING",

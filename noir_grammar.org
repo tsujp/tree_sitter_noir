@@ -2759,25 +2759,29 @@ In all cases Pattern is further parsed by call to ~parse_pattern_after_modifiers
 3. Return ~AST::Param~ which contains (1) and (2).
 :end:
 
-**** SPEC Pattern                                              :node:cluster:
+**** SPEC Pattern
 :PROPERTIES:
 :CUSTOM_ID: h:D349E307-F033-4D2A-A729-F2EE5B483065
 :END:
 :LOGBOOK:
 - State "SPEC"       from "TODO"       [2025-06-12 Thu 17:33]
 :END:
-:pgd:
-+ (opt) =mut= (kw)
-+ [[#h:4A5BB563-4244-4B1F-8084-1116B58FA40F][PatternNoMut]]
-:end:
 
 #+name: pattern
 #+begin_src js :rule _pattern :arg $ :ast Pattern
-seq(
-    // alias(seq($.mut_bound, <<r("pattern_no_mut")>>), $.mut_pattern),
-    // optional($.mut_bound),
+choice(
     <<r("pattern_no_mut")>>,
+    <<r("pattern_mut")>>,
 )
+#+end_src
+
+If a pattern has a mutable modifier it needs to be wrapped in another CST node to contain it. This form has lower precedence than pattern.
+#+name: pattern_mut
+#+begin_src js :rule mut_pattern :arg $
+prec(-1, seq(
+    <<r("modifier_mut")>>,
+    <<r("pattern_no_mut")>>,
+))
 #+end_src
 
 Parser: [[file:noir/compiler/noirc_frontend/src/parser/parser/pattern.rs::pub(crate) fn parse_pattern(&mut self)][parse_pattern()]], [[file:noir/compiler/noirc_frontend/src/parser/parser/pattern.rs::pub(crate) fn parse_pattern_after_modifiers(][parse_pattern_after_modifiers()]], [[file:noir/compiler/noirc_frontend/src/parser/parser/pattern.rs::fn parse_pattern_no_mut(&mut self)][parse_pattern_no_mut()]]
@@ -3622,7 +3626,7 @@ See [[#h:3F52F622-294C-463F-986F-DD38EB41EA89][add_semicolon]], ~StatementKind::
 #+begin_src js :arg $ :ast LetStatement
 seq(
     'let',
-    optional($.mut_bound),
+    optional(<<r("modifier_mut")>>),
     field('pattern', <<r("pattern")>>),
     <<field__type_annotation>>,
     '=',
@@ -5336,8 +5340,6 @@ module.exports = grammar({
         // * * * * * * * * * * * * * * * * * * * * * * * * * LITERALS
         <<grp__literals>>
 
-        // TODO: Delete mut_bound in favour of modifier_mut.
-        mut_bound: _ => 'mut',
         self: _ => 'self',
 
         crate: _ => 'crate',
@@ -5452,7 +5454,7 @@ alias(<<r("generic_type_args")>>, $.type_parameters)
 
 #+name: grp__patterns
 #+begin_src js :noweb yes
-<<c('("pattern_or_self" "pattern" "pattern_no_mut" "self_pattern"))>>
+<<c('("pattern_or_self" "pattern" "pattern_no_mut" "pattern_mut" "self_pattern"))>>
 <<n("tuple_pattern")>>
 <<c('("struct_pattern" "struct_pattern_field"))>>
 #+end_src

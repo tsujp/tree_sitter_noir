@@ -2000,7 +2000,7 @@ global f3 = { comptime for i in 0..10 { } };
   (block
     (comptime
       (let_statement
-        (mut_bound)
+        (mutable_modifier)
         pattern: (identifier)
         value: (bool_literal)))))
 (global_item
@@ -3393,7 +3393,6 @@ type f = fn(no_names: Field) -> Field
 type f = fn(,) -> Field
 #+end_test
 
-
 *** Closure
 #+begin_test
 type f = fn[Field](Field, ) -> Field;
@@ -3511,6 +3510,48 @@ global foo = [u8; 69];
 *** Binary
 #+begin_test :skip
 global foo = [u8; 1 + 2];
+#+end_test
+
+* Patterns
+:PROPERTIES:
+:export_file_name: patterns.txt
+:END:
+
+** Tuple
+#+begin_test
+fn foo((x, y): (Field, Field)) {}
+
+fn foo((mut a, mut b): (Foo, Bar)) {}
+
+---
+
+(function_item
+  name: (identifier)
+  parameters: (parameters
+    (parameter
+      pattern: (tuple_pattern
+        (identifier)
+        (identifier))
+      type: (tuple_type
+        (primitive_type)
+        (primitive_type))))
+  body: (block))
+
+(function_item
+  name: (identifier)
+  parameters: (parameters
+    (parameter
+      pattern: (tuple_pattern
+        (mut_pattern
+          (mutable_modifier)
+          (identifier))
+        (mut_pattern
+          (mutable_modifier)
+          (identifier)))
+      type: (tuple_type
+        (identifier)
+        (identifier))))
+  body: (block))
 #+end_test
 
 * Literals

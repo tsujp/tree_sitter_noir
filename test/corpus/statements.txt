@@ -267,7 +267,7 @@ global f3 = { comptime for i in 0..10 { } };
     (block
       (comptime
         (let_statement
-          (mut_bound)
+          (mutable_modifier)
           pattern: (identifier)
           value: (bool_literal)))))
   (global_item
