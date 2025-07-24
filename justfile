@@ -181,7 +181,7 @@ fd term *args:
     \
     printf -- '--> {{YELLOW}}CST slice{{NORMAL}}\n'; \
     just --justfile {{justfile()}} parse-file "${err_info[0]}" 2> /dev/null | \
-      rg --engine=auto -C5 "(${err_info[1]}|${err_info[3]}):" \
+      rg --engine=auto -C5 "\b(${err_info[1]}|${err_info[3]}):" \
       && \
     \
     (( err_info[1]++ )); \
