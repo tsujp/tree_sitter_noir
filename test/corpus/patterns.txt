@@ -1,0 +1,39 @@
+=====
+Tuple
+=====
+
+fn foo((x, y): (Field, Field)) {}
+
+fn foo((mut a, mut b): (Foo, Bar)) {}
+
+---
+
+(source_file
+  (function_item
+    name: (identifier)
+    parameters: (parameters
+      (parameter
+        pattern: (tuple_pattern
+          (identifier)
+          (identifier))
+        type: (tuple_type
+          (primitive_type)
+          (primitive_type))))
+    body: (block))
+
+  (function_item
+    name: (identifier)
+    parameters: (parameters
+      (parameter
+        pattern: (tuple_pattern
+          (mut_pattern
+            (mutable_modifier)
+            (identifier))
+          (mut_pattern
+            (mutable_modifier)
+            (identifier)))
+        type: (tuple_type
+          (identifier)
+          (identifier))))
+    body: (block))
+)
