@@ -37,3 +37,86 @@ fn foo((mut a, mut b): (Foo, Bar)) {}
           (identifier))))
     body: (block))
 )
+
+
+======
+Struct
+======
+
+pub fn permute<let T: u32, let N: u32, let X: u32>(
+    pos_conf: PoseidonConfig<T, N, X>,
+) {
+    let PoseidonConfig { t, rf, rp, alpha, round_constants, mds, presparse_mds, sparse_mds } =
+        pos_conf;
+}
+
+---
+
+(source_file
+  (function_item
+    (visibility_modifier)
+    name: (identifier)
+    type_parameters: (type_parameters
+      (constrained_type
+        name: (identifier)
+        type: (primitive_type))
+      (constrained_type
+        name: (identifier)
+        type: (primitive_type))
+      (constrained_type
+        name: (identifier)
+        type: (primitive_type)))
+    parameters: (parameters
+      (parameter
+        pattern: (identifier)
+        type: (generic
+          trait: (identifier)
+          type_parameters: (type_parameters
+            (identifier)
+            (identifier)
+            (identifier)))))
+    body: (block
+      (let_statement
+        pattern: (struct_pattern
+          type: (identifier)
+          (struct_pattern_field
+            (identifier))
+          (struct_pattern_field
+            (identifier))
+          (struct_pattern_field
+            (identifier))
+          (struct_pattern_field
+            (identifier))
+          (struct_pattern_field
+            (identifier))
+          (struct_pattern_field
+            (identifier))
+          (struct_pattern_field
+            (identifier))
+          (struct_pattern_field
+            (identifier)))
+        value: (identifier))))
+)
+
+
+=======================
+Struct / Lambda variety
+:skip
+=======================
+
+global f1 = |a, A::B::Lorem{ foo }| { a + foo };
+
+---
+
+(source_file
+  (global_item
+    name: (identifier)
+    (lambda
+      parameters: (lambda_parameters
+        (identifier))
+        TODO STRUCT PATTERN CST HERE
+      body: (block
+        (binary_expression
+          left: (identifier)
+          right: (identifier)))))
+)

@@ -4319,6 +4319,14 @@
       "type": "SEQ",
       "members": [
         {
+          "type": "FIELD",
+          "name": "type",
+          "content": {
+            "type": "SYMBOL",
+            "name": "identifier_or_path"
+          }
+        },
+        {
           "type": "STRING",
           "value": "{"
         },

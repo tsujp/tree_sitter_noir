@@ -2893,26 +2893,22 @@ Parser: [[file:noir/compiler/noirc_frontend/src/parser/parser/pattern.rs::fn par
 Via [[#h:8E0DC05B-1ED6-47BE-9589-64DC06FAECCA][parse_many]] in [[#h:5EC2C25E-781B-4AA1-B01B-D37B761237F8][parent]], split by =,= until =)=, each parsed as [[#h:D349E307-F033-4D2A-A729-F2EE5B483065][Pattern]].
 #+transclude: [[file:noir/compiler/noirc_frontend/src/parser/parser/pattern.rs::171][PatternList doc]] :lines 171-171 :src fundamental
 
-***** SPEC StructPattern                                               :node:
+***** DONE StructPattern
+CLOSED: [2025-07-25 Fri 03:03]
 :PROPERTIES:
 :CUSTOM_ID: h:44A2D194-B244-4E4C-B53E-2FCF3F4165E2
 :END:
 :LOGBOOK:
+- State "DONE"       from "SPEC"       [2025-07-25 Fri 03:03]
 - State "SPEC"       from "BLOCK"      [2025-06-12 Thu 17:26]
 - State "BLOCK"      from "TODO"       [2024-11-13 Wed 02:22] \\
   Until Path is complete.
 :END:
-:pgd:
-+ (opt) [[#h:07167116-EAE4-475B-8C87-DE9075BAF88D][Path]]
-+ ={=
-+ (opt) [[#h:AD401294-1A53-405B-9717-6818B89FF22E][StructPatternFields]]
-+ =}=
-:end:
 
 #+name: struct_pattern
 #+begin_src js :arg $ :ast StructPattern
 seq(
-    // TODO: Path
+    field('type', <<r("identifier_or_path")>>),
     '{',
     sepBy(<<r("struct_pattern_field")>>, ','), // Inlined Noirc: StructPatternFields.
     optional(','),

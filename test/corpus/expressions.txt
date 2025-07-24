@@ -955,29 +955,6 @@ global b1 = |x: Field, y| 123;
 )
 
 
-====================================
-Lambda / Parameters / Struct pattern
-:skip
-====================================
-
-global f1 = |a, A::B::Lorem{ foo }| { a + foo };
-
----
-
-(source_file
-  (global_item
-    name: (identifier)
-    (lambda
-      parameters: (lambda_parameters
-        (identifier))
-        TODO STRUCT PATTERN CST HERE
-      body: (block
-        (binary_expression
-          left: (identifier)
-          right: (identifier)))))
-)
-
-
 ====================
 Lambda / Return type
 ====================

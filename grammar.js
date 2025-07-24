@@ -1019,7 +1019,7 @@ module.exports = grammar({
         
         // [[file:noir_grammar.org::struct_pattern]]
         struct_pattern: $ => seq(
-            // TODO: Path
+            field('type', $.identifier_or_path),
             '{',
             sepBy($.struct_pattern_field, ','), // Inlined Noirc: StructPatternFields.
             optional(','),

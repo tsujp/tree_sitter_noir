@@ -3019,37 +3019,6 @@ global b1 = |x: Field, y| 123;
     body: (int_literal)))
 #+end_test
 
-**** TODO Struct pattern
-
-Assuming the following Noir source, the subsequent test would be valid Noir source code.
-
-#+begin_example
-mod A {
-  mod B {
-    struct Lorem {
-      foo: Field,
-    }
-  }
-}
-#+end_example
-
-#+begin_test :skip
-global f1 = |a, A::B::Lorem{ foo }| { a + foo };
-
----
-
-(global_item
-  name: (identifier)
-  (lambda
-    parameters: (lambda_parameters
-      (identifier))
-      TODO STRUCT PATTERN CST HERE
-    body: (block
-      (binary_expression
-        left: (identifier)
-        right: (identifier)))))
-#+end_test
-
 *** Return type
 #+begin_test
 global f1 = || -> Foo 123;
@@ -3574,6 +3543,95 @@ fn foo((mut a, mut b): (Foo, Bar)) {}
         (identifier))))
   body: (block))
 #+end_test
+
+** Struct
+#+begin_test
+pub fn permute<let T: u32, let N: u32, let X: u32>(
+    pos_conf: PoseidonConfig<T, N, X>,
+) {
+    let PoseidonConfig { t, rf, rp, alpha, round_constants, mds, presparse_mds, sparse_mds } =
+        pos_conf;
+}
+
+---
+
+(function_item
+  (visibility_modifier)
+  name: (identifier)
+  type_parameters: (type_parameters
+    (constrained_type
+      name: (identifier)
+      type: (primitive_type))
+    (constrained_type
+      name: (identifier)
+      type: (primitive_type))
+    (constrained_type
+      name: (identifier)
+      type: (primitive_type)))
+  parameters: (parameters
+    (parameter
+      pattern: (identifier)
+      type: (generic
+        trait: (identifier)
+        type_parameters: (type_parameters
+          (identifier)
+          (identifier)
+          (identifier)))))
+  body: (block
+    (let_statement
+      pattern: (struct_pattern
+        type: (identifier)
+        (struct_pattern_field
+          (identifier))
+        (struct_pattern_field
+          (identifier))
+        (struct_pattern_field
+          (identifier))
+        (struct_pattern_field
+          (identifier))
+        (struct_pattern_field
+          (identifier))
+        (struct_pattern_field
+          (identifier))
+        (struct_pattern_field
+          (identifier))
+        (struct_pattern_field
+          (identifier)))
+      value: (identifier))))
+#+end_test
+
+
+*** Lambda variety
+
+Assuming the following Noir source, the subsequent test would be valid Noir source code.
+
+#+begin_example
+mod A {
+  mod B {
+    struct Lorem {
+      foo: Field,
+    }
+  }
+}
+#+end_example
+
+#+begin_test :skip
+global f1 = |a, A::B::Lorem{ foo }| { a + foo };
+
+---
+
+(global_item
+  name: (identifier)
+  (lambda
+    parameters: (lambda_parameters
+      (identifier))
+      TODO STRUCT PATTERN CST HERE
+    body: (block
+      (binary_expression
+        left: (identifier)
+        right: (identifier)))))
+#+end_test
+
 
 * Literals
 :PROPERTIES:
