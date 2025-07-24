@@ -774,8 +774,7 @@ module.exports = grammar({
         _type: $ => choice(
             $.primitive_type,
             $._parentheses_type,
-            // TODO: array or slice type, mutable reference type
-            // $.array_or_slice_type,
+            $.array_type,
             $.reference_type,
             $.function_type,
             // TODO: TraitAsType, AsTraitPathType, UnresolvedNamedType
@@ -838,7 +837,23 @@ module.exports = grammar({
             optional(','),
             ')',
         ),
-        // TODO: ArrayOrSliceType, MutableReferenceType
+        
+        // [[file:noir_grammar.org::array_or_slice_type]]
+        array_type: $ => seq(
+            '[',
+            // Encompasses both slice and array types, if differentiation required this rule can easily be split up.
+            choice(
+                // UnresolvedTypeData::Slice.
+                $._type,
+                // UnresolvedTypeData::Array.
+                seq(
+                    $._type,
+                    ';',
+                    field('length', $._type_expr),
+                ),
+            ),
+            ']',
+        ),
         
         // [[file:noir_grammar.org::mutable_reference_type]]
         reference_type: $ => seq(

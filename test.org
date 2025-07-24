@@ -3425,6 +3425,26 @@ type f = fmtstr<10, T>;
       (identifier))))
 #+end_test
 
+** ArrayOrSlice
+#+begin_test
+pub fn verify_proof(
+  verification_key: [Field; N],
+) {}
+
+---
+
+(function_item
+  (visibility_modifier)
+  name: (identifier)
+  parameters: (parameters
+    (parameter
+      pattern: (identifier)
+      type: (array_type
+        (primitive_type)
+        length: (identifier))))
+  body: (block))
+#+end_test
+
 ** Mutable reference
 #+begin_test
 type f = &mut foo;

@@ -112,6 +112,30 @@ type f = fmtstr<10, T>;
 )
 
 
+============
+ArrayOrSlice
+============
+
+pub fn verify_proof(
+  verification_key: [Field; N],
+) {}
+
+---
+
+(source_file
+  (function_item
+    (visibility_modifier)
+    name: (identifier)
+    parameters: (parameters
+      (parameter
+        pattern: (identifier)
+        type: (array_type
+          (primitive_type)
+          length: (identifier))))
+    body: (block))
+)
+
+
 =================
 Mutable reference
 =================
