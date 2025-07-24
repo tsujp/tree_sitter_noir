@@ -164,18 +164,9 @@ fd term *args:
     } }} | xargs {{ts_cmd}} parse --quiet --stat --time --cst
 
 # Print the file CST of the next error in gamut of Noir vocabulary files.
-# [group: 'debug']
-# @parse-error:
-#     echo '{{BOLD + MAGENTA}}Reporting first parse error (if any)...{{NORMAL}}'
-#     rg -m1 'foo' \
-#       --no-line-number --only-matching \
-#       <(sleep 1; echo 'foo'; sleep 1; echo 'foo'; sleep 1; echo 'done'); kill "$!"
-
-# Print the file CST of the next error in gamut of Noir vocabulary files.
 [group: 'debug']
 [no-exit-message]
 @parse-error:
-    # Need to force stderr onto stdout via 2>&1 because Bun has default stderr output for the status of the command 'error: "tree-sitter" exited with code 1' and that output coming over stderr does something wacky to calling shell whereby arrow keys etc produce escape sequences now. Passing --silent to bun fixes it, as does this stderr/out merge approach.
     echo '{{BOLD + MAGENTA}}Reporting first parse error (if any)...{{NORMAL}}'
 
     # 0 = file ; 1 = starting line ; 2 = column in starting line ; 3, 4 = but for ending line
@@ -207,10 +198,6 @@ fd term *args:
       && \
     \
     printf -- '\n--> {{YELLOW}}Locus{{NORMAL}}\n%s\t%s,%s - %s,%s\n' "${err_info[@]}"
-# echo "$err_info" | cut -f1 -d$'\t' | xargs just --justfile {{justfile()}} parse-file
-# grep 'foo' -m1 <((sleep 5); sleep 1; echo 'foo'; sleep 1; echo 'foo'; sleep 1; echo 'done') && kill "$!"
-# (.*?)[\s]+Parse.*ERROR \[(\d+),\s(\d+)\]\s-\s\[(\d+),\s(\d+)\]
-# just test-vocab | ugrep -m1 -P 'ERROR \[(\d+),\s(\d+)\]\s-\s\[(\d+),\s(\d+)\]' --format='%1:%2 - %3:%4'
 
 
 # Test all parser functionality: parse, tags, highlight.
