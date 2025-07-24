@@ -1074,7 +1074,7 @@ choice(
     $._parentheses_type,
     // TODO: array or slice type, mutable reference type
     // $.array_or_slice_type,
-    // $.mutable_reference_type,
+    <<r("mutable_reference_type")>>,
     <<r("function_type")>>,
     // TODO: TraitAsType, AsTraitPathType, UnresolvedNamedType
     <<r("identifier_or_path_no_turbofish")>>,
@@ -1297,9 +1297,9 @@ seq(
 #+begin_src js :arg $ :ast "Ours: TypeArguments"
 seq(
     '<',
-    field('value', <<r("type_expr")>>),
+    <<r("type_expr")>>,
     ',',
-    field('type', <<r("type")>>),
+    <<r("type")>>,
     '>',
 )
 #+end_src
@@ -1504,33 +1504,30 @@ What about the &[0; 2] syntax for slice literals? This node doesn't appear to do
 *************** TODO Not going to differentiate between Array or Slice, also technically the first Type calls up to parse_type_or_error does it make a diff from ts pov?
 *************** END
 
-****** SPEC MutableReferenceType                                       :node:
+****** DONE MutableReferenceType
+CLOSED: [2025-07-24 Thu 18:18]
 :PROPERTIES:
 :CUSTOM_ID: h:C1EF6337-B3F1-44D9-B5E6-FF5A0215FCC5
 :END:
 :LOGBOOK:
+- State "DONE"       from "SPEC"       [2025-07-24 Thu 18:18]
 - State "SPEC"       from "BLOCK"      [2025-05-24 Sat 23:09] \\
   More complete alongside Type.
 - State "BLOCK"      from "TODO"       [2024-11-16 Sat 17:09] \\
   Block on Type completion.
 :END:
-:pgd:
-+ =&=
-+ =mut= (kw)
-+ [[#h:B3490B7C-F387-49C7-BF94-DC9CE8AC3581][Type]]
-:end:
 
-#+begin_src js :treesit t
-mutable_reference_type: ($) => seq(
+#+name: mutable_reference_type
+#+begin_src js :rule reference_type :arg $ :ast "Ours: MutableReferenceType"
+seq(
     '&',
-    'mut',
-    $._type,
+    <<r("modifier_mut")>>,
+    <<r("type")>>,
 )
 #+end_src
 
 Parser: [[file:noir/compiler/noirc_frontend/src/parser/parser/types.rs::fn parses_mutable_reference_type(&mut self)][parse_mutable_reference_type()]]
-
-Return: ~AST::UnresolvedTypeData::MutableReference~.
+Types: [[file:noir/compiler/noirc_frontend/src/ast/mod.rs::MutableReference(Box<UnresolvedType>),][UnresolvedTypeData::MutableReference]] ~AST::UnresolvedTypeData::MutableReference~
 
 ****** DONE FunctionType
 CLOSED: [2025-07-24 Thu 03:20]
@@ -2242,8 +2239,8 @@ seq(
     optional(seq(
         // Inlined Noirc: FunctionParametersList.
         sepBy1(choice(
-            alias(<<r("function_parameter")>>, $.parameter),
             <<r("self_pattern")>>,
+            alias(<<r("function_parameter")>>, $.parameter),
         ), ','),
         optional(','),
     )),
@@ -2743,8 +2740,8 @@ A ~TraitBound~ is a single type path used to constrain a trait.
 #+name: pattern_or_self
 #+begin_src js :rule _pattern_or_self :arg $ :ast PatternOrSelf
 choice(
+    <<r("self_pattern")>>,
     <<r("pattern")>>,
-    $.self_pattern,
 )
 #+end_src
 
@@ -2994,16 +2991,15 @@ Parser: [[file:noir/compiler/noirc_frontend/src/parser/parser/pattern.rs::fn par
 + [[#h:65B0176B-B46F-4679-8535-C504870AC048][ident]] (token)
 :end:
 
-**** SPEC SelfPattern                                                  :leaf:
+**** DONE SelfPattern
+CLOSED: [2025-07-24 Thu 18:19]
 :PROPERTIES:
 :CUSTOM_ID: h:5B14A337-12EC-477C-8269-961094FAB41B
 :END:
 :LOGBOOK:
+- State "DONE"       from "SPEC"       [2025-07-24 Thu 18:19]
 - State "SPEC"       from "TODO"       [2025-06-12 Thu 16:26]
 :END:
-:pgd:
-+ (opt) =&= by (opt) =mut= (kw) by =self=
-:end:
 
 #+name: self_pattern
 #+begin_src js :arg $ :ast SelfPattern
@@ -5451,6 +5447,7 @@ alias(<<r("generic_type_args")>>, $.type_parameters)
 <<c('("primitive_type" "field_type" "int_type" "bool_type" "str_type" "fmt_str_type"))>>
 <<c('("parentheses_type" "unit_type" "tuple_type"))>>
 // TODO: ArrayOrSliceType, MutableReferenceType
+<<n("mutable_reference_type")>>
 <<c('("function_type" "function_type_parameters" "capture_environment"))>>
 // TODO: TraitAsType? AsTraitPathType?
 <<c('("generics" "generic" "constrained_type"))>>

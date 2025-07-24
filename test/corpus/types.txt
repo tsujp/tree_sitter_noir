@@ -107,9 +107,44 @@ type f = fmtstr<10, T>;
     name: (identifier)
     type: (primitive_type
       type_arguments: (type_arguments
-        value: (int_literal)
-        type: (identifier))))
+        (int_literal)
+        (identifier))))
 )
+
+
+=================
+Mutable reference
+=================
+
+type f = &mut foo;
+
+---
+
+(source_file
+  (type_item
+    name: (identifier)
+    type: (reference_type
+      (mutable_modifier)
+      (identifier)))
+)
+
+
+====================================
+Mutable reference / Missing mut (e1)
+:error
+====================================
+
+type f = & foo;
+---
+
+
+==========================================
+Mutable reference / Missing reference (e1)
+:error
+==========================================
+
+type f = mut foo;
+---
 
 
 ====

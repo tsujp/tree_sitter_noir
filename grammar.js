@@ -402,8 +402,8 @@ module.exports = grammar({
             optional(seq(
                 // Inlined Noirc: FunctionParametersList.
                 sepBy1(choice(
-                    alias($.function_parameter, $.parameter),
                     $.self_pattern,
+                    alias($.function_parameter, $.parameter),
                 ), ','),
                 optional(','),
             )),
@@ -776,7 +776,7 @@ module.exports = grammar({
             $._parentheses_type,
             // TODO: array or slice type, mutable reference type
             // $.array_or_slice_type,
-            // $.mutable_reference_type,
+            $.reference_type,
             $.function_type,
             // TODO: TraitAsType, AsTraitPathType, UnresolvedNamedType
             $.identifier_or_path_no_turbofish,
@@ -790,9 +790,9 @@ module.exports = grammar({
         // [[file:noir_grammar.org::type_arguments]]
         type_arguments: $ => seq(
             '<',
-            field('value', $._type_expr),
+            $._type_expr,
             ',',
-            field('type', $._type),
+            $._type,
             '>',
         ),
         
@@ -839,6 +839,13 @@ module.exports = grammar({
             ')',
         ),
         // TODO: ArrayOrSliceType, MutableReferenceType
+        
+        // [[file:noir_grammar.org::mutable_reference_type]]
+        reference_type: $ => seq(
+            '&',
+            $.mutable_modifier,
+            $._type,
+        ),
         
         // [[file:noir_grammar.org::function_type]]
         function_type: $ => seq(
@@ -960,8 +967,8 @@ module.exports = grammar({
         
         // [[file:noir_grammar.org::pattern_or_self]]
         _pattern_or_self: $ => choice(
-            $._pattern,
             $.self_pattern,
+            $._pattern,
         ),
         // [[file:noir_grammar.org::pattern]]
         _pattern: $ => seq(

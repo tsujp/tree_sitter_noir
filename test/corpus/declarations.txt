@@ -821,6 +821,36 @@ impl Foo { fn foo(&mut self) {} }
 )
 
 
+==========================
+Impl / Methods / With self
+==========================
+
+impl Foo {
+  fn hash<H>(self, state: &mut H) {}
+}
+
+---
+
+(source_file
+  (impl_item
+    type: (identifier)
+    body: (trait_impl_body
+      (function_item
+        name: (identifier)
+        type_parameters: (type_parameters
+          (identifier))
+        parameters: (parameters
+          (self_pattern
+            (self))
+          (parameter
+            pattern: (identifier)
+            type: (reference_type
+              (mutable_modifier)
+              (identifier))))
+        body: (block))))
+)
+
+
 =========================================
 Impl / Methods / Ambiguous self parameter
 :skip
