@@ -508,7 +508,7 @@ module.exports = grammar({
             field('left', $._expression),
             choice(
                 // Desugared (and limited) binary expression assignment, see: next_is_op_assign.
-                '+=', '-=', '*=', '/=', '%=', '&=', '^=', '=',
+                '+=', '-=', '*=', '/=', '%=', '&=', '^=', '<<=', '|=', '>>=',
                 // Simple assignment.
                 '=',
             ),
@@ -989,7 +989,6 @@ module.exports = grammar({
         _pattern: $ => choice(
             $._pattern_no_mut,
             $.mut_pattern,
-            // alias(seq($.mut_bound, $._pattern_no_mut), $.mut_pattern),
         ),
         // [[file:noir_grammar.org::pattern_no_mut]]
         _pattern_no_mut: $ => choice(

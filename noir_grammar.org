@@ -3855,7 +3855,7 @@ seq(
     field('left', <<r("expression")>>),
     choice(
         // Desugared (and limited) binary expression assignment, see: next_is_op_assign.
-        '+=', '-=', '*=', '/=', '%=', '&=', '^=', '<<=', '|=', '>>=',
+        '+=', '-=', '*=', '/=', '%=', '&=', '^=', '<<ab_lit()[0,0]>>=', '|=', '<<ab_lit()[0,1]>>=',
         // Simple assignment.
         '=',
     ),
@@ -5074,9 +5074,6 @@ Param ~next~ is a function name to be called, and param ~op~ is a lambda to be e
 Each time ~parse_infix~ is called it updates Parser's ~start_span~ to ~current_token_span~. Then ~next~ is executed, and a loop over ~op~ is created.
 
 For all the expression AST nodes in the selfsame file ~parse_infix~ is in they pass a ~next~ which results in calling ~parse_infix~ again. This means for those AST nodes the operator precedence (for the language grammar) is the inverse of their call hierarchy. So ==== and =!== have the least precedence, and =*=, =/=, =%= the most.
-
-*************** TODO My understanding of the precedence here is correct yeah?
-*************** END
 
 *** [[file:noir/compiler/noirc_frontend/src/parser/parser/statement.rs::fn next_is_op_assign(&mut self)][Parser.next_is_op_assign()]]                                    :parser_fn:
 :PROPERTIES:

@@ -2088,13 +2088,13 @@ TODO
 
 AST =BlockStatement= /is/ =Block= (an expression) so look to [[#h:26192D97-5D6A-47B9-A598-98A41B83BD47][Block (Expression)]] tests instead.
 
-** TODO Assign
-
-Need (as appropriate) more complex tests still.
-
+** Assign
 #+begin_test
 global f1 = { x = y; };
 global f2 = { x += 123; };
+global f3 = { ret |= predicate(elem); };
+global f4 = { 123 <<= y; };
+global f5 = { x >>= 123; };
 
 ---
 
@@ -2103,6 +2103,27 @@ global f2 = { x += 123; };
   (block
     (assign_statement
       left: (identifier)
+      right: (identifier))))
+(global_item
+  name: (identifier)
+  (block
+    (assign_statement
+      left: (identifier)
+      right: (int_literal))))
+(global_item
+  name: (identifier)
+  (block
+    (assign_statement
+      left: (identifier)
+      right: (call_expression
+        function: (identifier)
+        arguments: (arguments
+          (identifier))))))
+(global_item
+  name: (identifier)
+  (block
+    (assign_statement
+      left: (int_literal)
       right: (identifier))))
 (global_item
   name: (identifier)
