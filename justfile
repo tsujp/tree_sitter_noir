@@ -179,19 +179,21 @@ fd term *args:
         )" \
       && \
     \
-    printf -- '--> {{YELLOW}}CST slice{{NORMAL}}\n'; \
+    declare err_pattern="${err_info[1]}:${err_info[2]}\s+-\s+${err_info[3]}:${err_info[4]}"; \
+    \
+    printf -- '--> {{YELLOW}}CST excerpt{{NORMAL}}    {{BOLD + BLACK}}(sanity: %s){{NORMAL}}\n' "$err_pattern"; \
     just --justfile {{justfile()}} parse-file "${err_info[0]}" 2> /dev/null | \
-      rg --engine=auto -C5 "\b(${err_info[1]}|${err_info[3]}):" \
+      rg --engine=auto -B4 -A8 "$err_pattern" \
       && \
     \
     (( err_info[1]++ )); \
     (( err_info[3]++ )); \
     \
     declare -a slice_range; \
-      slice_range[0]=$(( err_info[1] + ctx_lns )); \
-      slice_range[1]=$(( err_info[3] < ctx_lns ? 0 : err_info[3] - ctx_lns )); \
+      slice_range[0]=$(( err_info[3] + ctx_lns )); \
+      slice_range[1]=$(( err_info[1] < ctx_lns ? 0 : err_info[1] - ctx_lns )); \
     \
-    printf -- '\n--> {{YELLOW}}Source code slice{{NORMAL}}    {{BOLD + BLACK}}(sanity: %s < (%s - %s) < %s){{NORMAL}}\n' "${slice_range[0]}" "${err_info[1]}" "${err_info[3]}" "${slice_range[1]}"; \
+    printf -- '\n--> {{YELLOW}}Source code excerpt{{NORMAL}}    {{BOLD + BLACK}}(sanity: %s < (%s - %s) > %s){{NORMAL}}\n' "${slice_range[1]}" "${err_info[1]}" "${err_info[3]}" "${slice_range[0]}"; \
     sed "$(( 1 + ctx_lns )),$(( 1 + ctx_lns + err_info[3] - err_info[1] )) \
         s/^\(.*\)$/{{RED}}\1{{NORMAL}}/" \
           <(head -n +"${slice_range[0]}" "${err_info[0]}" | tail -n +"${slice_range[1]}") \
