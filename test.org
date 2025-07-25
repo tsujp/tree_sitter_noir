@@ -3421,7 +3421,8 @@ global f = 1 as u8;
 
 ** Member
 #+begin_test
-global f = foo.bar;
+global f1 = foo.bar;
+global f2 = self.0.hash;
 
 ---
 
@@ -3429,6 +3430,13 @@ global f = foo.bar;
   name: (identifier)
   (access_expression
     scope: (identifier)
+    name: (identifier)))
+(global_item
+  name: (identifier)
+  (access_expression
+    scope: (access_expression
+      scope: (identifier)
+      name: (int_literal))
     name: (identifier)))
 #+end_test
 

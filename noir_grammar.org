@@ -3214,7 +3214,7 @@ Could be fine idk.
 prec(PRECEDENCE.access, seq(
     field('scope', <<r("expression")>>),
     '.',
-    field('name', <<r("identifier")>>),
+    field('name', choice(<<r("identifier")>>, <<r("int")>>)),
 ))
 #+end_src
 

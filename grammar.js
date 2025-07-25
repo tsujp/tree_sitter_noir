@@ -586,7 +586,6 @@ module.exports = grammar({
                 field('right', $._expression),
             ))))
         },
-        // n("quote_expression")>> // TODO: Commented for now while trying to dev QuoteExpression.
         
         // [[file:noir_grammar.org::array_expression]]
         array_expression: $ => seq(
@@ -658,7 +657,7 @@ module.exports = grammar({
         access_expression: $ => prec(PRECEDENCE.access, seq(
             field('scope', $._expression),
             '.',
-            field('name', $.identifier),
+            field('name', choice($.identifier, $.int_literal)),
         )),
         // [[file:noir_grammar.org::cast_expression]]
         cast_expression: $ => prec(PRECEDENCE.cast, seq(
