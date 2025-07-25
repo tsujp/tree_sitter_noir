@@ -860,11 +860,13 @@ Only [[#h:F5A79701-65C9-4FEA-83D8-2413C585A5FA][ItemVisibility]] modifier applic
 *************** TODO Any accomodations for validate_secondary_attributes which is called in Trait's parser?
 *************** END
 
-****** BLOCK TraitBody
+****** DONE TraitBody
+CLOSED: [2025-07-26 Sat 00:36]
 :PROPERTIES:
 :CUSTOM_ID: h:EE2A95CB-6562-465A-A80F-4D2DB57E91DA
 :END:
 :LOGBOOK:
+- State "DONE"       from "BLOCK"      [2025-07-26 Sat 00:36]
 - State "BLOCK"      from "TOIMPL"     [2025-07-12 Sat 20:37] \\
   Blocked on TraitFunction, the rest is done
 - State "TOIMPL"     from "TODO"       [2025-07-10 Thu 15:47] \\
@@ -882,7 +884,9 @@ seq(
         choice(
             <<r("trait_type")>>,
             <<r("trait_constant")>>,
-            <<r("trait_function")>>,
+            // Noirc: TraitFunction allows optional function bodies.
+            <<r("function")>>,
+            <<r("function_signature")>>,
         ),
     ),
     '}',
@@ -979,17 +983,16 @@ Looks like it should be:
 =?= added after the group since default_value in parser function can be None (which is valid) if no === is parsed. See [[file:noir/compiler/noirc_frontend/src/parser/parser/traits.rs::if self.eat_assign() { Some(self.parse_expression_or_error()) } else { None };][here]]
 *************** END
 
-****** BLOCK TraitFunction
+****** DONE TraitFunction
+CLOSED: [2025-07-26 Sat 00:36]
 :LOGBOOK:
+- State "DONE"       from "BLOCK"      [2025-07-26 Sat 00:36]
 - State "BLOCK"      from "TODO"       [2025-07-10 Thu 16:28] \\
   Parser examined, is it similar to Function so we can share rules? Once Function done implement this ts rule
 - State "TODO"       from              [2025-07-10 Thu 16:19]
 :END:
 
-#+name: trait_function
-#+begin_src js :ast TraitFunction
-'TODO____TRAIT_FUNCTION__TEMP_COMMENT_IS_IT_SIMILAR_TO_NORMAL_FUNCTION'
-#+end_src
+Grammar rule placed at [[#h:B3C4609F-307A-42A1-B420-DBBAB6CDE6E5][Function]] instead. Parser logic here makes this identical to Function except this has an optional body, and only ~Pattern::Identifier~ allowed in parameters.
 
 Parser: [[file:noir/compiler/noirc_frontend/src/parser/parser/traits.rs::fn parse_trait_function(&mut self)][parse_trait_function()]]
 
@@ -998,6 +1001,9 @@ Optional body, allows =self=. Only ~Pattern::Identifier~ allowed in parameters, 
 #+name: ,ebnf_trait_function
 #+transclude: [[file:noir/compiler/noirc_frontend/src/parser/parser/traits.rs::134][TraitFunction doc]] :lines 134-134 :src fundamental
 
+*************** TODO Consider the parameters Pattern::Identifier restriction for inclusion into ts grammar?
+Any value in that, similar to other strict requirements elsewhere. May be more technically correct but also increases parser complexity, and at what /real world/ benefit.
+*************** END
 *************** TODO This can almost DEFINITELY be de-duplicated with Function when Function is more complete.
 TraitFunction = Modifiers Function
 
@@ -2159,6 +2165,23 @@ seq(
 )
 #+end_src
 
+#+name: function_signature
+#+begin_src js :rule function_signature_item :arg $ :ast TraitFunction
+seq(
+    optional(<<r("item_visibility")>>),
+    optional(alias(<<r("function_item_modifiers")>>, $.modifiers)),
+    'fn',
+    field('name', <<r("identifier")>>),
+    field('type_parameters', optional(<<r("generic_parameters")>>)),
+    field('parameters', <<r("function_parameters")>>),
+    field('return_type', optional(<<r("function_return_type")>>)),
+    // TODO: Field name for where clause like on Traits and so forth?
+    optional(<<r("where")>>),
+    // No body = a function signature, and requires a terminating semicolon.
+    ';',
+)
+#+end_src
+
 #+name: function_return_type
 #+begin_src js :rule return_type :arg $
 seq(
@@ -2595,11 +2618,11 @@ If attempt to parse TypeOrTypeExpression yields ~None~ parser error ~ParsingRule
 
 #+name: where
 #+begin_src js :rule where_clause :arg $ :ast WhereClause
-seq(
+prec.right(seq(
     'where',
     sepBy(<<r("where_clause")>>, ','), // Inlined Noirc: WhereClauseItems.
     optional(',')
-)
+))
 #+end_src
 
 Is implicit optional ([[file:noir/compiler/noirc_frontend/src/parser/parser/where_clause.rs::if !self.eat_keyword(Keyword::Where) {][src]]) everywhere it appears unless callsite checks for empty vec return.
@@ -5367,10 +5390,10 @@ alias(<<r("generic_type_args")>>, $.type_parameters)
 <<n("mod_or_contract")>>
 <<c('("struct" "struct_field" "struct_field_list"))>>
 <<c('("impl" "trait_impl_body" "trait_impl_type" "trait_impl_constant"))>>
-<<c('("trait"  "trait_bounds" "trait_bound" "trait_body" "trait_type" "trait_constant" "trait_function"))>>
+<<c('("trait"  "trait_bounds" "trait_bound" "trait_body" "trait_type" "trait_constant"))>>
 <<c('("global" "global_item_modifiers"))>>
 <<n("type_alias")>>
-<<c('("function" "function_item_modifiers" "function_return_type" "function_parameters" "function_parameter" "function_parameter_type"))>>
+<<c('("function" "function_signature" "function_item_modifiers" "function_return_type" "function_parameters" "function_parameter" "function_parameter_type"))>>
 <<c('("where" "where_clause"))>>
 #+end_src
 

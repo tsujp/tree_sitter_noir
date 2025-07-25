@@ -1658,11 +1658,15 @@
       "required": false,
       "types": [
         {
-          "type": "trait_constant",
+          "type": "function_item",
           "named": true
         },
         {
-          "type": "trait_function",
+          "type": "function_signature_item",
+          "named": true
+        },
+        {
+          "type": "trait_constant",
           "named": true
         },
         {
@@ -2085,6 +2089,70 @@
           }
         ]
       },
+      "name": {
+        "multiple": false,
+        "required": true,
+        "types": [
+          {
+            "type": "identifier",
+            "named": true
+          }
+        ]
+      },
+      "parameters": {
+        "multiple": false,
+        "required": true,
+        "types": [
+          {
+            "type": "parameters",
+            "named": true
+          }
+        ]
+      },
+      "return_type": {
+        "multiple": false,
+        "required": false,
+        "types": [
+          {
+            "type": "return_type",
+            "named": true
+          }
+        ]
+      },
+      "type_parameters": {
+        "multiple": false,
+        "required": false,
+        "types": [
+          {
+            "type": "type_parameters",
+            "named": true
+          }
+        ]
+      }
+    },
+    "children": {
+      "multiple": true,
+      "required": false,
+      "types": [
+        {
+          "type": "modifiers",
+          "named": true
+        },
+        {
+          "type": "visibility_modifier",
+          "named": true
+        },
+        {
+          "type": "where_clause",
+          "named": true
+        }
+      ]
+    }
+  },
+  {
+    "type": "function_signature_item",
+    "named": true,
+    "fields": {
       "name": {
         "multiple": false,
         "required": true,
@@ -6047,10 +6115,6 @@
   {
     "type": "trait",
     "named": false
-  },
-  {
-    "type": "trait_function",
-    "named": true
   },
   {
     "type": "true",

@@ -321,7 +321,9 @@ module.exports = grammar({
                 choice(
                     $.trait_type,
                     $.trait_constant,
-                    $.trait_function,
+                    // Noirc: TraitFunction allows optional function bodies.
+                    $.function_item,
+                    $.function_signature_item,
                 ),
             ),
             '}',
@@ -341,8 +343,6 @@ module.exports = grammar({
             )),
             ';',
         ),
-        // [[file:noir_grammar.org::trait_function]]
-        trait_function: _ => 'TODO____TRAIT_FUNCTION__TEMP_COMMENT_IS_IT_SIMILAR_TO_NORMAL_FUNCTION',
         
         // [[file:noir_grammar.org::global]]
         global_item: $ => seq(
@@ -385,6 +385,20 @@ module.exports = grammar({
             // No optional body allowed at this locus.
             field('body', $.block),
         ),
+        // [[file:noir_grammar.org::function_signature]]
+        function_signature_item: $ => seq(
+            optional($.visibility_modifier),
+            optional(alias($.function_item_modifiers, $.modifiers)),
+            'fn',
+            field('name', $.identifier),
+            field('type_parameters', optional($._generic_parameters)),
+            field('parameters', $.parameters),
+            field('return_type', optional($.return_type)),
+            // TODO: Field name for where clause like on Traits and so forth?
+            optional($.where_clause),
+            // No body = a function signature, and requires a terminating semicolon.
+            ';',
+        ),
         // [[file:noir_grammar.org::function_item_modifiers]]
         function_item_modifiers: _ => repeat1(choice(
             'comptime',
@@ -425,11 +439,11 @@ module.exports = grammar({
         ),
         
         // [[file:noir_grammar.org::where]]
-        where_clause: $ => seq(
+        where_clause: $ => prec.right(seq(
             'where',
             sepBy($.where_constraint, ','), // Inlined Noirc: WhereClauseItems.
             optional(',')
-        ),
+        )),
         // [[file:noir_grammar.org::where_clause]]
         where_constraint: $ => seq(
             field('type', $._type),

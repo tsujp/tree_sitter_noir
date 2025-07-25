@@ -1615,7 +1615,6 @@ trait Lorem { let y    : Field = 1; }
 
 ===============================
 Trait / Declarations / Function
-:skip
 ===============================
 
 trait Foo { fn foo(); }
@@ -1624,7 +1623,56 @@ trait Foo { fn foo() {} }
 ---
 
 (source_file
+  (trait_item
+    name: (identifier)
+    body: (declaration_list
+      (function_signature_item
+        name: (identifier)
+        parameters: (parameters))))
+  (trait_item
+    name: (identifier)
+    body: (declaration_list
+      (function_item
+        name: (identifier)
+        parameters: (parameters)
+        body: (block))))
+)
 
+
+===========================================
+Trait / Declarations / Function / Signature
+===========================================
+
+pub trait Hash {
+    fn hash<H>(self, state: &mut H)
+    where
+        H: Hasher;
+}
+
+---
+
+(source_file
+  (trait_item
+    (visibility_modifier)
+    name: (identifier)
+    body: (declaration_list
+      (function_signature_item
+        name: (identifier)
+        type_parameters: (type_parameters
+          (identifier))
+        parameters: (parameters
+          (self_pattern
+            (self))
+          (parameter
+            pattern: (identifier)
+            type: (reference_type
+              (mutable_modifier)
+              (identifier))))
+        (where_clause
+          (where_constraint
+            type: (identifier)
+            bounds: (trait_bounds
+              (identifier)))))))
 )
 
 

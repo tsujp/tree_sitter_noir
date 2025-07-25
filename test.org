@@ -1448,9 +1448,60 @@ trait Lorem { let y    : Field = 1; }
 
 If Trait functions /are/ normal functions etc need to know before writing ts rule and thus associated tests.
 
-#+begin_test :skip
+#+begin_test
 trait Foo { fn foo(); }
 trait Foo { fn foo() {} }
+
+---
+
+(trait_item
+  name: (identifier)
+  body: (declaration_list
+    (function_signature_item
+      name: (identifier)
+      parameters: (parameters))))
+(trait_item
+  name: (identifier)
+  body: (declaration_list
+    (function_item
+      name: (identifier)
+      parameters: (parameters)
+      body: (block))))
+#+end_test
+
+***** Signature
+
+From current submodule version of Noir: noir/noir_stdlib/src/hash/mod.nr    131,4 - 135,1
+#+begin_test
+pub trait Hash {
+    fn hash<H>(self, state: &mut H)
+    where
+        H: Hasher;
+}
+
+---
+
+(trait_item
+  (visibility_modifier)
+  name: (identifier)
+  body: (declaration_list
+    (function_signature_item
+      name: (identifier)
+      type_parameters: (type_parameters
+        (identifier))
+      parameters: (parameters
+        (self_pattern
+          (self))
+        (parameter
+          pattern: (identifier)
+          type: (reference_type
+            (mutable_modifier)
+            (identifier))))
+      (where_clause
+        (where_constraint
+          type: (identifier)
+          bounds: (trait_bounds
+            (identifier)))))))
 #+end_test
 
 ** Global
@@ -3600,7 +3651,6 @@ pub fn permute<let T: u32, let N: u32, let X: u32>(
       value: (identifier))))
 #+end_test
 
-
 *** Lambda variety
 
 Assuming the following Noir source, the subsequent test would be valid Noir source code.
@@ -3631,7 +3681,6 @@ global f1 = |a, A::B::Lorem{ foo }| { a + foo };
         left: (identifier)
         right: (identifier)))))
 #+end_test
-
 
 * Literals
 :PROPERTIES:
