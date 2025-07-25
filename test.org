@@ -777,11 +777,11 @@ impl Foo {
       body: (block))))
 #+end_test
 
-**** TODO Ambiguous self parameter
+**** Ambiguous self parameter
 
 This should pass but is currently an error
 
-#+begin_test :skip
+#+begin_test
 impl Foo { fn foo(self: Foo) {} }
 
 ---
@@ -793,8 +793,8 @@ impl Foo { fn foo(self: Foo) {} }
       name: (identifier)
       parameters: (parameters
         (parameter
-          pattern: (identifier)
-          type: (identifier_type)))
+          pattern: (self)
+          type: (identifier)))
       body: (block))))
 #+end_test
 

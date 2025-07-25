@@ -2285,7 +2285,10 @@ CLOSED: [2025-07-22 Tue 02:48]
 #+name: function_parameter
 #+begin_src js :arg $ :ast FunctionParameter
 seq(
-    field('pattern', <<r("pattern")>>),
+    field('pattern', choice(
+        <<r("pattern")>>,
+        <<r("self")>>,
+    )),
     field('type', choice(
         <<r("type_annotation")>>,
         <<r("function_parameter_type")>>,

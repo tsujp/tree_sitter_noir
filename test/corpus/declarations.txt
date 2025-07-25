@@ -853,7 +853,6 @@ impl Foo {
 
 =========================================
 Impl / Methods / Ambiguous self parameter
-:skip
 =========================================
 
 impl Foo { fn foo(self: Foo) {} }
@@ -868,8 +867,8 @@ impl Foo { fn foo(self: Foo) {} }
         name: (identifier)
         parameters: (parameters
           (parameter
-            pattern: (identifier)
-            type: (identifier_type)))
+            pattern: (self)
+            type: (identifier)))
         body: (block))))
 )
 

@@ -423,7 +423,10 @@ module.exports = grammar({
         ),
         // [[file:noir_grammar.org::function_parameter]]
         function_parameter: $ => seq(
-            field('pattern', $._pattern),
+            field('pattern', choice(
+                $._pattern,
+                $.self,
+            )),
             field('type', choice(
                 $._type_annotation,
                 $.visible_type,

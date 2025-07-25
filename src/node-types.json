@@ -3599,6 +3599,10 @@
             "named": true
           },
           {
+            "type": "self",
+            "named": true
+          },
+          {
             "type": "struct_pattern",
             "named": true
           },
