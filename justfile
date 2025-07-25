@@ -183,7 +183,8 @@ fd term *args:
     declare -i ctx_lns=5; \
     \
     readarray -t err_info <<< "$(\
-      rg -m1 --engine=auto '(.*?)[\s]+Parse.*ERROR \[(\d+),\s(\d+)\]\s-\s\[(\d+),\s(\d+)\]' \
+      rg -m1 --engine=auto \
+        '(.*?)[\s]+Parse.*(?:ERROR|MISSING).*\[(\d+),\s(\d+)\]\s-\s\[(\d+),\s(\d+)\]' \
         --color never --no-line-number --only-matching --replace=$'$1\n$2\n$3\n$4\n$5' \
         <(just --justfile {{justfile()}} test-vocab); kill "$!" \
         )" \

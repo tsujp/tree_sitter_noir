@@ -1444,10 +1444,7 @@ trait Lorem { let y    : Field = 1; }
       value: (int_literal))))
 #+end_test
 
-**** TODO Function
-
-If Trait functions /are/ normal functions etc need to know before writing ts rule and thus associated tests.
-
+**** Function
 #+begin_test
 trait Foo { fn foo(); }
 trait Foo { fn foo() {} }
@@ -2359,14 +2356,40 @@ global foo = f"no \"quotes\" can be escaped in a format string";
 #+end_test
 
 *** Quasiquote
-#+begin_test :skip
-global foo = quote { 1 };
+#+begin_test
+global f1 = quote {};
+global f2 = quote { 1 };
 
 ---
 
 (global_item
   name: (identifier)
   (quote_expression))
+(global_item
+  name: (identifier)
+  (quote_expression
+    (quote_tokens)))
+#+end_test
+
+**** TODO Complex
+And rename this subheading to something better
+
+#+begin_test
+comptime fn foo() {
+  let signature = quote { fn hash<H>(_self: Self, _state: &mut H) where H: std::hash::Hasher };
+}
+
+---
+
+(function_item
+  (modifiers)
+  name: (identifier)
+  parameters: (parameters)
+  body: (block
+    (let_statement
+      pattern: (identifier)
+      value: (quote_expression
+        (quote_tokens)))))
 #+end_test
 
 *** Array expression
@@ -2575,6 +2598,43 @@ global foo2 = &       [1; 2];
 :END:
 *************** TODO Tests, BlockStatement _is_ just BlockExpression i.e. this
 *************** END
+
+#+begin_test
+global f = {
+  unsafe { 1 }
+};
+
+fn foo() {
+  let x = 123;
+
+  unsafe { 1 }
+
+  let y = 456;
+}
+
+---
+
+(global_item
+  name: (identifier)
+  (block
+    (unsafe
+      (block
+        (int_literal)))))
+
+(function_item
+  name: (identifier)
+  parameters: (parameters)
+  body: (block
+    (let_statement
+      pattern: (identifier)
+      value: (int_literal))
+    (unsafe
+      (block
+        (int_literal)))
+    (let_statement
+      pattern: (identifier)
+      value: (int_literal))))
+#+end_test
 
 ** Binary
 

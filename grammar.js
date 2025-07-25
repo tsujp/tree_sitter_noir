@@ -148,11 +148,9 @@ module.exports = grammar({
             optional('!'), // Marks InnerAttribute.
             '[',
             optional("'"), // Marks attribute as having a tag
-            alias($.attribute_content, $.content),
+            alias($.arbitrary_content, $.content),
             ']',
         ),
-        // [[file:noir_grammar.org::attribute_content]]
-        attribute_content: _ => seq(repeat1(choice(' ', REG_ALPHABETIC, REG_NUMERIC, REG_ASCII_PUNCTUATION))),
         
         // [[file:noir_grammar.org::use]]
         use_item: $ => seq(
@@ -468,7 +466,10 @@ module.exports = grammar({
                 alias($.comptime_statement__let_for, $.comptime),
                 $.for_statement,
                 $.if_expression,
+                // Block and it's variants appear to all be valid at each other's locations.
                 $.block,
+                $.comptime,
+                $.unsafe,
                 $.assign_statement,
                 $.expression_statement,
             ),
@@ -585,9 +586,7 @@ module.exports = grammar({
                 field('right', $._expression),
             ))))
         },
-        
-        // [[file:noir_grammar.org::quote_expression]]
-        quote_expression: $ => alias($.quote_literal, $.quote_expression),
+        // n("quote_expression")>> // TODO: Commented for now while trying to dev QuoteExpression.
         
         // [[file:noir_grammar.org::array_expression]]
         array_expression: $ => seq(
@@ -1047,6 +1046,11 @@ module.exports = grammar({
 
         // * * * * * * * * * * * * * * * * * * * * * * * * * TEMPLATES / MISC
         
+        // Essentially the equivalent of /.*/ but in a way that doesn't implode tree-sitter.
+        
+        // [[file:noir_grammar.org::arbitrary_content]]
+        arbitrary_content: _ => seq(repeat1(choice(' ', REG_ALPHABETIC, REG_NUMERIC, REG_ASCII_PUNCTUATION))),
+        
         // Alias both Generic and GenericType parameters to a node of the same name.
         
         // [[file:noir_grammar.org::generic_parameters]]
@@ -1074,7 +1078,7 @@ module.exports = grammar({
                 $.str_literal,
                 $.raw_str_literal,
                 $.fmt_str_literal,
-                // $.quote_expression, // TODO: Broken for now.
+                $.quote_expression,
                 $.array_expression,
                 $.slice_expression,
                 $.block,
@@ -1131,13 +1135,30 @@ module.exports = grammar({
         fmt_str_content: _ => /[\x20-\x21\x23-\x7E\s]+/,
         
         // [[file:noir_grammar.org::quote]]
-        quote_literal: _ => seq(
-            // TODO: Stubbed for now, see org doc.
-            'quote',
-            '{',
-            /.*/,
-            '}',
-        ),
+        quote_expression: $ => {
+            // All the patterns here are REG_ASCII_PUNCTUATION except (in each case) the opening/closing delimiters removed from the pattern.
+            const t = [
+                ['{', '}', /[!"#$%&'()*+,\-./:;<=>?@\[\\\]^_`|~]/],  // Braces removed.
+                ['[', ']', /[!"#$%&'()*+,\-./:;<=>?@\\^_`\{|\}~]/],  // Brackets removed.
+                ['(', ')', /[!"#$%&'*+,\-./:;<=>?@\[\\\]^_`\{|\}~]/], // Parens removed.
+            ]
+        
+            return seq(
+                'quote',
+                choice(...t.map(([o, c, p]) => seq(
+                    o,
+                    optional(alias(
+                        seq(repeat1(choice(
+                            REG_ALPHABETIC,
+                            REG_NUMERIC,
+                            p,
+                        ))),
+                        $.quote_tokens,
+                    )),
+                    c,
+                )))
+            )
+        },
         
         // [[file:noir_grammar.org::comment]]
         comment: $ => choice(

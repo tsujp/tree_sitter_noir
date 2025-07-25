@@ -195,10 +195,10 @@ global foo = f"no \"quotes\" can be escaped in a format string";
 
 ====================
 Literal / Quasiquote
-:skip
 ====================
 
-global foo = quote { 1 };
+global f1 = quote {};
+global f2 = quote { 1 };
 
 ---
 
@@ -206,6 +206,33 @@ global foo = quote { 1 };
   (global_item
     name: (identifier)
     (quote_expression))
+  (global_item
+    name: (identifier)
+    (quote_expression
+      (quote_tokens)))
+)
+
+
+==============================
+Literal / Quasiquote / Complex
+==============================
+
+comptime fn foo() {
+  let signature = quote { fn hash<H>(_self: Self, _state: &mut H) where H: std::hash::Hasher };
+}
+
+---
+
+(source_file
+  (function_item
+    (modifiers)
+    name: (identifier)
+    parameters: (parameters)
+    body: (block
+      (let_statement
+        pattern: (identifier)
+        value: (quote_expression
+          (quote_tokens)))))
 )
 
 
@@ -430,6 +457,48 @@ global foo2 = &       [1; 2];
       (array_expression
         (int_literal)
         length: (int_literal))))
+)
+
+
+==========================
+Literal / Block expression
+==========================
+
+global f = {
+  unsafe { 1 }
+};
+
+fn foo() {
+  let x = 123;
+
+unsafe { 1 }
+
+  let y = 456;
+}
+
+---
+
+(source_file
+  (global_item
+    name: (identifier)
+    (block
+      (unsafe
+        (block
+          (int_literal)))))
+
+  (function_item
+    name: (identifier)
+    parameters: (parameters)
+    body: (block
+      (let_statement
+        pattern: (identifier)
+        value: (int_literal))
+      (unsafe
+        (block
+          (int_literal)))
+      (let_statement
+        pattern: (identifier)
+        value: (int_literal))))
 )
 
 

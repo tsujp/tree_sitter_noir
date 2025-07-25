@@ -82,6 +82,10 @@
             "named": true
           },
           {
+            "type": "quote_expression",
+            "named": true
+          },
+          {
             "type": "raw_str_literal",
             "named": true
           },
@@ -191,6 +195,10 @@
         },
         {
           "type": "path",
+          "named": true
+        },
+        {
+          "type": "quote_expression",
           "named": true
         },
         {
@@ -333,6 +341,10 @@
         },
         {
           "type": "path",
+          "named": true
+        },
+        {
+          "type": "quote_expression",
           "named": true
         },
         {
@@ -525,6 +537,10 @@
             "named": true
           },
           {
+            "type": "quote_expression",
+            "named": true
+          },
+          {
             "type": "raw_str_literal",
             "named": true
           },
@@ -628,6 +644,10 @@
           },
           {
             "type": "path",
+            "named": true
+          },
+          {
+            "type": "quote_expression",
             "named": true
           },
           {
@@ -816,6 +836,10 @@
             "named": true
           },
           {
+            "type": "quote_expression",
+            "named": true
+          },
+          {
             "type": "raw_str_literal",
             "named": true
           },
@@ -992,6 +1016,10 @@
             "named": true
           },
           {
+            "type": "quote_expression",
+            "named": true
+          },
+          {
             "type": "raw_str_literal",
             "named": true
           },
@@ -1129,6 +1157,10 @@
         },
         {
           "type": "path",
+          "named": true
+        },
+        {
+          "type": "quote_expression",
           "named": true
         },
         {
@@ -1299,6 +1331,10 @@
           },
           {
             "type": "path",
+            "named": true
+          },
+          {
+            "type": "quote_expression",
             "named": true
           },
           {
@@ -1500,6 +1536,10 @@
           },
           {
             "type": "path",
+            "named": true
+          },
+          {
+            "type": "quote_expression",
             "named": true
           },
           {
@@ -1754,6 +1794,10 @@
           "named": true
         },
         {
+          "type": "quote_expression",
+          "named": true
+        },
+        {
           "type": "raw_str_literal",
           "named": true
         },
@@ -1872,6 +1916,10 @@
           },
           {
             "type": "path",
+            "named": true
+          },
+          {
+            "type": "quote_expression",
             "named": true
           },
           {
@@ -2019,6 +2067,10 @@
           },
           {
             "type": "path",
+            "named": true
+          },
+          {
+            "type": "quote_expression",
             "named": true
           },
           {
@@ -2423,6 +2475,10 @@
           "named": true
         },
         {
+          "type": "quote_expression",
+          "named": true
+        },
+        {
           "type": "raw_str_literal",
           "named": true
         },
@@ -2549,6 +2605,10 @@
           },
           {
             "type": "path",
+            "named": true
+          },
+          {
+            "type": "quote_expression",
             "named": true
           },
           {
@@ -2770,6 +2830,10 @@
             "named": true
           },
           {
+            "type": "quote_expression",
+            "named": true
+          },
+          {
             "type": "raw_str_literal",
             "named": true
           },
@@ -2873,6 +2937,10 @@
           },
           {
             "type": "path",
+            "named": true
+          },
+          {
+            "type": "quote_expression",
             "named": true
           },
           {
@@ -3052,6 +3120,10 @@
           },
           {
             "type": "path",
+            "named": true
+          },
+          {
+            "type": "quote_expression",
             "named": true
           },
           {
@@ -3341,6 +3413,10 @@
           },
           {
             "type": "path",
+            "named": true
+          },
+          {
+            "type": "quote_expression",
             "named": true
           },
           {
@@ -3708,6 +3784,10 @@
           "named": true
         },
         {
+          "type": "quote_expression",
+          "named": true
+        },
+        {
           "type": "raw_str_literal",
           "named": true
         },
@@ -3919,6 +3999,26 @@
     }
   },
   {
+    "type": "quote_expression",
+    "named": true,
+    "fields": {},
+    "children": {
+      "multiple": false,
+      "required": false,
+      "types": [
+        {
+          "type": "quote_tokens",
+          "named": true
+        }
+      ]
+    }
+  },
+  {
+    "type": "quote_tokens",
+    "named": true,
+    "fields": {}
+  },
+  {
     "type": "range_expression",
     "named": true,
     "fields": {},
@@ -3988,6 +4088,10 @@
         },
         {
           "type": "path",
+          "named": true
+        },
+        {
+          "type": "quote_expression",
           "named": true
         },
         {
@@ -4165,6 +4269,10 @@
         },
         {
           "type": "path",
+          "named": true
+        },
+        {
+          "type": "quote_expression",
           "named": true
         },
         {
@@ -4725,6 +4833,10 @@
             "named": true
           },
           {
+            "type": "quote_expression",
+            "named": true
+          },
+          {
             "type": "raw_str_literal",
             "named": true
           },
@@ -4995,6 +5107,10 @@
         },
         {
           "type": "path",
+          "named": true
+        },
+        {
+          "type": "quote_expression",
           "named": true
         },
         {
@@ -5385,6 +5501,10 @@
           "named": true
         },
         {
+          "type": "quote_expression",
+          "named": true
+        },
+        {
           "type": "raw_str_literal",
           "named": true
         },
@@ -5503,6 +5623,10 @@
         },
         {
           "type": "path",
+          "named": true
+        },
+        {
+          "type": "quote_expression",
           "named": true
         },
         {
@@ -6082,6 +6206,10 @@
   },
   {
     "type": "pub",
+    "named": false
+  },
+  {
+    "type": "quote",
     "named": false
   },
   {

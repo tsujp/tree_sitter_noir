@@ -174,7 +174,7 @@
           "type": "ALIAS",
           "content": {
             "type": "SYMBOL",
-            "name": "attribute_content"
+            "name": "arbitrary_content"
           },
           "named": true,
           "value": "content"
@@ -182,35 +182,6 @@
         {
           "type": "STRING",
           "value": "]"
-        }
-      ]
-    },
-    "attribute_content": {
-      "type": "SEQ",
-      "members": [
-        {
-          "type": "REPEAT1",
-          "content": {
-            "type": "CHOICE",
-            "members": [
-              {
-                "type": "STRING",
-                "value": " "
-              },
-              {
-                "type": "PATTERN",
-                "value": "[a-zA-Z]"
-              },
-              {
-                "type": "PATTERN",
-                "value": "[0-9]"
-              },
-              {
-                "type": "PATTERN",
-                "value": "[!\"#$%&'()*+,\\-./:;<=>?@\\[\\\\\\]^_`\\{|\\}~]"
-              }
-            ]
-          }
         }
       ]
     },
@@ -1723,6 +1694,14 @@
             },
             {
               "type": "SYMBOL",
+              "name": "comptime"
+            },
+            {
+              "type": "SYMBOL",
+              "name": "unsafe"
+            },
+            {
+              "type": "SYMBOL",
               "name": "assign_statement"
             },
             {
@@ -2450,15 +2429,6 @@
           }
         }
       ]
-    },
-    "quote_expression": {
-      "type": "ALIAS",
-      "content": {
-        "type": "SYMBOL",
-        "name": "quote_literal"
-      },
-      "named": true,
-      "value": "quote_expression"
     },
     "array_expression": {
       "type": "SEQ",
@@ -4517,6 +4487,35 @@
         }
       ]
     },
+    "arbitrary_content": {
+      "type": "SEQ",
+      "members": [
+        {
+          "type": "REPEAT1",
+          "content": {
+            "type": "CHOICE",
+            "members": [
+              {
+                "type": "STRING",
+                "value": " "
+              },
+              {
+                "type": "PATTERN",
+                "value": "[a-zA-Z]"
+              },
+              {
+                "type": "PATTERN",
+                "value": "[0-9]"
+              },
+              {
+                "type": "PATTERN",
+                "value": "[!\"#$%&'()*+,\\-./:;<=>?@\\[\\\\\\]^_`\\{|\\}~]"
+              }
+            ]
+          }
+        }
+      ]
+    },
     "_generic_parameters": {
       "type": "ALIAS",
       "content": {
@@ -4589,6 +4588,10 @@
           {
             "type": "SYMBOL",
             "name": "fmt_str_literal"
+          },
+          {
+            "type": "SYMBOL",
+            "name": "quote_expression"
           },
           {
             "type": "SYMBOL",
@@ -4770,7 +4773,7 @@
       "type": "PATTERN",
       "value": "[\\x20-\\x21\\x23-\\x7E\\s]+"
     },
-    "quote_literal": {
+    "quote_expression": {
       "type": "SEQ",
       "members": [
         {
@@ -4778,16 +4781,162 @@
           "value": "quote"
         },
         {
-          "type": "STRING",
-          "value": "{"
-        },
-        {
-          "type": "PATTERN",
-          "value": ".*"
-        },
-        {
-          "type": "STRING",
-          "value": "}"
+          "type": "CHOICE",
+          "members": [
+            {
+              "type": "SEQ",
+              "members": [
+                {
+                  "type": "STRING",
+                  "value": "{"
+                },
+                {
+                  "type": "CHOICE",
+                  "members": [
+                    {
+                      "type": "ALIAS",
+                      "content": {
+                        "type": "SEQ",
+                        "members": [
+                          {
+                            "type": "REPEAT1",
+                            "content": {
+                              "type": "CHOICE",
+                              "members": [
+                                {
+                                  "type": "PATTERN",
+                                  "value": "[a-zA-Z]"
+                                },
+                                {
+                                  "type": "PATTERN",
+                                  "value": "[0-9]"
+                                },
+                                {
+                                  "type": "PATTERN",
+                                  "value": "[!\"#$%&'()*+,\\-./:;<=>?@\\[\\\\\\]^_`|~]"
+                                }
+                              ]
+                            }
+                          }
+                        ]
+                      },
+                      "named": true,
+                      "value": "quote_tokens"
+                    },
+                    {
+                      "type": "BLANK"
+                    }
+                  ]
+                },
+                {
+                  "type": "STRING",
+                  "value": "}"
+                }
+              ]
+            },
+            {
+              "type": "SEQ",
+              "members": [
+                {
+                  "type": "STRING",
+                  "value": "["
+                },
+                {
+                  "type": "CHOICE",
+                  "members": [
+                    {
+                      "type": "ALIAS",
+                      "content": {
+                        "type": "SEQ",
+                        "members": [
+                          {
+                            "type": "REPEAT1",
+                            "content": {
+                              "type": "CHOICE",
+                              "members": [
+                                {
+                                  "type": "PATTERN",
+                                  "value": "[a-zA-Z]"
+                                },
+                                {
+                                  "type": "PATTERN",
+                                  "value": "[0-9]"
+                                },
+                                {
+                                  "type": "PATTERN",
+                                  "value": "[!\"#$%&'()*+,\\-./:;<=>?@\\\\^_`\\{|\\}~]"
+                                }
+                              ]
+                            }
+                          }
+                        ]
+                      },
+                      "named": true,
+                      "value": "quote_tokens"
+                    },
+                    {
+                      "type": "BLANK"
+                    }
+                  ]
+                },
+                {
+                  "type": "STRING",
+                  "value": "]"
+                }
+              ]
+            },
+            {
+              "type": "SEQ",
+              "members": [
+                {
+                  "type": "STRING",
+                  "value": "("
+                },
+                {
+                  "type": "CHOICE",
+                  "members": [
+                    {
+                      "type": "ALIAS",
+                      "content": {
+                        "type": "SEQ",
+                        "members": [
+                          {
+                            "type": "REPEAT1",
+                            "content": {
+                              "type": "CHOICE",
+                              "members": [
+                                {
+                                  "type": "PATTERN",
+                                  "value": "[a-zA-Z]"
+                                },
+                                {
+                                  "type": "PATTERN",
+                                  "value": "[0-9]"
+                                },
+                                {
+                                  "type": "PATTERN",
+                                  "value": "[!\"#$%&'*+,\\-./:;<=>?@\\[\\\\\\]^_`\\{|\\}~]"
+                                }
+                              ]
+                            }
+                          }
+                        ]
+                      },
+                      "named": true,
+                      "value": "quote_tokens"
+                    },
+                    {
+                      "type": "BLANK"
+                    }
+                  ]
+                },
+                {
+                  "type": "STRING",
+                  "value": ")"
+                }
+              ]
+            }
+          ]
         }
       ]
     },
