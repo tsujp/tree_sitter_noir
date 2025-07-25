@@ -169,6 +169,16 @@ fd term *args:
 @parse-error:
     echo '{{BOLD + MAGENTA}}Reporting first parse error (if any)...{{NORMAL}}'
 
+    # JORDAN TODO: Maybe this pattern will work for multiline stuff AND single line? It'll match everything between the two delimiters including trying to find the end one.
+    #        (?s)130:4\s+-\s134:1.*134:1(?-s).*
+    # I made a little playground: https://regex101.com/r/chNR9M/1
+    # This one works when there's no ending it seems (better)
+    #        130:4\s+-\s134:1((?s).*134:1.*?$)?
+    #
+    #        130:4\s+-\s134:1((?s).*-\s134:1.*?$)?
+    # https://regex101.com/r/chNR9M/2
+    # with ripgrep need to use this pattern with --multiline flag
+
     # 0 = file ; 1 = starting line ; 2 = column in starting line ; 3, 4 = but for ending line
     declare -i ctx_lns=5; \
     \
@@ -179,11 +189,13 @@ fd term *args:
         )" \
       && \
     \
-    declare err_pattern="${err_info[1]}:${err_info[2]}\s+-\s+${err_info[3]}:${err_info[4]}"; \
+    declare err_start="${err_info[1]}:${err_info[2]}"; \
+    declare err_end="${err_info[3]}:${err_info[4]}"; \
+    declare err_pattern="${err_start}\s+-\s${err_end}((?s).*-\s${err_end}.*?$)?"; \
     \
     printf -- '--> {{YELLOW}}CST excerpt{{NORMAL}}    {{BOLD + BLACK}}(sanity: %s){{NORMAL}}\n' "$err_pattern"; \
     just --justfile {{justfile()}} parse-file "${err_info[0]}" 2> /dev/null | \
-      rg --engine=auto -B4 -A8 "$err_pattern" \
+      rg --engine=auto -B4 -A8 --multiline "$err_pattern" \
       && \
     \
     (( err_info[1]++ )); \
