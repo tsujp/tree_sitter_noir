@@ -148,7 +148,8 @@ module.exports = grammar({
             optional('!'), // Marks InnerAttribute.
             '[',
             optional("'"), // Marks attribute as having a tag
-            alias($.arbitrary_content, $.content),
+            // ASCII space, and printable characters except for opening and closing brackets.
+            optional(alias(/[\x20-\x22\x23-\x5A,\x5C,\x5E-\x7E\s]+/, $.content)),
             ']',
         ),
         
@@ -1062,11 +1063,6 @@ module.exports = grammar({
 
         // * * * * * * * * * * * * * * * * * * * * * * * * * TEMPLATES / MISC
         
-        // Essentially the equivalent of /.*/ but in a way that doesn't implode tree-sitter.
-        
-        // [[file:noir_grammar.org::arbitrary_content]]
-        arbitrary_content: _ => seq(repeat1(choice(' ', REG_ALPHABETIC, REG_NUMERIC, REG_ASCII_PUNCTUATION))),
-        
         // Alias both Generic and GenericType parameters to a node of the same name.
         
         // [[file:noir_grammar.org::generic_parameters]]
@@ -1118,20 +1114,18 @@ module.exports = grammar({
             repeat(choice(
                 $.str_content,
                 $.escape_sequence,
-                // $.str_content,
-                // $.escape_sequence,
             )),
             token.immediate('"'),
         ),
         // [[file:noir_grammar.org::str_content]]
         str_content: _ => /[\x20-\x21\x23-\x5B\x5D-\x7E\s]+/,
         // [[file:noir_grammar.org::escape_sequence]]
-        escape_sequence: $ => seq(
-            '\\',
-            // TODO: Do we want to be strict on valid escape sequences (r, n, t etc) or accept any ASCII. Problem is error recovery in tree-sitter and how that affects highlighting.
-            token.immediate(choice(
-                'r', 'n', 't', '0', '"', '\\',
-            )),
+        escape_sequence: _ => token.immediate(
+            seq(
+                '\\',
+                // TODO: Do we want to be strict on valid escape sequences (r, n, t etc) or accept any ASCII. Problem is error recovery in tree-sitter and how that affects highlighting.
+                choice('r', 'n', 't', '0', '"', '\\'),
+            ),
         ),
         
         // [[file:noir_grammar.org::raw_str]]

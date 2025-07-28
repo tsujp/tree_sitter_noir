@@ -43,6 +43,246 @@ Call ~taxy-fill~ with created taxy from ~make-taxy~ and a list of objects to fil
 ~taxy-mapcar~ can replace items in a taxy.
 
 ** Development
+*** Tree-sitter
+**** Testing
+
+- =test/corpus= :: CST assertions.
+- =test/highlight= ([[https://tree-sitter.github.io/tree-sitter/3-syntax-highlighting.html#unit-testing][src]]) :: highlight selector positions.
+- =test/tags= ([[https://tree-sitter.github.io/tree-sitter/4-code-navigation.html#unit-testing][src]]) :: tag assertions.
+- =test/vocabulary= :: Noir source-code for parsing, assertion that Noirc will parse.
+
+**** Queries
+
+- =queries/highlights.scm= :: highlights.
+- =queries/locals.scm= :: local variables.
+- =queries/injections.scm= :: injections.
+
+***** Syntax
+Source: [[https://tree-sitter.github.io/tree-sitter/using-parsers/queries/1-syntax.html][tree-sitter query syntax]]
+
+Queries consist of one or more /patterns/ defined as an s-expression. **Patterns** match sets of nodes in the CST according to their type (rule name resulting in a **named node**), and may optionally have any number of additional patterns which match children of the initial node type.
+
+**Child patterns** can be prefixed with **field names** to limit said pattern to the field name of the /parent/.
+
+**Negate** fields by prefixing them with =!=, only nodes which lack a negated field will be matched.
+
+**Anonymous nodes** cannot be matched with the s-expression syntax, instead their contents (as they have no name) must be matched between double-quotes.
+
+**Wildcard** nodes may be matched with =(_)= which matches any **named** node, or =_= which matches any **named or anonymous** node.
+
+**Error** nodes are created by the parser when it encounters text it does not recognise, they look like =(ERROR)= and can be queried like normal nodes.
+
+TODO: Missing nodes https://tree-sitter.github.io/tree-sitter/using-parsers/queries/1-syntax.html#the-missing-node
+
+****** Examples
+
+Match a ~binary_expression~ who has two children, both of which are ~number_literal~\s.
+#+begin_example
+(binary_expression (number_literal) (number_literal))
+#+end_example
+
+Match an ~assignment_expression~ which has a field 'left' which has a child ~member_expression~.
+#+begin_example
+(assignment_expression
+  left: (member_expression))
+#+end_example
+
+Match a ~binary_expression~ which (1) has a field 'operator' that has an anonymous node with the contents ~!=~, and (2) has a field 'right' which has a child ~null~.
+#+begin_example
+(binary_expression
+  operator: "!="
+  right: (null))
+#+end_example
+
+Match any **named** node inside ~call~.
+#+begin_example
+(call (_))
+#+end_example
+
+***** Operators
+Source: [[https://tree-sitter.github.io/tree-sitter/using-parsers/queries/2-operators.html][tree-sitter operators]]
+
+**Captures** allow one to refer to specific regions of a pattern by a custom name for further use elsewhere. Capture names come /after/ the nodes they refer to and begin with =@=.
+
+**Quantifications** allow matching sequences of sibling nodes, they are supplied postfix to the nodes pattern, can be combined with captures, and are:
+  - =+= :: match /one or more/ repetitions.
+  - =*= :: match /zero or more/ repetitions.
+  - =?= :: match /zero or one/ repetitions (i.e. /optional/).
+
+**Groups** of sequential sibling nodes can be formed by surrounding patterns with parentheses. Groups can be combined with captures.
+
+**Alternations** are defined within =[]= and specify a list of alternative patterns.
+
+**Anchors** =.= constrain where child-patterns are matched in their parents. Anchors may be placed before the first child-pattern, in the middle of two child-patterns, or at the end after all child-patterns and **only affect named nodes**.
+  - Start :: child-pattern only matches if it is the /first/ named node.
+  - Middle :: child-patterns only match if immediately adjacent.
+  - End :: child-pattern only matches if it is the /last/ named node.
+    
+****** Examples
+
+Match any assignment of ~function~ to an ~identifier~ and **capture** the ~identifier~ node under the name ~the-function-name~.
+#+begin_example
+(assignment_expression
+  left: (identifier) @the-function-name
+  right: (function))
+#+end_example
+
+Match ~class_declaration~ and capture all ~decorator~ nodes under the name ~the-decorator~, as well as an ~identifier~ in field 'name' under the name ~the-name~.
+#+begin_example
+(class_declaration
+  (decorator)* @the-decorator
+  name: (identifier) @the-name)
+#+end_example
+
+Match a ~comment~ which is directly followed by (sibling to) a ~function_declaration~.
+#+begin_example
+(
+  (comment)
+  (function_declaration)
+)
+#+end_example
+
+Match a comma-delimited series of ~number~ nodes.
+#+begin_example
+(
+  (number)
+  ("," (number))*
+)
+#+end_example
+
+This pattern has an anchor at the start, and matches an ~array~ node at most once, with the first child ~identifier~ being captured with name ~the-element~.
+#+begin_example
+(array . (identifier) @the-element)
+#+end_example
+
+The same pattern, without the anchor, would over and over for each ~identifier~ in ~array~ and ~the-element~ would capture all of them.
+#+begin_example
+(array (identifier) @the-element)
+#+end_example
+
+Match any named node under the name ~last-expression~ so long as it is the last node (child) in a ~block~.
+#+begin_example
+(block (_) @last-expression .)
+#+end_example
+
+Match a ~dotted_name~ where an ~identifier~ is captured under name ~prev-id~, and an ~identifier~ is captured under name ~next-id~ but **only if** said identifiers are immediately adjacent to each other.
+#+begin_example
+(dotted_name
+  (identifier) @prev-id
+  .
+  (identifier) @next-id)
+#+end_example
+
+So given =a.b.c.d= only =a.b=, =b.c=, and =c.d= will match. Without the anchor =a.c=, and =b.d= would also be matched.
+
+***** Predicates and Directives
+Source: [[https://tree-sitter.github.io/tree-sitter/using-parsers/queries/3-predicates-and-directives.html#predicates][tree-sitter predicates and directives]]
+
+Note: The tree-sitter CLI implements these, they are not directly part of the tree-sitter C API and so their support may depend on the eventual target. If that target uses the Rust crate or WebAssembly bindings they are supported for example.
+
+**Predicates** allow specifying arbitrary conditions and metadata and are written within s-expressions. The predicate is enclosed within =#?=. Capture names within predicates and bindings are prefixed with =@=.
+
+- ~#eq?~ ([[https://tree-sitter.github.io/tree-sitter/using-parsers/queries/3-predicates-and-directives.html#the-eq-predicate][src]]): test single capture or /string/.
+  :: 2 params: (1) capture name; (2) capture name or string.
+- ~#match?~ ([[https://tree-sitter.github.io/tree-sitter/using-parsers/queries/3-predicates-and-directives.html#the-match-predicate][src]]): test /regular expression/ value.
+  :: 2 params: (1) capture name; (2) regular expression (as a string).
+- ~#any-of?~ ([[https://tree-sitter.github.io/tree-sitter/using-parsers/queries/3-predicates-and-directives.html#the-any-of-predicate][src]]): test multiple /string/ values.
+  :: 1 + N params: (1) capture name; (N) space separated strings.
+- ~#is?~ ([[https://tree-sitter.github.io/tree-sitter/using-parsers/queries/3-predicates-and-directives.html#the-is-predicate][src]]): test presence of given property.
+  :: 1 param: (1) property name.
+- ~#is-not?~: test absence of given property.
+  :: 1 param: (1) property name.
+
+Predicates ~#eq?~, and ~#match?~, and ~#any-of?~ can be prefixed with:
+  - =not-= to test their complement.
+
+Predicates ~#eq?~, and ~#match?~ can be prefixed with:
+  - =any-= to test /any/ of the associated nodes.
+  - =any-not-= to test the complement of =any-=.
+
+Quantifiers, by default, will only match when all nodes satisfy the pattern so =any-=-prefixed predicates are most useful in combination with them.
+
+*************** TODO What is a 'property'? Do they mean a 'field'?
+*************** END
+
+**Directives** are the same as predicates except they are wrapped in =#!= and have side-effects.
+
+- ~#set!~ ([[https://tree-sitter.github.io/tree-sitter/using-parsers/queries/3-predicates-and-directives.html#the-set-directive][src]]): associate key-value pairs with a pattern.
+  :: 2 params: (1) key-name to set; (2) value to set.
+- ~#select-adjacent!~ ([[https://tree-sitter.github.io/tree-sitter/using-parsers/queries/3-predicates-and-directives.html#the-select-adjacent-directive][src]]): filter text associated with a capture so that only nodes adjacent to another capture are preserved.
+  :: 2 params: (1) capture name; (2) capture name.
+- ~#strip!~ ([[https://tree-sitter.github.io/tree-sitter/using-parsers/queries/3-predicates-and-directives.html#the-strip-directive][src]]): remove matched regular expression text from a capture.
+  :: 2 params: (1) capture name to strip text from; (2) regular expression.
+  
+*************** TODO More on select-adjacent, I don't yet get it
+Examples for select adjacent and strip in code navigation docs: https://tree-sitter.github.io/tree-sitter/4-code-navigation.html#examples
+*************** END
+    
+****** Examples
+
+(c) Match any ~identifier~ node which has contents equal to string =self=.
+#+begin_example
+((identifier) @variable.builtin
+  (#eq? @variable.builtin "self"))
+#+end_example
+
+Match any ~pair~ whose =key= field has the same contents as it's =value= field, i.e. whose key and pair have the same values.
+#+begin_example
+(
+  (pair
+    key: (property_identifier) @key-name
+    value: (identifier) @value-name)
+  (#eq? @key-name @value-name)
+)
+#+end_example
+
+Match an empty ~comment~ within a group of comments. A quantifier is used here to constrain the pattern (initial) to only those groups of 1 or more comments.
+#+begin_example
+((comment)+ @comment.empty
+  (#any-eq? @comment.empty "//"))
+#+end_example
+
+Match ~identifier~ nodes who are written in =ALL_CAPS_SNAKECASE=.
+#+begin_example
+((identifier) @constant
+  (#match? @constant "^[A-Z][A-Z_]+"))
+#+end_example
+
+(js) Initially match ~identifier~ nodes who are builtin variables, but because of ~#is-not?~ ultimately match builtin variables who are not local.
+#+begin_example
+((identifier) @variable.builtin
+  (#match? @variable.builtin "^(arguments|module|console|window|document)$")
+  (#is-not? local))
+#+end_example
+
+(lua) Match any ~comment~ that contains a Doxygen-style comment (regex) and then set the =injection.language= key of that ~comment~ to string =doxygen=.
+#+begin_example
+((comment) @injection.content
+  (#lua-match? @injection.content "/[*\/][!*\/]<?[^a-zA-Z]")
+  (#set! injection.language "doxygen"))
+#+end_example
+
+***** Highlights
+Source: https://tree-sitter.github.io/tree-sitter/3-syntax-highlighting.html#highlights
+
+Assign arbitrary highlight names using catures, the highlight names can be dot-separated.
+
+***** Locals
+Source: https://tree-sitter.github.io/tree-sitter/3-syntax-highlighting.html#local-variables
+
+Keep track of local scopes and variables so the appropriate entities are highlighted consisently.
+
+Only specific named captures can be used.
+  - ~@local.scope~: syntax node introduces new scope.
+  - ~@local.definition~: syntax node contains /name/ of definition within current local scope.
+  - ~@local.reference~: syntax node contains /name/ which may (or not) refer to an earlier definition in some enclosing scope.
+
+When highlighting a file tree-sitter keeps track of the scopes which contain any given position, and the definitions within that scope. For example, when processing a syntax node captured as =local.reference= tree-sitter will try find a definition for a name that matches the nodes text; if it finds one it will ensure the /reference/ and /definition/ are coloured the same.
+
+Highlights can access locals query information, for example to disable a pattern for nodes identified as local use the predicate ~(#is-not? local)~ in the pattern.
+
+***** TODO Injections
+Source: https://tree-sitter.github.io/tree-sitter/3-syntax-highlighting.html#language-injection
 
 *** Scratch
 
@@ -102,8 +342,69 @@ Patterns are used to match values against structures and to, optionally, bind va
 2025/06/12 6:17pm
 Trying to depth-first for Function has resulted in A LOT of stuff, so.. a lot of moving parts. Looks like Global is simpler (in terms of apparent nesting) so going to change tack to that for now.
 
-2025/07/08 10:27pm
-A lot added since last entry, Global 'called' from ItemKind so let's continue from there. Looking back at Function again now.
+
+
+2025/07/14 2:32 pm
+CONTINUE FROM ItemKind Function!!!!!!
+- need to look at Block
+- need to look at FunctionParameters
+
+Need to look at Pattern next (I say as I am adding required semicolon stuff and see pattern is part of LetStatement)
+
+Looking at Block continue from the parse_statement_in_block bits, want to make sure not duplicating work here. It's all coming together just remain thorough!
+
+Need to look at the semicolon terminating stuff for BlockExpression
+
+2025/07/15 11:52pm
+At the point where I need to do some restructuring for ExpressionStatement. I've got the list of StatementKinds which require a terminating semimcolon now I need ts rules that match this structure. So repeated statements (with semicolons) then an expression statement etc.
+
+BlockExpression > Statement
+
+TODO: be sure to add a test that correctly differentiates between an if expression being used as a statement versus as an expression-statement.
+
+For ExpressionStatement still need to do the terminating ; afterwards which is currently an error
+
+Where else can IfExpression be reached from? Can we wrap it in ExpressionStatement should it be followed by a ';'?
+
+
+2025/07/24 03:47am
+
+
+head/tail notes so i can stop derping out:
+
+~head~ - display first lines of a file
+  - param ~-n COUNT~ to display only first ~n~ lines.
+
+~tail~ - display last part of a file
+  - param ~-n COUNT~ refers to line ~n~
+  - numbers given with leading ~+~ are relative to the beginning of the input, numbers with leading ~-~ are relative to the end of the input
+
+
+
+1. what version of git is magit using (and print that on startup or something)
+2. other stuff to speedup magit? cos it's annoyingly fucking slow
+3. any way to have a shortcut command to stage certain files so i dont have to manually select them every time?
+
+
+
+fix attribute content parsing
+
+- Attributes may have no contents so add optional to rule.
+- Attribute contents structured in such a way that attempts to parse a
+  line_comment within them was occuring, this is invalid and broke the parser
+  where attributes contained URLs (the // in a URL looks like a line_comment).
+- A 'proper' long-term solution might be to use an external scanner for string
+  contents, and/or attribute contents but for now this resolves the issue
+  correctly and the CST still appears nice so K.I.S.S.
+- Also the locus error reports line 136 but is actually from a failure to
+  parse the attribute on (real) line 30 of tecurve.nr.
+
+- Noirc stdlib parse progress: 89.86% -> 89.86% (+0%)
+- Resolves error attempting to parse Noirc stdlib at locus:
+
+    noir/noir_stdlib/src/ec/tecurve.nr      136,54 - 137,73
+
+
 
 
 *** Grammar Areas
@@ -115,6 +416,164 @@ Areas to tackle to construct the tree-sitter grammar.
 General top-level items need doing (macro) so micro-level structures can be tested. Currently got a bunch of micro-level structures but not enough macro-level.
 
 Program contains Module which contains InnerDocComments and Item. Comments can appear anywhere, so Item is effectively our top-level.
+
+**** Use and Paths
+
+
+
+Need to document how Use and Path interact in the sense that it's a big cluster fuck, and that incldues PathKind and PathNoTurbofish shite.
+
+**** Patterns
+
+Identifier patterns: https://doc.rust-lang.org/reference/patterns.html#r-patterns.ident.bare
+
+**** Impl
+
+Impl > TypeImpl > Generics
+                > Type
+                > TypeImplBody > TypeImplItem > OuterDocComments
+                                              > Attributes
+                                              > Modifiers
+                                              > Function
+                               
+     > TraitImpl > Generics
+                 > Path
+                 > GenericTypeArgs
+                 > Type
+                 > TraitImplBody > TraitImplItem > TraitImplType
+                                                 > TraitImplConstant
+                                                 > TraitImplFunction
+
+TraitImplType > identifier
+              > Type
+
+TraitImplConstant > identifier
+                  > OptionalTypeAnnotation
+
+TraitImplFunction > Attributes
+                  > Modifiers
+                  > Function
+
+***** EBNF
+
+Remember 'GenericTypeArgs' = WhereClause.
+
+
+TypeImpl = 'impl' Generics Type TypeImplBody
+
+TypeImplBody = '{' TypeImplItem* '}'
+TypeImplItem = OuterDocComments Attributes Modifiers Function
+
+
+TraitImpl = 'impl' Generics Path GenericTypeArgs 'for' Type TraitImplBody
+
+TraitImplBody = '{' TraitImplItem* '}'
+TraitImplItem
+    = TraitImplType
+    | TraitImplConstant
+    | TraitImplFunction
+TraitImplType = 'type' identifier ( ':' Type )? ';'
+TraitImplConstant = 'let' identifier OptionalTypeAnnotation ';'
+TraitImplFunction = Attributes Modifiers Function
+                  
+**** Function
+
+Function > identifier
+         > Generics
+         > FunctionParameters > FunctionParametersList > FunctionParameter > Visibility
+                                                                           > PatternOrSelf
+                                                                           > Type
+         > Visibility
+         > Type
+         > WhereClause
+         > Block
+
+PatternOrSelf > Pattern 
+              > SelfPattern
+
+PatternNoMut > InternedPattern > interned_pattern
+             > TuplePattern > PatternList > Pattern
+             > StructPattern > Path
+                             > StructPatternFields > StructPatternField > identifier
+                                                                        > Pattern
+             > IdentifierPattern > identifier
+
+**** Expression Hierarchy
+
+Term > UnaryOp
+     > Term
+     > AtomOrUnaryRightExpression > Atom
+                                  > UnaryRightExpression > CallExpression
+                                                         > MemberAccessOrMethodCallExpression
+                                                         > CastExpression
+                                                         > IndexExpression
+
+CallExpression > Atom
+               > CallArguments
+
+MemberAccessOrMethodCallExpression > MemberAccessExpression > Atom
+                                                            > identifier
+                                   > MethodCallExpression > Atom
+                                                          > CallArguments
+                                                          > identifier
+
+CastExpression > Atom
+               > Type
+
+IndexExpression > Atom
+                > Expression
+
+Atom > Literal
+     > ParenthesesExpression > UnitLiteral/
+                             > ParenthesizedExpression > Expression
+                             > TupleExpression > Expression
+     > UnsafeExpression > Block
+     > PathExpression > VariableExpression > Path
+                      > ConstructorExpression > Type
+                                              > ConstructorFields > ConstructorField
+                                                                  > Expression
+                                                                  > identifier
+     > IfExpression > ExpressionExceptConstructor
+                    > Block
+                    > IfExpression*
+     > Lambda
+     > ComptimeExpression > Block
+     > UnquoteExpression > Expression
+                         > identifier
+     > TypePathExpression > PrimitiveType
+                          > identifier
+                          > GenericTypeArgs
+     > AsTraitPath
+     > ResolvedExpression > unquote_marker
+     > InternedExpression > interned_expr
+     > InternedStatementExpression > interned_statement
+
+**** Statement / Literal Conflict
+
+Block > Statement > BreakStmt
+                  > ContinueStmt
+                  > ReturnStmt
+                  > LetStmt
+                  > ComptimeStmt
+                  > ConstrainStmt
+                  > ForStmt
+                  > AssignStmt
+                  > IfExpression
+                  > Block
+                  > ExpressionStmt > Expression > Identifier
+                                                > BinaryExpression
+                                                > Literal
+
+Literal > QuoteExpression/
+        > ArrayExpression > ArrayLiteral > StandardArrayLiteral > ArrayElements > Expression
+                                         > RepeatedArrayLiteral > Expression
+                                                                > TypeExpression
+        > SliceExpression > ArrayLiteral
+        > BlockExpression > Block
+
+BinaryExpression > Expression
+
+SliceExpression > ArrayExpression
 
 *** Classification Semantics
 :PROPERTIES:
@@ -167,6 +626,10 @@ seq(
 )
 #+end_src
 
+**** TODO Items in Body
+e.g.     /// TraitBody = '{' ( OuterDocComments TraitItem )* '}'
+
+Are there other places like struct/impl/enum/function bodies where this can be reduced?
 
 *** Coverage TODOs
 
@@ -217,6 +680,39 @@ Finish converting the various forms that are in the literal =grammar.js= to tang
 - [ ] [[file:noir_grammar.org::#h:65B0176B-B46F-4679-8535-C504870AC048][ident]] :: identifier regex (but might need to convert into EBNFs weird xD or whatever stuff)
 - [ ] [[file:noir_grammar.org::#h:54ACA91F-70A8-4121-A799-F872DDCAF240][bool]]
 - [ ] [[file:noir_grammar.org::#h:F5A79701-65C9-4FEA-83D8-2413C585A5FA][ItemVisibility]] :: don't need to specify 'nothing'
+- [ ] [[file:noir_grammar.org::#h:02355489-DDCD-4E67-BB39-5DF3F0BC0A8A][TraitConstant]] :: see inline task at target for proper EBNF
+- [ ] [[file:noir_grammar.org::#h:96FCF9AD-3B89-451B-B84D-90A7A625B56D][PathKind]] ::  see inline task at target
+- [ ] [[file:noir_grammar.org::#h:ADB184CE-E43C-423B-803F-DE1679A91829][Use]] :: see inline task at target
+- [ ] [[file:noir_grammar.org::#h:A051D0D5-7007-4DF8-83B7-FB4EFF9C383E][PathNoTurbofish]] :: see inline task at target
+
+**** TODO Rename ts rules for ItemKind items so they are xxx_item
+i.e. function becomes function_item etc
+
+**** TODO Rename struct_field_list and struct_field_item
+Rename to field_declaration_list and field_declaration respectively? We already know they are for structs because they are inside a struct_item
+
+**** TODO Duplicate production locuses e.g. if_expression
+
+IfExpression is under Statement, and also under Expression. Now that is the case in the literal EBNF but it likely doesn't have to be the case in the tree-sitter grammar. Once the grammar is done look at de-duplicating this if it is applicable. However of course tests where expression-statement is to be expected need to still pass.
+
+***** TODO ParenthesizedTypeExpression and ParenthesizedExpression
+
+**** TODO Decide on rule names for ConstructorExpression and StructPattern
+Very similar rules, any possible merging and unification of naming style for fields?
+
+**** TODO Function return type similar to lambda return type
+I've decided to wrap the -> into the rule, we do this for parameters, bodies and a bunch of other constructs so why not for return type? Function still needs the return_type field so also take a similar approach there unless I change my mind. See: Lambda.
+
+**** TODO Impl type object generics, parameters or arguments?
+Parameters being a declaration of what it can accept, arguments being concrete things passed in. For syntax like: impl<T> Option<T> {}    is the T in Option<T> a type /parameter/ or a type /argument/. It's an argument right? If so, adjust CST accordingly.
+
+Also add a test for this into Noirc impls.rs
+
+**** TODO Attribute content and str content potential external scanner
+Found when trying to parse Noir stdlib locus referenced in this commit, because line_comment is (correctly) an extra (and thus can occur anywhere), URLs within strings are being incorrectly parsed as line comments within said strings which break the parser. In order to tell the external scanner that line comments (if we're within a string) are not actually line comments we need to add a rule (string_content) to the external scanner so we can check if we're within it (string_content), and if we are to refuse creating a line_comment at this point.
+    noir/noir_stdlib/src/ec/tecurve.nr      136,54 - 137,73
+    but also actually at line 30 (or off-by-1 ts line 29)
+
 
 *** Debugging
 

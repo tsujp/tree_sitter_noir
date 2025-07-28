@@ -4792,7 +4792,8 @@ seq(
     optional('!'), // Marks InnerAttribute.
     '[',
     optional("'"), // Marks attribute as having a tag
-    alias(<<r("arbitrary_content")>>, $.content),
+    // ASCII space, and printable characters except for opening and closing brackets.
+    optional(alias(/[\x20-\x22\x23-\x5A,\x5C,\x5E-\x7E\s]+/, $.content)),
     ']',
 )
 #+end_src
@@ -4927,21 +4928,19 @@ seq(
     repeat(choice(
         <<r("str_content")>>,
         <<r("escape_sequence")>>,
-        // $.str_content,
-        // $.escape_sequence,
     )),
     token.immediate('"'),
 )
 #+end_src
 
 #+name: escape_sequence
-#+begin_src js :arg $
-seq(
-    '\\',
-    // TODO: Do we want to be strict on valid escape sequences (r, n, t etc) or accept any ASCII. Problem is error recovery in tree-sitter and how that affects highlighting.
-    token.immediate(choice(
-        'r', 'n', 't', '0', '"', '\\',
-    )),
+#+begin_src js
+token.immediate(
+    seq(
+        '\\',
+        // TODO: Do we want to be strict on valid escape sequences (r, n, t etc) or accept any ASCII. Problem is error recovery in tree-sitter and how that affects highlighting.
+        choice('r', 'n', 't', '0', '"', '\\'),
+    ),
 )
 #+end_src
 
@@ -5434,11 +5433,6 @@ alias(<<r("generics")>>, $.type_parameters)
 alias(<<r("generic_type_args")>>, $.type_parameters)
 #+end_src
 
-#+name: arbitrary_content
-#+begin_src js
-seq(repeat1(choice(' ', REG_ALPHABETIC, REG_NUMERIC, REG_ASCII_PUNCTUATION)))
-#+end_src
-
 ** Declarations
 
 #+name: grp__declarations
@@ -5531,9 +5525,6 @@ Mostly meta-rules e.g. inlined tree-sitter rules serving as templates.
 
 #+name: grp__misc
 #+begin_src js :noweb yes
-
-// Essentially the equivalent of /.*/ but in a way that doesn't implode tree-sitter.
-<<n("arbitrary_content")>>
 
 // Alias both Generic and GenericType parameters to a node of the same name.
 <<c('("generic_parameters" "generic_type_parameters"))>>

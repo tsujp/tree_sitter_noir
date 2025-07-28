@@ -46,17 +46,27 @@ Including definitions, and items.
 fn normal() {}
 #+end_test
 
+**** TODO No newlines
+Will require an external scanner I think.
+#+begin_test :error :skip
+#[newlines
+are not allowed
+in attributes]
+fn foo() {}
+#+end_test
+
 *** Degenerate
 #+begin_test
+#[]
+
 #[   ]
-
 #[oracle( )]
-
 #[oracle(...)]
-
 #[ leading, and space,      seperated  /with/  punctuation!!!,{}|!#_ () () ( ( ) () ( ]
 
 ---
+
+(attribute_item)
 
 (attribute_item
   (content))
@@ -2198,17 +2208,12 @@ x
 
 *** String
 #+begin_test
-global foo = "";
-global foo = "\\";
+global f1 = "";
+global f2 = "       ";
+global f3 = "hello";
 
-global bar = "hello";
-global bar = "hello\"escaped\"";
-
-global lorem = "hello
-multiline
-        with scapes and *&!@#%!@#(&!#())
-some escapes \r \n \"nested string \r\n\"
-blah";
+global f3 = "hello
+world!";
 
 ---
 
@@ -2218,11 +2223,56 @@ blah";
 (global_item
   name: (identifier)
   (str_literal
-    (escape_sequence)))
+    (str_content)))
+(global_item
+  name: (identifier)
+  (str_literal
+    (str_content)))
 
 (global_item
   name: (identifier)
   (str_literal
+    (str_content)))
+#+end_test
+
+**** Line comment contents
+
+For instance, a URL looks like a line comment due to the =//= but it isn't and should not be interpreted as such while we're parsing string contents.
+
+TODO: Group this test under it's own heading (and in general some 'inversing' re-org required) instead of being under attribute or (as it currently is) string.
+#+begin_test
+global do_not_parse_line_comment_in_string_contents = "at: https://example.com";
+
+#[deprecated = "It's recommmended to use the external noir-edwards library (https://github.com/noir-lang/noir-edwards)"]
+
+---
+
+(global_item
+  name: (identifier)
+  (str_literal
+    (str_content)))
+(attribute_item
+  (content))
+#+end_test
+
+**** Escape sequence
+#+begin_test
+global f1 = "foo\\bar";
+global f2 = "hello\"escaped\"";
+
+global b1 = "hello
+multiline
+        with escapes and *&!@#%!@#(&!#())
+some escapes \r \n \" nested string \r\n\"
+blah";
+
+---
+
+(global_item
+  name: (identifier)
+  (str_literal
+    (str_content)
+    (escape_sequence)
     (str_content)))
 (global_item
   name: (identifier)
@@ -2246,6 +2296,28 @@ blah";
     (escape_sequence)
     (escape_sequence)
     (str_content)))
+#+end_test
+
+***** Degenerate
+
+String contents (after escaping) =\=.
+#+begin_test
+global f1 = "\\";
+
+---
+
+(global_item
+  name: (identifier)
+  (str_literal
+    (escape_sequence)))
+#+end_test
+
+***** Require immediate
+Escape sequences must bind to immediate tokens.
+TODO: When CST testing implemented make a CST test for this: https://github.com/tree-sitter/tree-sitter/pull/4633 and https://github.com/tree-sitter/tree-sitter/issues/4476
+
+#+begin_test :error
+global f = "\ r";
 #+end_test
 
 *** Raw string

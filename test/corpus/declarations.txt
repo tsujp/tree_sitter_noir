@@ -43,21 +43,35 @@ fn normal() {}
 ---
 
 
+======================================
+Attributes / Normal / No newlines (e1)
+:error
+:skip
+======================================
+
+#[newlines
+are not allowed
+in attributes]
+fn foo() {}
+---
+
+
 =======================
 Attributes / Degenerate
 =======================
 
+#[]
+
 #[   ]
-
 #[oracle( )]
-
 #[oracle(...)]
-
 #[ leading, and space,      seperated  /with/  punctuation!!!,{}|!#_ () () ( ( ) () ( ]
 
 ---
 
 (source_file
+  (attribute_item)
+
   (attribute_item
     (content))
   (attribute_item

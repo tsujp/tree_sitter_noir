@@ -171,13 +171,21 @@
           ]
         },
         {
-          "type": "ALIAS",
-          "content": {
-            "type": "SYMBOL",
-            "name": "arbitrary_content"
-          },
-          "named": true,
-          "value": "content"
+          "type": "CHOICE",
+          "members": [
+            {
+              "type": "ALIAS",
+              "content": {
+                "type": "PATTERN",
+                "value": "[\\x20-\\x22\\x23-\\x5A,\\x5C,\\x5E-\\x7E\\s]+"
+              },
+              "named": true,
+              "value": "content"
+            },
+            {
+              "type": "BLANK"
+            }
+          ]
         },
         {
           "type": "STRING",
@@ -4547,35 +4555,6 @@
         }
       ]
     },
-    "arbitrary_content": {
-      "type": "SEQ",
-      "members": [
-        {
-          "type": "REPEAT1",
-          "content": {
-            "type": "CHOICE",
-            "members": [
-              {
-                "type": "STRING",
-                "value": " "
-              },
-              {
-                "type": "PATTERN",
-                "value": "[a-zA-Z]"
-              },
-              {
-                "type": "PATTERN",
-                "value": "[0-9]"
-              },
-              {
-                "type": "PATTERN",
-                "value": "[!\"#$%&'()*+,\\-./:;<=>?@\\[\\\\\\]^_`\\{|\\}~]"
-              }
-            ]
-          }
-        }
-      ]
-    },
     "_generic_parameters": {
       "type": "ALIAS",
       "content": {
@@ -4739,15 +4718,15 @@
       "value": "[\\x20-\\x21\\x23-\\x5B\\x5D-\\x7E\\s]+"
     },
     "escape_sequence": {
-      "type": "SEQ",
-      "members": [
-        {
-          "type": "STRING",
-          "value": "\\"
-        },
-        {
-          "type": "IMMEDIATE_TOKEN",
-          "content": {
+      "type": "IMMEDIATE_TOKEN",
+      "content": {
+        "type": "SEQ",
+        "members": [
+          {
+            "type": "STRING",
+            "value": "\\"
+          },
+          {
             "type": "CHOICE",
             "members": [
               {
@@ -4776,8 +4755,8 @@
               }
             ]
           }
-        }
-      ]
+        ]
+      }
     },
     "raw_str_literal": {
       "type": "SEQ",
