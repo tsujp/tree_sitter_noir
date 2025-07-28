@@ -186,9 +186,17 @@ fd term *args:
       rg -m1 --engine=auto \
         '(.*?)[\s]+Parse.*(?:ERROR|MISSING).*\[(\d+),\s(\d+)\]\s-\s\[(\d+),\s(\d+)\]' \
         --color never --no-line-number --only-matching --replace=$'$1\n$2\n$3\n$4\n$5' \
-        <(just --justfile {{justfile()}} test-vocab); kill "$!" \
+        <(just --justfile {{justfile()}} test-vocab); \
+          if kill -0 "$!" 2>/dev/null; then \
+            kill "$!"; \
+          fi; \
         )" \
       && \
+    \
+    if [[ -z ${err_info[@]} ]]; then \
+      printf 'no parser error found\n'; \
+      exit 0; \
+    fi; \
     \
     declare err_start="${err_info[1]}:${err_info[2]}"; \
     declare err_end="${err_info[3]}:${err_info[4]}"; \
@@ -196,7 +204,7 @@ fd term *args:
     \
     printf -- '--> {{YELLOW}}CST excerpt{{NORMAL}}    {{BOLD + BLACK}}(sanity: %s){{NORMAL}}\n' "$err_pattern"; \
     just --justfile {{justfile()}} parse-file "${err_info[0]}" 2> /dev/null | \
-      rg --engine=auto -B4 -A8 --multiline "$err_pattern" \
+      rg --engine=auto -B8 -A8 --multiline "$err_pattern" \
       && \
     \
     (( err_info[1]++ )); \
