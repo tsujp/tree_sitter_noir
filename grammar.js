@@ -65,6 +65,9 @@ module.exports = grammar({
     name: 'noir',
 
     externals: ($) => [
+        $.quote_expr_content, // Quoted content.
+        $.quote_expr_unquote, // Unquote marker ($).
+        //
         $._raw_str_literal_start,
         $._raw_str_literal_content,
         $._raw_str_literal_end,
@@ -97,6 +100,8 @@ module.exports = grammar({
         [$.function_item_modifiers, $.global_item_modifiers],
         // XXX: Temporary or required? When adding generic_type to Type AST.
         [$._type, $.generic],
+        // XXX: Had to add this when doing quote expression stuff, perhaps with an external scanner it won't be required but for now it is.
+        // [r("quote")>>],
     ],
 
     // TODO: Need to document (for myself) keyword extraction to check we're doing it properly.
@@ -540,7 +545,8 @@ module.exports = grammar({
         // * * * * * * * * * * * * * * * * * * * * * * * * * EXPRESSIONS
         
         // [[file:noir_grammar.org::expression]]
-        _expression: $ => prec(1, choice(
+        _expression: $ => prec.left(1,
+        choice(
             $.binary_expression,
             $.generic_function, // Ours.
             // Inlined Noirc: Atom.
@@ -556,7 +562,7 @@ module.exports = grammar({
             $.if_expression,
             $.lambda,
             $.comptime,
-            $.unquote_expression,
+            // r("unquote_expression")>>, // XXX: Moving so only valid within QuoteExpression.
             // TypePathExpression is Path.
             alias($.trait_path_alias, $.path),
             // Blocked: ResolvedExpression, InternedExpression, InternedStatementExpression.
@@ -781,9 +787,9 @@ module.exports = grammar({
         
         // [[file:noir_grammar.org::unquote_expression]]
         unquote_expression: $ => seq(
-            '$',
+            $.quote_expr_unquote,
             choice(
-                $.path,
+                $.identifier_or_path,
                 seq('(', $._expression, ')'),
             ),
         ),
@@ -1146,30 +1152,27 @@ module.exports = grammar({
         fmt_str_content: _ => /[\x20-\x21\x23-\x7E\s]+/,
         
         // [[file:noir_grammar.org::quote]]
-        quote_expression: $ => {
-            // All the patterns here are REG_ASCII_PUNCTUATION except (in each case) the opening/closing delimiters removed from the pattern.
-            const t = [
-                ['{', '}', /[!"#$%&'()*+,\-./:;<=>?@\[\\\]^_`|~]/],  // Braces removed.
-                ['[', ']', /[!"#$%&'()*+,\-./:;<=>?@\\^_`\{|\}~]/],  // Brackets removed.
-                ['(', ')', /[!"#$%&'*+,\-./:;<=>?@\[\\\]^_`\{|\}~]/], // Parens removed.
-            ]
+        quote_expression: $ => seq(
+            'quote',
+            '{',
+            // field('tokens', alias($.quote_content, $.token_stream)),
+            // XXX: Optionality here must be in-sync with external scanner.
+            field('tokens', optional(seq(
+                choice(
+                    $.unquote_expression,
+                    alias($.quote_expr_content, $.token_stream),
+                ),
+            ))),
+            '}',
+        ),
         
-            return seq(
-                'quote',
-                choice(...t.map(([o, c, p]) => seq(
-                    o,
-                    optional(alias(
-                        seq(repeat1(choice(
-                            REG_ALPHABETIC,
-                            REG_NUMERIC,
-                            p,
-                        ))),
-                        $.quote_tokens,
-                    )),
-                    c,
-                )))
-            )
-        },
+        // XXX: If more nested structure desired.
+        quote_content: $ => seq(
+            choice(
+                $.unquote_expression,
+                alias($.quote_expr_content, $.token_stream),
+            ),
+        ),
         
         // [[file:noir_grammar.org::comment]]
         comment: $ => choice(

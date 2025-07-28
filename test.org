@@ -2210,7 +2210,7 @@ x
 #+begin_test
 global f1 = "";
 global f2 = "       ";
-global f3 = "hello";
+global f3 = "hello ";
 
 global f3 = "hello
 world!";
@@ -2430,7 +2430,7 @@ global foo = f"no \"quotes\" can be escaped in a format string";
 *** Quasiquote
 #+begin_test
 global f1 = quote {};
-global f2 = quote { 1 };
+global f2 = quote { 1234 };
 
 ---
 
@@ -2440,11 +2440,99 @@ global f2 = quote { 1 };
 (global_item
   name: (identifier)
   (quote_expression
-    (quote_tokens)))
+    tokens: (token_stream)))
 #+end_test
 
-**** TODO Complex
-And rename this subheading to something better
+**** Nested delimiters
+#+begin_test
+comptime fn foo() -> Quoted {
+  quote { { 42069 } }
+}
+
+---
+
+(function_item
+  (modifiers)
+  name: (identifier)
+  parameters: (parameters)
+  return_type: (return_type
+    type: (identifier))
+  body: (block
+    (quote_expression
+      tokens: (token_stream))))
+#+end_test
+
+**** Unquote
+#+begin_test :skip
+comptime fn foo() -> Quoted {
+  quote { $(1 + 2) };
+
+  quote { $foo::bar }
+}
+
+---
+
+(function_item
+  (modifiers)
+  name: (identifier)
+  parameters: (parameters)
+  return_type: (return_type
+    type: (identifier))
+  body: (block
+    (expression_statement
+      (quote_expression
+        (token_stream
+          (unquote_expression
+            (binary_expression
+              left: (int_literal)
+              right: (int_literal))))))
+    (quote_expression
+      (token_stream
+        (unquote_expression
+          (path
+            scope: (identifier)
+            name: (identifier)))))))
+#+end_test
+
+***** Nested delimiters
+#+begin_test :skip
+comptime fn foo() -> Expr {
+  quote { { $exprs }}.as_expr().unwrap()
+}
+
+---
+
+(function_item
+  (modifiers)
+  name: (identifier)
+  parameters: (parameters)
+  return_type: (return_type
+    type: (identifier))
+  body: (block
+    (call_expression
+      function: (access_expression
+        scope: (call_expression
+          function: (access_expression
+            scope: (quote_expression
+              (token_stream
+                (unquote_expression
+                  (identifier))))
+            name: (identifier))
+          arguments: (arguments))
+        name: (identifier))
+      arguments: (arguments))))
+#+end_test
+
+***** No unquote outside quote
+
+Attempt to use unquote outside of quote is an error.
+#+begin_test :error
+global f1 = $foo::bar;
+#+end_test
+
+**** Complex
+
+TODO: Rename this subheading to something better
 
 #+begin_test
 comptime fn foo() {
@@ -2461,7 +2549,14 @@ comptime fn foo() {
     (let_statement
       pattern: (identifier)
       value: (quote_expression
-        (quote_tokens)))))
+        tokens: (token_stream)))))
+#+end_test
+
+**** Complex 2
+#+begin_test :skip
+comptime fn f() {
+  quote { if $condition { $consequence } else { $alternative }}.as_expr().unwrap()
+}
 #+end_test
 
 *** Array expression
@@ -3277,22 +3372,10 @@ global f1 = comptime { 123; };
         (int_literal)))))
 #+end_test
 
-** Unquote
-#+begin_test
-global f1 = $foo::bar;
+** Unquote                                                             :stub:
 
----
-
-(global_item
-  name: (identifier)
-  (unquote_expression
-    (path
-      scope: (identifier)
-      name: (identifier))))
-#+end_test
-
-*************** TODO Generics in the Path, potential limited scope to Quote Expression
-*************** END
+Put inside 
+AST =B= /is/ =Block= (an expression) so look to [[#h:26192D97-5D6A-47B9-A598-98A41B83BD47][Block (Expression)]] tests instead.
 
 ** TypePath
 #+begin_test

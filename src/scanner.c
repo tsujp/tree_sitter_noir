@@ -8,6 +8,9 @@
 
 // Order must match that in grammar's `externals`, enumerants names need not match.
 enum TokenType {
+  QUOTE_EXPR_CONTENT,
+  QUOTE_EXPR_UNQUOTE,
+  //
   RAW_STR_LITERAL_START,
   RAW_STR_LITERAL_CONTENT,
   RAW_STR_LITERAL_END,
@@ -75,6 +78,62 @@ static inline void skip(TSLexer *lexer) { lexer->advance(lexer, true); }
 
 static inline bool is_ascii(TSLexer *lexer) {
   return (0 <= lexer->lookahead && lexer->lookahead <= 127);
+}
+
+
+static inline bool scan_quote_expression(TSLexer *lexer, const bool *valid_symbols) {
+  char first = (char)lexer->lookahead;
+
+  // Matches: {}
+  //           ^
+  //
+  // If next char is immediately the closing delimiter then this quote expression's contents (tokens) is nothing.
+  if (first == '}') {
+    advance(lexer);
+    return false;
+  }
+  
+  unsigned depth = 1;
+
+  // TODO: What to do about whitespace padding on the quote expression, keep or ignore..?
+  
+  while (!lexer->eof(lexer) && depth != 0) {
+    switch (lexer->lookahead) {
+    case '{':
+      advance(lexer);
+      depth++;
+
+      continue;
+      break;
+
+    case '}':
+      if (depth == 1) {
+        lexer->mark_end(lexer);
+      } else {
+        advance(lexer);
+      }
+
+      depth--;
+
+      continue;
+      break;
+
+      // TODO: Unquote.
+
+    default:
+      if (is_ascii(lexer) == false) return false;
+    }
+
+    lexer->mark_end(lexer);
+    advance(lexer);
+  }
+
+  if (depth == 0 && valid_symbols[QUOTE_EXPR_CONTENT]) {
+    lexer->result_symbol = QUOTE_EXPR_CONTENT;
+    return true;
+  }
+
+  return false;
 }
 
 
@@ -231,6 +290,11 @@ bool tree_sitter_noir_external_scanner_scan(
   TSLexer *lexer,
   const bool *valid_symbols
 ) {
+  if (valid_symbols[QUOTE_EXPR_CONTENT] ||
+      valid_symbols[QUOTE_EXPR_UNQUOTE]) {
+    return scan_quote_expression(lexer, valid_symbols);
+  }
+  
   if (valid_symbols[BLOCK_COMMENT_CONTENT] ||
       valid_symbols[INNER_BLOCK_COMMENT_DOC_STYLE] ||
       valid_symbols[OUTER_BLOCK_COMMENT_DOC_STYLE]

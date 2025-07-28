@@ -4,7 +4,7 @@ Literal / String
 
 global f1 = "";
 global f2 = "       ";
-global f3 = "hello";
+global f3 = "hello ";
 
 global f3 = "hello
 world!";
@@ -267,7 +267,7 @@ Literal / Quasiquote
 ====================
 
 global f1 = quote {};
-global f2 = quote { 1 };
+global f2 = quote { 1234 };
 
 ---
 
@@ -278,8 +278,111 @@ global f2 = quote { 1 };
   (global_item
     name: (identifier)
     (quote_expression
-      (quote_tokens)))
+      tokens: (token_stream)))
 )
+
+
+========================================
+Literal / Quasiquote / Nested delimiters
+========================================
+
+comptime fn foo() -> Quoted {
+  quote { { 42069 } }
+}
+
+---
+
+(source_file
+  (function_item
+    (modifiers)
+    name: (identifier)
+    parameters: (parameters)
+    return_type: (return_type
+      type: (identifier))
+    body: (block
+      (quote_expression
+        tokens: (token_stream))))
+)
+
+
+==============================
+Literal / Quasiquote / Unquote
+:skip
+==============================
+
+comptime fn foo() -> Quoted {
+  quote { $(1 + 2) };
+
+  quote { $foo::bar }
+}
+
+---
+
+(source_file
+  (function_item
+    (modifiers)
+    name: (identifier)
+    parameters: (parameters)
+    return_type: (return_type
+      type: (identifier))
+    body: (block
+      (expression_statement
+        (quote_expression
+          (token_stream
+            (unquote_expression
+              (binary_expression
+                left: (int_literal)
+                right: (int_literal))))))
+      (quote_expression
+        (token_stream
+          (unquote_expression
+            (path
+              scope: (identifier)
+              name: (identifier)))))))
+)
+
+
+==================================================
+Literal / Quasiquote / Unquote / Nested delimiters
+:skip
+==================================================
+
+comptime fn foo() -> Expr {
+  quote { { $exprs }}.as_expr().unwrap()
+}
+
+---
+
+(source_file
+  (function_item
+    (modifiers)
+    name: (identifier)
+    parameters: (parameters)
+    return_type: (return_type
+      type: (identifier))
+    body: (block
+      (call_expression
+        function: (access_expression
+          scope: (call_expression
+            function: (access_expression
+              scope: (quote_expression
+                (token_stream
+                  (unquote_expression
+                    (identifier))))
+              name: (identifier))
+            arguments: (arguments))
+          name: (identifier))
+        arguments: (arguments))))
+)
+
+
+==============================================================
+Literal / Quasiquote / Unquote / No unquote outside quote (e1)
+:error
+==============================================================
+
+global f1 = $foo::bar;
+---
 
 
 ==============================
@@ -301,7 +404,23 @@ comptime fn foo() {
       (let_statement
         pattern: (identifier)
         value: (quote_expression
-          (quote_tokens)))))
+          tokens: (token_stream)))))
+)
+
+
+================================
+Literal / Quasiquote / Complex 2
+:skip
+================================
+
+comptime fn f() {
+  quote { if $condition { $consequence } else { $alternative }}.as_expr().unwrap()
+}
+
+---
+
+(source_file
+
 )
 
 
@@ -1190,24 +1309,6 @@ global f1 = comptime { 123; };
       (block
         (expression_statement
           (int_literal)))))
-)
-
-
-=======
-Unquote
-=======
-
-global f1 = $foo::bar;
-
----
-
-(source_file
-  (global_item
-    name: (identifier)
-    (unquote_expression
-      (path
-        scope: (identifier)
-        name: (identifier))))
 )
 
 

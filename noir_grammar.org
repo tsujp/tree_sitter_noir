@@ -3052,7 +3052,8 @@ Guaranteed to NOT have a colon =:= following it.
 
 #+name: expression
 #+begin_src js :rule _expression :arg $
-prec(1, choice(
+prec.left(1,
+choice(
     <<r("binary_expression")>>,
     <<r("generic_function")>>, // Ours.
     // Inlined Noirc: Atom.
@@ -3068,7 +3069,7 @@ prec(1, choice(
     <<r("if_expression")>>,
     <<r("lambda")>>,
     <<r("comptime_block")>>,
-    <<r("unquote_expression")>>,
+    // r("unquote_expression")>>, // XXX: Moving so only valid within QuoteExpression.
     // TypePathExpression is Path.
     alias(<<r("trait_path_alias")>>, $.path),
     // Blocked: ResolvedExpression, InternedExpression, InternedStatementExpression.
@@ -4388,12 +4389,23 @@ CLOSED: [2025-07-19 Sat 23:47]
 #+name: unquote_expression
 #+begin_src js :arg $ :ast UnquoteExpression
 seq(
-    '$',
+    $.quote_expr_unquote,
     choice(
-        <<r("path")>>,
+        <<r("identifier_or_path")>>,
         seq('(', <<r("expression")>>, ')'),
     ),
 )
+#+end_src
+
+#+name: unquote_expression__OLD
+#+begin_src js :arg $ :ast UnquoteExpression
+prec.left(100, seq(
+    '$',
+    choice(
+        prec.left(1000, <<r("identifier_or_path")>>),
+        seq('(', prec.right(1000, <<r("expression")>>), ')'),
+    ),
+))
 #+end_src
 
 Parser: [[file:noir/compiler/noirc_frontend/src/parser/parser/expression.rs::fn parse_unquote_expr(&mut self)][parse_unquote_expr()]]
@@ -5034,27 +5046,58 @@ CLOSED: [2025-07-26 Sat 03:01]
 // TODO: Will likely require an external scanner since we need to match the opening delimiter which can be 1 of 3 options, and there is nesting. For now: only braces.
 
 #+name: quote
+#+begin_src js :rule quote_expression :arg $
+seq(
+    'quote',
+    '{',
+    // field('tokens', alias($.quote_content, $.token_stream)),
+    // XXX: Optionality here must be in-sync with external scanner.
+    field('tokens', optional(seq(
+        choice(
+            <<r("unquote_expression")>>,
+            alias($.quote_expr_content, $.token_stream),
+        ),
+    ))),
+    '}',
+),
+
+// XXX: If more nested structure desired.
+quote_content: $ => seq(
+    choice(
+        <<r("unquote_expression")>>,
+        alias($.quote_expr_content, $.token_stream),
+    ),
+)
+#+end_src
+
+#+name: quote_OLD
 #+begin_src js :rule quote_expression :arg $ :ast quote
 {
-    // All the patterns here are REG_ASCII_PUNCTUATION except (in each case) the opening/closing delimiters removed from the pattern.
-    const t = [
-        ['{', '}', /[!"#$%&'()*+,\-./:;<=>?@\[\\\]^_`|~]/],  // Braces removed.
-        ['[', ']', /[!"#$%&'()*+,\-./:;<=>?@\\^_`\{|\}~]/],  // Brackets removed.
-        ['(', ')', /[!"#$%&'*+,\-./:;<=>?@\[\\\]^_`\{|\}~]/], // Parens removed.
-    ]
+    const t = [ ['{', '}'], ['[', ']'], ['(', ')'] ]
 
+    // Single character regex with:
+    //   - Space (as \s)
+    //   - All printable ASCII characters, except...
+    //   - ... $ (\x24)
+    // const regex_token_stream = /[\x20-\x23\x25-\x7E\s]/
+    const regex_token_stream = /[\x20-\x7E\s]/
+
+    // TODO: This feels hacky but it apparently works, no external scanner required.
     return seq(
         'quote',
         choice(...t.map(([o, c, p]) => seq(
             o,
-            optional(alias(
-                seq(repeat1(choice(
-                    REG_ALPHABETIC,
-                    REG_NUMERIC,
-                    p,
-                ))),
-                $.quote_tokens,
-            )),
+            alias(
+                repeat(choice(
+                    // Order here doesn't matter.
+                    // o, c, regex_token_stream,
+                    <<r("expression")>>,
+                        <<r("if_expression")>>,
+                    <<r("unquote_expression")>>,
+                    // XXX: Need to specify all possible keywords which are no longer special within the scope of QuoteExpression.
+                )),
+                $.token_stream,
+            ),
             c,
         )))
     )
@@ -5316,6 +5359,9 @@ module.exports = grammar({
     name: 'noir',
 
     externals: ($) => [
+        $.quote_expr_content, // Quoted content.
+        $.quote_expr_unquote, // Unquote marker ($).
+        //
         $._raw_str_literal_start,
         $._raw_str_literal_content,
         $._raw_str_literal_end,
@@ -5348,6 +5394,8 @@ module.exports = grammar({
         [<<r("function_item_modifiers")>>, <<r("global_item_modifiers")>>],
         // XXX: Temporary or required? When adding generic_type to Type AST.
         [<<r("type")>>, <<r("generic_type")>>],
+        // XXX: Had to add this when doing quote expression stuff, perhaps with an external scanner it won't be required but for now it is.
+        // [r("quote")>>],
     ],
 
     // TODO: Need to document (for myself) keyword extraction to check we're doing it properly.
