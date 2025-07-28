@@ -367,6 +367,7 @@ module.exports = grammar({
         
         // [[file:noir_grammar.org::type_alias]]
         type_item: $ => seq(
+            optional($.visibility_modifier),
             'type',
             field('name', $.identifier),
             field('type_parameters', optional($._generic_parameters)),

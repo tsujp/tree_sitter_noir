@@ -392,18 +392,14 @@ Perhaps a new % sign in my font, the % is a little hard to read sometimes. Maybe
 
 
 
-refactor QuoteExpression to external scanner
+add visibility to TypeAlias
 
-- It's probably possible to do purely in the tree-sitter DSL but... beats me. I
-  know how to do it via external scanner and this commit does so. Unquote is not
-  added yet because that adds a lot of (relative) complexity. Will get to that
-  later.
+- Forgot this.
 
-- Noirc stdlib parse progress: 94.20% -> 98.55% (+4.35%)
+- Noirc stdlib parse progress: 98.55% -> 100% (+1.45%)
 - Resolves error attempting to parse Noirc stdlib at loci:
 
-    noir/noir_stdlib/src/meta/expr.nr       569,46 - 569,51
-    noir/noir_stdlib/src/meta/expr.nr       544,23 - 545,1
+    noir/noir_stdlib/src/meta/mod.nr        39,4 - 39,57
 
 
 

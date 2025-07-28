@@ -3661,6 +3661,22 @@ type f = unconstrained fn() -> Field;
       type: (primitive_type))))
 #+end_test
 
+*** Visibility
+#+begin_test
+pub type DeriveFunction = fn(StructDefinition) -> Quoted;
+
+---
+
+(type_item
+  (visibility_modifier)
+  name: (identifier)
+  type: (function_type
+    parameters: (parameters
+      (identifier))
+    return_type: (return_type
+      type: (identifier))))
+#+end_test
+
 *** Simple
 #+begin_test
 type f = fn() -> Field;

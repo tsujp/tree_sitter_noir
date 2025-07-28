@@ -2126,6 +2126,7 @@ CLOSED: [2025-07-23 Wed 00:24]
 #+name: type_alias
 #+begin_src js :rule type_item :arg $ :ast TypeAlias
 seq(
+    optional(<<r("item_visibility")>>),
     'type',
     field('name', <<r("identifier")>>),
     field('type_parameters', optional(<<r("generic_parameters")>>)),

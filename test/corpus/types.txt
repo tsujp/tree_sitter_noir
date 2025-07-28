@@ -17,6 +17,26 @@ type f = unconstrained fn() -> Field;
 )
 
 
+=====================
+Function / Visibility
+=====================
+
+pub type DeriveFunction = fn(StructDefinition) -> Quoted;
+
+---
+
+(source_file
+  (type_item
+    (visibility_modifier)
+    name: (identifier)
+    type: (function_type
+      parameters: (parameters
+        (identifier))
+      return_type: (return_type
+        type: (identifier))))
+)
+
+
 =================
 Function / Simple
 =================
