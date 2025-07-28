@@ -541,6 +541,7 @@ module.exports = grammar({
         // [[file:noir_grammar.org::expression]]
         _expression: $ => prec(1, choice(
             $.binary_expression,
+            $.generic_function, // Ours.
             // Inlined Noirc: Atom.
             $.__literal,
               // Inlined Noirc: ParenthesesExpression.
@@ -656,6 +657,19 @@ module.exports = grammar({
             $._expression,
         )),
         
+        // [[file:noir_grammar.org::generic_function]]
+        generic_function: $ => prec(
+            1, // Precedence so long as it's higher than Path.
+            seq(
+                field('function', choice(
+                    $.identifier,
+                    $.access_expression,
+                )),
+                '::',
+                // TODO: Alias generic_type_parameters usage to CST node 'type_arguments' here and elsewhere.
+                field('type_arguments', $._generic_type_parameters),
+            )
+        )   ,
         // [[file:noir_grammar.org::member_access_expression]]
         access_expression: $ => prec(PRECEDENCE.access, seq(
             field('scope', $._expression),

@@ -2030,6 +2030,10 @@
           },
           {
             "type": "SYMBOL",
+            "name": "generic_function"
+          },
+          {
+            "type": "SYMBOL",
             "name": "__literal"
           },
           {
@@ -2753,6 +2757,44 @@
           {
             "type": "SYMBOL",
             "name": "_expression"
+          }
+        ]
+      }
+    },
+    "generic_function": {
+      "type": "PREC",
+      "value": 1,
+      "content": {
+        "type": "SEQ",
+        "members": [
+          {
+            "type": "FIELD",
+            "name": "function",
+            "content": {
+              "type": "CHOICE",
+              "members": [
+                {
+                  "type": "SYMBOL",
+                  "name": "identifier"
+                },
+                {
+                  "type": "SYMBOL",
+                  "name": "access_expression"
+                }
+              ]
+            }
+          },
+          {
+            "type": "STRING",
+            "value": "::"
+          },
+          {
+            "type": "FIELD",
+            "name": "type_arguments",
+            "content": {
+              "type": "SYMBOL",
+              "name": "_generic_type_parameters"
+            }
           }
         ]
       }

@@ -3054,6 +3054,7 @@ Guaranteed to NOT have a colon =:= following it.
 #+begin_src js :rule _expression :arg $
 prec(1, choice(
     <<r("binary_expression")>>,
+    <<r("generic_function")>>, // Ours.
     // Inlined Noirc: Atom.
     <<r("literal")>>,
       // Inlined Noirc: ParenthesesExpression.
@@ -3199,10 +3200,33 @@ prec(PRECEDENCE.call, seq(
 Parser: [[file:noir/compiler/noirc_frontend/src/parser/parser/expression.rs::fn parse_call(&mut self, atom: Expression, start_span: Span)][parse_call()]]
 Types: [[file:noir/compiler/noirc_frontend/src/ast/expression.rs::pub struct CallExpression {][CallExpression struct]]
 
-*************** TODO When a turbofish is involved the CST looks a bit ugly with path, does this matter?
-Could be fine idk.
-*************** END
 *************** TODO Whether or not this is a macro call (also see CallArguments) here
+*************** END
+
+**** GenericFunction                                                 :pseudo:
+
+#+name: generic_function
+#+begin_src js :arg $ :ast "Ours: GenericFunction"
+prec(
+    1, // Precedence so long as it's higher than Path.
+    seq(
+        field('function', choice(
+            <<r("identifier")>>,
+            <<r("member_access_expression")>>,
+        )),
+        '::',
+        // TODO: Alias generic_type_parameters usage to CST node 'type_arguments' here and elsewhere.
+        field('type_arguments', <<r("generic_type_parameters")>>),
+    )
+)   
+#+end_src
+
+Before this rule anything with a turbofish in it was essentially considered a path with generics, however that's not technically correct (however I think Noirc makes this a little ambiguous IIRC). Paths (i.e. =::= delimited )that included generics and ended in a call expression worked fine but access expressions (i.e. =.= delimited) did not work as it was not possible to then parse an identifier followed by =::<T>= by =()=. This also addresses an internal TODO about CallExpression with paths looking ugly (as Path) was involved.
+
+*************** TODO Further refinements on path probably required in the long run
+What's considered a path versus call expression, member access etc etc. Basically just need to add more tests in the Noirc side to get back what the compiler frontend considers a thing and mirror that here. For now our rules are correct (in that they parse things correctly etc) but their names (semantics) /might/ not be the best.
+*************** END
+*************** TODO Might need to also rename 'generic' (as in a generic type) to that also, since this CST rule will be 'generic_function'.
 *************** END
 
 **** TOIMPL MemberAccessExpression
@@ -5454,7 +5478,7 @@ seq(repeat1(choice(' ', REG_ALPHABETIC, REG_NUMERIC, REG_ASCII_PUNCTUATION)))
 <<n("for_range")>>
 
 <<n("unary_op")>>
-<<c('("member_access_expression" "cast_expression" "index_expression"))>>
+<<c('("generic_function" "member_access_expression" "cast_expression" "index_expression"))>>
 
 // Ordered as at Atom.
 <<n("parenthesised_expression")>>

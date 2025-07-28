@@ -3331,9 +3331,9 @@ global f = foo::<T>(1, 2);
 (global_item
   name: (identifier)
   (call_expression
-    function: (path
-      scope: (identifier)
-      type_parameters: (type_parameters
+    function: (generic_function
+      function: (identifier)
+      type_arguments: (type_parameters
         (identifier)))
     arguments: (arguments
       (int_literal)
@@ -3373,12 +3373,43 @@ global f2 = lorem.ipsum.foo.bar("x", "y");
         (str_content)))))
 #+end_test
 
-**** TODO Turbofish
+**** Turbofish
 
 Some kind of conflict or a misconfigured rule, it wont parse without error currently.
 
-#+begin_test :skip
+#+begin_test
 global f = foo.bar::<T, U>(1, 2);
+global x = x.y.z.f.assert_max_bit_size::<128>;
+
+---
+
+(global_item
+  name: (identifier)
+  (call_expression
+    function: (generic_function
+      function: (access_expression
+        scope: (identifier)
+        name: (identifier))
+      type_arguments: (type_parameters
+        (identifier)
+        (identifier)))
+    arguments: (arguments
+      (int_literal)
+      (int_literal))))
+(global_item
+  name: (identifier)
+  (generic_function
+    function: (access_expression
+      scope: (access_expression
+        scope: (access_expression
+          scope: (access_expression
+            scope: (identifier)
+            name: (identifier))
+          name: (identifier))
+        name: (identifier))
+      name: (identifier))
+    type_arguments: (type_parameters
+      (int_literal))))
 #+end_test
 
 *** Solo delimiter
