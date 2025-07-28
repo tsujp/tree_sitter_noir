@@ -713,7 +713,8 @@ module.exports = grammar({
         
         // [[file:noir_grammar.org::constructor_expression]]
         struct_expression: $ => seq(
-            field('name', $.identifier),
+            // TODO: is it really any Type? So like a parentheses type etc. For now just identifier or path no turbofish.
+            field('name', $.identifier_or_path_no_turbofish),
             field('body', alias($.constructor_body, $.initializer_list)),
         ),
         // [[file:noir_grammar.org::constructor_body]]

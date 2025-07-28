@@ -385,24 +385,25 @@ head/tail notes so i can stop derping out:
 2. other stuff to speedup magit? cos it's annoyingly fucking slow
 3. any way to have a shortcut command to stage certain files so i dont have to manually select them every time?
 
+Perhaps a new % sign in my font, the % is a little hard to read sometimes. Maybe it's because it's narrow? 1234%.
 
 
-fix attribute content parsing
 
-- Attributes may have no contents so add optional to rule.
-- Attribute contents structured in such a way that attempts to parse a
-  line_comment within them was occuring, this is invalid and broke the parser
-  where attributes contained URLs (the // in a URL looks like a line_comment).
-- A 'proper' long-term solution might be to use an external scanner for string
-  contents, and/or attribute contents but for now this resolves the issue
-  correctly and the CST still appears nice so K.I.S.S.
-- Also the locus error reports line 136 but is actually from a failure to
-  parse the attribute on (real) line 30 of tecurve.nr.
 
-- Noirc stdlib parse progress: 89.86% -> 89.86% (+0%)
+
+
+allow PathNoTurbofish in Constructor name; add tests
+
+- Unclear on exactly which Types are allowed but it appears at least a Path
+  without Turbofish is given the error locus here. I believe I already have some
+  internal documentation for a Type which is parsed as an Identifier but I
+  cannot find it again right now, so, for now the rule
+  identifier_or_path_no_turbofish is fine.
+
+- Noirc stdlib parse progress: 89.86% -> 94.20% (+4.34%)
 - Resolves error attempting to parse Noirc stdlib at locus:
 
-    noir/noir_stdlib/src/ec/tecurve.nr      136,54 - 137,73
+    noir/noir_stdlib/src/ec/tecurve.nr      99,22 - 99,29
 
 
 

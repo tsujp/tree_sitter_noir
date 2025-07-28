@@ -3052,6 +3052,21 @@ global b2 = Bar { a, x: u32, z };
         (identifier)))))
 #+end_test
 
+*** Path
+#+begin_test
+global f1 = lorem::Foo {};
+
+---
+
+(global_item
+  name: (identifier)
+  (struct_expression
+    name: (path
+      scope: (identifier)
+      name: (identifier))
+    body: (initializer_list)))
+#+end_test
+
 *** Solo delimiter
 #+begin_test :error
 global f1 = Foo {,};
@@ -3836,7 +3851,7 @@ mod A {
 }
 #+end_example
 
-#+begin_test :skip
+#+begin_test
 global f1 = |a, A::B::Lorem{ foo }| { a + foo };
 
 ---
@@ -3845,8 +3860,15 @@ global f1 = |a, A::B::Lorem{ foo }| { a + foo };
   name: (identifier)
   (lambda
     parameters: (lambda_parameters
-      (identifier))
-      TODO STRUCT PATTERN CST HERE
+      (identifier)
+      (struct_pattern
+        type: (path
+          scope: (path
+            scope: (identifier)
+            name: (identifier))
+          name: (identifier))
+        (struct_pattern_field
+          (identifier))))
     body: (block
       (binary_expression
         left: (identifier)

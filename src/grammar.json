@@ -2999,7 +2999,7 @@
           "name": "name",
           "content": {
             "type": "SYMBOL",
-            "name": "identifier"
+            "name": "identifier_or_path_no_turbofish"
           }
         },
         {

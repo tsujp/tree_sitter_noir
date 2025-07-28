@@ -4207,7 +4207,8 @@ CLOSED: [2025-07-19 Sat 17:30]
 #+name: constructor_expression
 #+begin_src js :rule struct_expression :arg $ :ast ConstructorExpression
 seq(
-    field('name', <<r("identifier")>>),
+    // TODO: is it really any Type? So like a parentheses type etc. For now just identifier or path no turbofish.
+    field('name', <<r("identifier_or_path_no_turbofish")>>),
     field('body', alias(<<r("constructor_body")>>, $.initializer_list)),
 )
 #+end_src

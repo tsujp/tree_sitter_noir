@@ -935,6 +935,25 @@ global b2 = Bar { a, x: u32, z };
 )
 
 
+==================
+Constructor / Path
+==================
+
+global f1 = lorem::Foo {};
+
+---
+
+(source_file
+  (global_item
+    name: (identifier)
+    (struct_expression
+      name: (path
+        scope: (identifier)
+        name: (identifier))
+      body: (initializer_list)))
+)
+
+
 =================================
 Constructor / Solo delimiter (e1)
 :error
