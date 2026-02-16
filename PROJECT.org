@@ -1,3 +1,4 @@
+#+TODO: TODO(t@) BLOCK(b@) | DONE(d!)
 #+STARTUP: indent logdone logdrawer content lognoteclock-out
 # ------------------------------------------------------
 #+TITLE: Project Planning: tree_sitter_noir
@@ -750,8 +751,7 @@ To be clear those transclusions are the targets to other js source blocks for th
 *** DONE Update tree-sitter 0.25.8 to 0.26.5
 CLOSED: [2026-02-16 Mon 17:26]
 :LOGBOOK:
-CLOCK: [2026-02-16 Mon 17:31]
-CLOCK: [2026-02-16 Mon 17:11]--[2026-02-16 Mon 17:25] =>  0:14
+CLOCK: [2026-02-16 Mon 17:11]--[2026-02-16 Mon 17:54] =>  0:43
 - No action taken to change anything in the grammar itself, just updated the tree-sitter version in the project and re-built and re-ran all tests (which pass). Incremental improvements from the latest tree-sitter features should be done separately later.
 CLOCK: [2026-02-13 Fri 20:28]--[2026-02-13 Fri 21:21] =>  0:53
 - Read all changelog items from 0.25.8 to 0.26.5 and made note of (probably) important ones.
