@@ -4,7 +4,7 @@ Noir grammar for tree-sitter. Noir is a ZK circuit programming language created 
 
 ** Status
 
-Pre-alpha work-in-progress. Currently in the final stages of adding rules to the grammar.
+Grammar works, queries and refinements are the focus now.
 
 See [[./PROJECT.org][tree_sitter_noir's project planning file]] for TODOs, and further resources etc.
 
@@ -32,6 +32,9 @@ just test
 The justfile is configured (by default) to echo the commands it executes; it's syntax is very readable.
 
 *** Developer Environments / Tooling
+:PROPERTIES:
+:CUSTOM_ID: h:C72FA3F7-3C23-4334-9590-5FF173EDB81C
+:END:
 
 The =.jam= /directory/ includes a =Containerfile= (aka. =Dockerfile=) for container-based workflows. It is primarily written for use with [[https://podman.io/][Podman]] but should also work with Docker. It is currently written for macOS hosts running containers; i.e. an implicit Linux-VM which itself is actually managing containers.
 
@@ -53,6 +56,27 @@ You can ssh into the container via:
 #+begin_src sh
 ./jam ssh
 #+end_src
+
+**** Debugging
+
+There are two approaches to debugging the grammar, if the rule in question involves an external scanner it is advised to use a debugger like =gdb=, =lldb=, or other appropriate command-line (optionally DAP-capable) debuggers. This is because you will want to step through execution and set breakpoints to examine what is happening. You can still use this approach if the rule does not involve an external scanner.
+
+***** Command Line Debuggers / DAP
+
+The included [[#h:C72FA3F7-3C23-4334-9590-5FF173EDB81C][Jam developer environment]] pre-configures a debugging-ready environment using =gdb= (which is DAP capable).
+
+The easiest way to create a debuggable parser is to **not** attempt to attach to the tree-sitter CLI but to use the tree-sitter API via your language of choice (pre-provided is C-based [[./debug_parser.c][debug_parser]]) and set a breakpoint where =ts_parser_parse_string= (or equivalent) is called. From there you can step through the parser and examine behaviour.
+
+Useful watchpoints can be found in [[./.gdbinit][gdbinit]] but at the minimum would be =(char)lexer->lookahead=.
+
+***** Debug Logs
+
+If debugging rules wholly constructed through the tree-sitter DSL you can pass =-0= to =tree-sitter generate= to compile the parser in debug mode, and then =-d= to =tree-sitter test= to output textual logging information.
+
+./jam ssh
+just clean-all
+just bootstrap
+just debug
 
 *** Org Files
 
@@ -76,9 +100,9 @@ If you wish to contribute you may edit either the test org-file or the resulting
 
 *** AI / LLMs
 
-Code generated in-part or wholly by LLMs is not allowed. Contributions are only valuable if they can be maintained and understood. Beyond trivial constructs (which are better suited to snippet completion tools) generating code leads to a lack of understanding about what or why.
+**Code generated in-part or wholly by LLMs is not allowed**. Contributions are only valuable if they can be maintained and understood. Beyond trivial constructs (which are better suited to snippet completion tools) generating code leads to a lack of understanding about what or why.
 
-Furthermore LLM companies steal others' work for profit which is antithetical to open-source. If you disagree with this stance please do not contribute, it is not up for discussion in any form.
+Furthermore LLM companies steal others' work for profit which is antithetical to open-source and generally immoral behaviour. If you disagree with this stance please do not contribute, /it is not up for discussion in any form/.
 
 ** Bindings
 
