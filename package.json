@@ -9,8 +9,10 @@
   },
   "main": "bindings/node",
   "types": "bindings/node",
+  "type": "module",
   "repository": {
-    "type": "git"
+    "type": "git",
+    "url": "git+https://github.com/tsujp/tree_sitter_noir.git"
   },
   "keywords": [],
   "files": [
@@ -19,7 +21,7 @@
     "src/**"
   ],
   "dependencies": {
-    "tree-sitter-cli": "^0.25.8"
+    "tree-sitter-cli": "^0.26.5"
   },
   "devDependencies": {
     "prebuildify": "^6.0.1",

@@ -61,7 +61,7 @@ const SECONDARY_ATTRIBUTES = [
     'allow',
 ]
 
-module.exports = grammar({
+export default grammar({
     name: 'noir',
 
     externals: ($) => [

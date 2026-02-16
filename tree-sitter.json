@@ -32,6 +32,7 @@
   "bindings": {
     "c": false,
     "go": false,
+    "java": false,
     "node": false,
     "python": false,
     "rust": false,

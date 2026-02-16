@@ -1,4 +1,4 @@
-#+STARTUP: indent logdone logdrawer content
+#+STARTUP: indent logdone logdrawer content lognoteclock-out
 # ------------------------------------------------------
 #+TITLE: Project Planning: tree_sitter_noir
 #+LANGUAGE: en
@@ -43,6 +43,9 @@ Call ~taxy-fill~ with created taxy from ~make-taxy~ and a list of objects to fil
 ~taxy-mapcar~ can replace items in a taxy.
 
 ** Development
+:LOGBOOK:
+:END:
+
 *** Tree-sitter
 **** Testing
 
@@ -387,23 +390,6 @@ head/tail notes so i can stop derping out:
 
 Perhaps a new % sign in my font, the % is a little hard to read sometimes. Maybe it's because it's narrow? 1234%.
 
-
-
-
-
-
-add visibility to TypeAlias
-
-- Forgot this.
-
-- Noirc stdlib parse progress: 98.55% -> 100% (+1.45%)
-- Resolves error attempting to parse Noirc stdlib at loci:
-
-    noir/noir_stdlib/src/meta/mod.nr        39,4 - 39,57
-
-
-
-
 *** Grammar Areas
 
 Areas to tackle to construct the tree-sitter grammar.
@@ -632,6 +618,12 @@ Are there other places like struct/impl/enum/function bodies where this can be r
 
 It's a bit hard (currently) to track general-coverage TODOs within =noir_grammar.org= itself, and I have yet to dive-deep into org-agenda which might be able to construct such a view. However there are a lot of other TODOs specific to each headline they are under. Here is a general "overview" of areas of the grammar that need to be done as a way to "save progress" for when future Jordan comes back to work on =noir_grammar.org=.
 
+**** TODO Migrate to QuickJS instead of requiring Bun
+From v0.26.1 I think we don't need a JS runtime of any kind now (explicitly) which simplifies project dependencies so let's migrate to that approach
+
+**** TODO Use Supertypes instead of underscore containers since they handle the same thing and result in a less verbose grammar.js definition?
+See this recent commit that actually explains how supertypes and friends work: https://github.com/tree-sitter/tree-sitter/pull/4825/changes
+
 **** TODO ExpressionStatement requires some grammar re-structuring
 
 The addition of ExpressionStatement as-is results in rule conflicts, and while those conflicts could be solved with some precedence settings they shouldn't really be happening in the first place I feel. Let's table ExpressionStatement for now and continue with other things and once all the known places Statement is elucidated appropriate action can be taken.
@@ -754,6 +746,115 @@ CLOSED: [2025-06-05 Thu 16:37]
 Want to trigger transclusion on that subheading and all it's children only (by default) because babel tangle or saving the file triggers export so we could accidentally export a partially constructed grammar.js if those transclusions are not automatically made.
 
 To be clear those transclusions are the targets to other js source blocks for the tree-sitter js dsl.
+
+*** DONE Update tree-sitter 0.25.8 to 0.26.5
+CLOSED: [2026-02-16 Mon 17:26]
+:LOGBOOK:
+CLOCK: [2026-02-16 Mon 17:31]
+CLOCK: [2026-02-16 Mon 17:11]--[2026-02-16 Mon 17:25] =>  0:14
+- No action taken to change anything in the grammar itself, just updated the tree-sitter version in the project and re-built and re-ran all tests (which pass). Incremental improvements from the latest tree-sitter features should be done separately later.
+CLOCK: [2026-02-13 Fri 20:28]--[2026-02-13 Fri 21:21] =>  0:53
+- Read all changelog items from 0.25.8 to 0.26.5 and made note of (probably) important ones.
+CLOCK: [2026-02-10 Tue 21:25]--[2026-02-10 Tue 21:50] =>  0:25
+:END:
+
+- https://github.com/tree-sitter/tree-sitter/releases/tag/v0.25.9
+- https://github.com/tree-sitter/tree-sitter/releases/tag/v0.25.10
+- https://github.com/tree-sitter/tree-sitter/releases/tag/v0.26.1
+- https://github.com/tree-sitter/tree-sitter/releases/tag/v0.26.2
+- https://github.com/tree-sitter/tree-sitter/releases/tag/v0.26.3
+- https://github.com/tree-sitter/tree-sitter/releases/tag/v0.26.4
+- https://github.com/tree-sitter/tree-sitter/releases/tag/v0.26.5
+
+**** v0.25.9
+
+Reserved words DSL
+- https://github.com/tree-sitter/tree-sitter/pull/3896
+- https://github.com/tree-sitter/tree-sitter/pull/4650
+- https://github.com/tree-sitter/tree-sitter/pull/4661
+
+Allow ERROR nodes to match when they're children in queries
+- https://github.com/tree-sitter/tree-sitter/pull/4748
+- https://github.com/tree-sitter/tree-sitter/pull/4747
+
+Error when generating parser with indirectly recursive single state transitions
+- https://github.com/tree-sitter/tree-sitter/pull/4790
+- https://github.com/tree-sitter/tree-sitter/pull/4786
+
+Use correct state id when adding terminal states to non terminal extras
+- https://github.com/tree-sitter/tree-sitter/pull/4794
+- https://github.com/tree-sitter/tree-sitter/pull/4792
+
+**** v0.26.1
+
+feat: remove the need of an external JS runtime for processing grammars
+- https://github.com/tree-sitter/tree-sitter/pull/3780
+
+docs: add more information on supertype nodes for grammars and queries
+- https://github.com/tree-sitter/tree-sitter/pull/4825
+
+Warn about unreachable variables
+- https://github.com/tree-sitter/tree-sitter/issues/4565
+- https://github.com/tree-sitter/tree-sitter/pull/4567
+
+feat: Only evaluate grammar.js to grammar.json
+- https://github.com/tree-sitter/tree-sitter/pull/4601
+
+fix(docs): update test command flag from -f to -i
+- https://github.com/tree-sitter/tree-sitter/pull/4263
+
+fix(highlight): account for multiple rows in highlight testing assertions
+- https://github.com/tree-sitter/tree-sitter/pull/4333
+
+feat(cli): add grammar-path to various subcommands
+- https://github.com/tree-sitter/tree-sitter/pull/4358
+
+feat(cli): rebuild parsers by default when --grammar-path is passed.
+- https://github.com/tree-sitter/tree-sitter/pull/4498
+
+feat(test): allow cst as expected output of test case
+- https://github.com/tree-sitter/tree-sitter/pull/4633
+
+feat(cli): allow users to specify dynamic libraries directly
+- https://github.com/tree-sitter/tree-sitter/pull/4645
+
+tree-sitter version with no arguments displays current version / feat(cli): Version updates (#4179)
+- https://github.com/tree-sitter/tree-sitter/issues/4179
+- https://github.com/tree-sitter/tree-sitter/pull/4205
+
+fix(cli): show rule names for rules with metadata / Allow regex to be used for reserved words
+- https://github.com/tree-sitter/tree-sitter/pull/4739
+
+***** Misc
+
+[[https://github.com/tree-sitter/tree-sitter/pull/4213][#4213]] Ignore external tokens that are zero-length and extra
+[[https://github.com/tree-sitter/tree-sitter/pull/4276][#4276]] fix(cli): properly escape invisible characters in parse error output
+[[https://github.com/tree-sitter/tree-sitter/pull/4284][#4284]] fix(make): make install shouldn’t fail when a parser bundles no queries
+[[https://github.com/tree-sitter/tree-sitter/pull/4338][#4338]] Add @generated to parser.c header
+[[https://github.com/tree-sitter/tree-sitter/pull/4466][#4466]] docs: mention ~ and $HOME for parser-directories
+[[https://github.com/tree-sitter/tree-sitter/pull/4512][#4512]] build(rust): use $CARGO_PKG_RUST_VERSION when generating bindings
+[[https://github.com/tree-sitter/tree-sitter/pull/4509][#4509]] fix(docs): replace TSInput by TSInputEdit in "Advanced Parsing"
+[[https://github.com/tree-sitter/tree-sitter/pull/4712][#4712]] feat(lib): add lldb pretty-printers for some C lib types
+[[https://github.com/tree-sitter/tree-sitter/pull/4744][#4744]] fix(lib): check if an ERROR node is named before assuming it's the builtin error node
+[[https://github.com/tree-sitter/tree-sitter/pull/4769][#4769]] feat(test): pin fixture grammars to specific commits
+[[https://github.com/tree-sitter/tree-sitter/pull/4764][#4764]] fix(cli): canonicalize --lib-path arguments
+[[https://github.com/tree-sitter/tree-sitter/pull/4232][#4232]] Place APIs for generating grammars from a file behind a feature flag
+[[https://github.com/tree-sitter/tree-sitter/pull/4117][#4117]] Remove tree-sitter dependency from tree-sitter-generate
+[[https://github.com/tree-sitter/tree-sitter/pull/4847][#4847]] build: add static and shared targets to Makefile
+[[https://github.com/tree-sitter/tree-sitter/pull/4846][#4846]] feat: add API for editing points and ranges
+[[https://github.com/tree-sitter/tree-sitter/pull/4647][#4647]] docs: update options for generate command
+[[https://github.com/tree-sitter/tree-sitter/pull/4877][#4877]] fix(lib): account for unreachable patterns with children
+[[https://github.com/tree-sitter/tree-sitter/pull/4889][#4889]] feat: add option to disable parse state optimizations
+[[https://github.com/tree-sitter/tree-sitter/pull/5076][#5076]] fix(docs): final updates before 0.26.1
+[[https://github.com/tree-sitter/tree-sitter/pull/5100][#5100]] Add "containing range" APIs to QueryCursor rebased
+
+**** v0.26.4
+
+fix(cli): increase verbosity of tree-sitter init -u updates
+- https://github.com/tree-sitter/tree-sitter/pull/5178
+
+feat(cli): concurrent builds of the same grammar on different locations on disk
+- https://github.com/tree-sitter/tree-sitter/pull/5174
 
 *** DONE Update tree-sitter from 0.24.3 to 0.25.3
 CLOSED: [2025-04-22 Tue 16:43]
