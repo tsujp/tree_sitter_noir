@@ -45,6 +45,15 @@ Call ~taxy-fill~ with created taxy from ~make-taxy~ and a list of objects to fil
 
 ** Development
 :LOGBOOK:
+CLOCK: [2026-02-18 Wed 18:52]--[2026-02-18 Wed 21:25] =>  2:33
+- - Review parser.rs, associated TODO notes.
+  - Start updating (very basic so far) noir_grammar.org; will mark all subsequent items therein for update afterwards.
+  - Workflow to nicely view diffs for grammar changes.
+CLOCK: [2026-02-16 Mon 18:11]--[2026-02-16 Mon 20:13] =>  2:02
+- - Start reviewing grammar changes.
+  - Refamiliarise with noir_grammar.org.
+  - Git commands to get tags between prior release and current.
+  - Git commands to review difference betwern frontend parser files.
 :END:
 
 *** Tree-sitter
@@ -615,9 +624,152 @@ e.g.     /// TraitBody = '{' ( OuterDocComments TraitItem )* '}'
 
 Are there other places like struct/impl/enum/function bodies where this can be reduced?
 
+*** Grammar Changelog
+
+Upstream grammar changes to Noir.
+
+**** v0.36.0 to v1.0.0-beta.19
+
+
+**** TODO Misc
+:LOGBOOK:
+- State "TODO"       from              [2026-02-18 Wed 20:11] \\
+  Viewing diffs in ediff, kinda hard to get the commit associated with a change in this way. Would need to open in magit and blame, so just collecting this without commit attribution.
+:END:
+
+parser.rs
+~parse_program_with_dummy_file~
+~for_str_with_dummy_file~
+(94) token: SpannedToken -> LocatedToken
+(96) Span -> Location
+
+(104) Comments for a statement are now tracked (for reasons), apparently ~unsafe~ expressions can be commented in their containing statements?
+#+begin_src
+    /// The current statement's comments.
+    /// This is used to eventually know if an `unsafe { ... }` expression is commented
+    /// in its containing statement. For example:
+    ///
+    /// ```noir
+    /// // Safety: test
+    /// let x = unsafe { call() };
+    /// ```
+#+end_src
+
+(125) lexer can be configured to skip lexing comments (false, don't skip by default)
+
+Update Parser.eat_kind's docs in noir_grammar.org because eat_kind has slightly changed (LocatedToken). Also need to double check the self.token.kind() function it's talking about hasn't changed.
+
+(278) some new function eat_non_underscore_ident, may affect grammar not clear yet.
+
+(356) FmtStrFragment in eat_fmt_str
+
+***** TODO eat_attribute_start, eat_inner_attribute_start
+:LOGBOOK:
+- State "TODO"       from              [2026-02-18 Wed 20:47] \\
+  Consequential behaviour?
+:END:
+
+(393) eat_attribute_start, see the comment here, consequences?
+(412) eat_inner_attribute_start comments and the entire function
+
+***** TODO eat_unquote_marker
+:LOGBOOK:
+- State "TODO"       from              [2026-02-18 Wed 20:45] \\
+  Looks potentially important.
+:END:
+
+(380) eat_unquote_marker, did this actually replace eat_comma{s} or just a diff quirk?
+
+***** TODO LocatedToken vs SpannedToken
+:LOGBOOK:
+- State "TODO"       from              [2026-02-18 Wed 20:25] \\
+  Difference
+:END:
+
+***** TODO skip_to_recovery_point, location_since
+:LOGBOOK:
+- State "TODO"       from              [2026-02-18 Wed 20:49] \\
+  Recovery points might change grammar structure, but unsure yet so maybe this is important.
+:END:
+
+(550) recovery points =;=, =}=, =EOF=.
+
+***** TODO modifiers_not_followed_by_an_item new requirement
+:LOGBOOK:
+- State "TODO"       from              [2026-02-18 Wed 20:51] \\
+  Consequential?
+:END:
+
+(675) mutable_not_followed_by_an_item
+
 *** Coverage TODOs
 
 It's a bit hard (currently) to track general-coverage TODOs within =noir_grammar.org= itself, and I have yet to dive-deep into org-agenda which might be able to construct such a view. However there are a lot of other TODOs specific to each headline they are under. Here is a general "overview" of areas of the grammar that need to be done as a way to "save progress" for when future Jordan comes back to work on =noir_grammar.org=.
+
+**** TODO Workflow for updating grammar sources and checking for new changes
+:LOGBOOK:
+- State "TODO"       from              [2026-02-18 Wed 19:00]
+:END:
+
+1. [ ] Update submodule
+2. [ ] Examine changelog notes from each tag between release then and now?
+   :: e.g. via ~git tag -l "v*" --sort=version:refname   --merged v1.0.0-beta.19   --no-merged v0.36.0~ executed in noir submodule
+3. [ ] (instead of/in-addition to) look at diff between frontend files themselves from release then/now? Or maybe that first and then changelog notes for anything missed?
+
+**** TODO Document git sparse checkout submodule of noir
+:LOGBOOK:
+- State "TODO"       from              [2026-02-16 Mon 18:15]
+:END:
+
+I cannot remember how I set up that submodule and assured that it was a sparse checkout, silly past me for not making note of this. Or maybe I did and it's somewhere not immediately obvious (also bad). Re-figure that out and make note of it.
+
+***** Very rough
+
+o - submodules
+l - list them
+press enter on noir, it'll open a new magit for that submodule with said submodule as the git project in question
+^^ at this point you can also examine why (at least at time of writing) its marked as dirty and remove those changes so the tree is clean etc
+
+now we're on the submodule as a repo, we want to checkout a new commit. At time of writing that'll be tag (for commit 99bb8b5):
+v1.0.0-beta.18
+
+f
+u
+^^ to fetch latest information from remote
+
+b
+b
+v1.0.0-beta.18
+RET
+
+----
+
+list all non-nightly tags between tag A and B. Ignores nightly tag spam as those don't begin with "v" and we enforce pattern match on tags starting with "v"
+
+git tag -l "v*" --sort=version:refname   --merged v1.0.0-beta.18   --no-merged v0.36.0
+
+**** TODO Organise PROJECT.org and noir_grammar.org
+:LOGBOOK:
+- State "TODO"       from              [2026-02-18 Wed 18:50]
+:END:
+
+How much of noir_grammar.org can be chipped away as verbose/unneeded, how much of PROJECT.org can be cleaned up. Should the files be merged? Etc etc.
+
+**** TODO Automatically install the associated Nargo for the current language grammar
+:LOGBOOK:
+- State "TODO"       from              [2026-02-16 Mon 18:53]
+:END:
+
+Required because various project commands like ~just test-vocab~ execute nargo and if it's out of sync (like just now I still have nargo 0.36.0 against noir v1.0.0-beta.18) then it's obviously not going to work. This is really just a pre-run sanity check that the Noir source is valid according to Noir itself but I think it's still important all the time, but not urgent.
+
+This should be part of project's justfile and runbook
+
+**** TODO The other fields in tree-sitter.json for email, domain, funding etc
+:LOGBOOK:
+- State "TODO"       from              [2026-02-16 Mon 18:17]
+:END:
+
+General project polish in a sense, low priority though.
 
 **** TODO Migrate to QuickJS instead of requiring Bun
 From v0.26.1 I think we don't need a JS runtime of any kind now (explicitly) which simplifies project dependencies so let's migrate to that approach

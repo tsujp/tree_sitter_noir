@@ -1,5 +1,5 @@
 #+TODO: TODO(t@) TOIMPL(i@) SPEC(r@) BLOCK(b@) | DONE(d!)
-#+STARTUP: indent logdone logdrawer content
+#+STARTUP: indent logdone logdrawer content lognoteclock-out
 # ------------------------------------------------------
 #+NOIR_TEMPLATE_URL: https://github.com/noir-lang/noir/blob/%h/%p#L%lC%c-L%lC%s
 # ------------------------------------------------------
@@ -19,13 +19,17 @@ Noir's syntax isn't officially specified currently; expected given the language 
 
 Noir's compiler frontend performs parsing and lexing at the same time; the parser internally lexes the target file(s).
 
+*************** TODO Needs updating to v1.0.0-beta.19
+:LOGBOOK:
+- State "TODO"       from              [2026-02-18 Wed 21:07] \\
+  Token, Span, SpannedToken are different in v1.0.0-beta.19 so this needs updating.
+:END:
 The lexer transforms an iterator of characters into an iterator of ~SpannedToken~; each ~Token~ having a ~Span~ (delimited region in source file). ~Spans~ are owned by AST nodes which forms the (initial) parsing result.
+*************** END
 
 Concerning Noir's frontend compiler:
 - Tag =node= being used as a non-terminal symbol.
 - Tag =leaf= used as a terminal symbol.
-
-Entry: [[file:noir/compiler/noirc_frontend/src/parser/parser.rs::pub fn parse_program(source_program: &str)][parse_program]]
 
 ** Lexing
 
@@ -34,43 +38,42 @@ TODO: Rename this header, idk?
 *** Code whitespace
 
 Whitespace is not significant in Noir.
-#+transclude: [[file:noir/compiler/noirc_frontend/src/lexer/lexer.rs][Lexer::eat_whitespace()]] :lines 703-704 :src rust
+#+transclude: [[file:noir/compiler/noirc_frontend/src/lexer/lexer.rs][Lexer::eat_whitespace()]]  :lines 703-704 :src rust
 
 Newline, tab, carriage return, ASCII space.
-#+transclude: [[file:noir/compiler/noirc_frontend/src/lexer/lexer.rs][Lexer::is_code_whitespace()]] :lines 699-700 :src rust
+#+transclude: [[file:noir/compiler/noirc_frontend/src/lexer/lexer.rs][Lexer::is_code_whitespace()]]  :lines 699-700 :src rust
 
 ** Parsing
 :PROPERTIES:
 :CUSTOM_ID: h:DB42728E-09AF-4189-B2BE-E48853E5C1D9
 :END:
 
-Parser entry at [[file:noir/compiler/noirc_frontend/src/parser/parser.rs::pub fn parse_program(source_program: &str)][parse_program()]], yields a ~ParsedModule~ struct.
-#+transclude: [[file:noir/compiler/noirc_frontend/src/parser/mod.rs::84][ParsedModule struct]] :lines 84-89 :src rust
+Parser entry at [[file:noir/compiler/noirc_frontend/src/parser/parser.rs::pub fn parse_program(source_program: &str, file_id: FileId)][parse_program]] yields tuple ~(ParsedModule, Vec<ParserError>)~.
+#+transclude: [[file:noir/compiler/noirc_frontend/src/parser/mod.rs::pub struct ParsedModule {][ParsedModule struct]]  :lines 1-4 :src rust
 
-From ~ParsedModule~ we see ~Item~ and ~ItemKind~ which reveals some intial top-level structure:
-#+transclude: [[file:noir/compiler/noirc_frontend/src/parser/mod.rs::133][ItemKind enum]] :lines 133-145 :src rust
-
-*************** TODO Continue exploring parser/mod.rs which has other structs like ParsedSubModule
-These help inform the general structure for the tree-sitter grammar. Especially now as I am currently trying to get the top-level stuff coarse enough to reach the fine-grained things which have been 'implemented' but which cannot yet be tested since a full CST is required.
-*************** END
+~ItemKind~ enum reveals some basic top-level structure.
+#+transclude: [[file:noir/compiler/noirc_frontend/src/parser/mod.rs::pub enum ItemKind {][ItemKind enum]]  :lines 1-14 :src rust
 
 ** Structure
 
-This subtree layout is for documentation, and does not (in it's raw source form) 1:1 represent Noir's AST as there are many nested, recursive, and cross-referencing nodes (which is to be expected). Org-mode is strictly hierarchical so what is literally in-source here are logical groupings for notes and grammar construction.
+Subtree layout here is for documentation, does not represent 1:1 Noir's AST.
 
 *** DONE Program
-CLOSED: [2025-05-25 Sun 17:51]
+CLOSED: [2026-02-18 Wed 21:04]
 :PROPERTIES:
 :CUSTOM_ID: h:A8A4AE5F-6FDB-4091-87DA-E4BCE320452C
 :END:
 :LOGBOOK:
+- State "DONE"       from "TODO"       [2026-02-18 Wed 21:04]
+- State "TODO"       from "DONE"       [2026-02-18 Wed 21:02] \\
+  Update parser function and EBNF search.
 - State "DONE"       from "TODO"       [2025-05-25 Sun 17:51]
 :END:
 
-Parser: [[file:noir/compiler/noirc_frontend/src/parser/parser.rs::fn parse_program(&mut self)][parse_program()]]
+Parser: [[file:noir/compiler/noirc_frontend/src/parser/parser.rs::fn parse_program(&mut self)][parse_program]]
 
 #+name: ,ebnf_program
-#+transclude: [[file:noir/compiler/noirc_frontend/src/parser/parser.rs::115][Program doc]] :lines 115-115 :src fundamental
+#+transclude: [[file:noir/compiler/noirc_frontend/src/parser/parser.rs::/// Program =][Program doc]]  :lines 1- :src fundamental :end "pub(crate) fn parse_program"
 
 *** SPEC Module
 :PROPERTIES:
@@ -89,7 +92,7 @@ This /is/ ~ParsedModule~ (see: [[#h:DB42728E-09AF-4189-B2BE-E48853E5C1D9][Parsin
 Parser: [[file:noir/compiler/noirc_frontend/src/parser/parser.rs::fn parse_module(&mut self, nested: bool)][parse_module()]]
 
 #+name: ,ebnf_module
-#+transclude: [[file:noir/compiler/noirc_frontend/src/parser/parser.rs::122][Module doc]] :lines 122-122 :src fundamental
+#+transclude: [[file:noir/compiler/noirc_frontend/src/parser/parser.rs::122][Module doc]]  :lines 122-122 :src fundamental
 
 *** DONE DocComments                                                 :pseudo:
 CLOSED: [2025-06-05 Thu 16:59]
@@ -117,7 +120,7 @@ CLOSED: [2025-06-05 Thu 16:57]
 Parser: [[file:noir/compiler/noirc_frontend/src/parser/parser/doc_comments.rs::fn parse_inner_doc_comments(&mut self)][parse_inner_doc_comments()]], [[file:noir/compiler/noirc_frontend/src/parser/parser/doc_comments.rs::fn parse_inner_doc_comment(&mut self)][parse_inner_doc_comment()]]
 
 #+name: ,ebnf_inner_doc_comments
-#+transclude: [[file:noir/compiler/noirc_frontend/src/parser/parser/doc_comments.rs::6][InnerDocComments doc]] :lines 6-6 :src fundamental
+#+transclude: [[file:noir/compiler/noirc_frontend/src/parser/parser/doc_comments.rs::6][InnerDocComments doc]]  :lines 6-6 :src fundamental
 
 *************** TODO Look at BorrowedToken
 Not strictly related to this headline only, just while looking around. In token.rs enum BorrowedToken represents a token in noirs grammar. So, all the token types are there.
@@ -135,7 +138,7 @@ CLOSED: [2025-06-05 Thu 16:57]
 Parser: [[file:noir/compiler/noirc_frontend/src/parser/parser/doc_comments.rs::fn parse_outer_doc_comments(&mut self)][parse_outer_doc_comments()]], [[file:noir/compiler/noirc_frontend/src/parser/parser/doc_comments.rs::fn parse_outer_doc_comment(&mut self)][parse_outer_doc_comment()]]
 
 #+name: ,ebnf_outer_doc_comments
-#+transclude: [[file:noir/compiler/noirc_frontend/src/parser/parser/doc_comments.rs::19][OuterDocComments doc]] :lines 19-19 :src fundamental
+#+transclude: [[file:noir/compiler/noirc_frontend/src/parser/parser/doc_comments.rs::19][OuterDocComments doc]]  :lines 19-19 :src fundamental
 
 *** TODO Item
 :PROPERTIES:
@@ -145,7 +148,7 @@ Parser: [[file:noir/compiler/noirc_frontend/src/parser/parser/doc_comments.rs::f
 Parser: [[file:noir/compiler/noirc_frontend/src/parser/parser/item.rs::fn parse_module_items(&mut self, nested: bool)][parse_module_items()]], [[file:noir/compiler/noirc_frontend/src/parser/parser/item.rs::fn parse_module_item_in_list(&mut self, nested: bool)][parse_module_item_in_list()]], [[file:noir/compiler/noirc_frontend/src/parser/parser/item.rs::fn parse_item(&mut self)][parse_item()]]
 
 #+name: ,ebnf_item
-#+transclude: [[file:noir/compiler/noirc_frontend/src/parser/parser/item.rs::87][Item doc]] :lines 87-87 :src fundamental
+#+transclude: [[file:noir/compiler/noirc_frontend/src/parser/parser/item.rs::87][Item doc]]  :lines 87-87 :src fundamental
 
 - Parsed without separator (~Parser::parse_module_items~).
 - ~Parser::parse_module_item_in_list~.
@@ -178,7 +181,7 @@ TODO: Does this mean that in a list of attributes #[foo] #[bar] #![bing] #[bong]
 *************** END
 
 #+name: ,ebnf_item_kind
-#+transclude: [[file:noir/compiler/noirc_frontend/src/parser/parser/item.rs::97][ItemKind doc]] :lines 97-108 :src fundamental
+#+transclude: [[file:noir/compiler/noirc_frontend/src/parser/parser/item.rs::97][ItemKind doc]]  :lines 97-108 :src fundamental
 
 ***** DONE Attributes
 CLOSED: [2025-06-05 Thu 20:03]
@@ -227,7 +230,7 @@ CLOSED: [2025-06-05 Thu 20:03]
 
 Parser (sop): [[file:noir/compiler/noirc_frontend/src/parser/parser/item.rs::if let Some(kind) = self.parse_inner_attribute() {][parse_inner_attribute() parent]]
 Parser: [[file:noir/compiler/noirc_frontend/src/parser/parser/attributes.rs::pub(super) fn parse_inner_attribute(&mut self)][parse_inner_attribute()]]
-#+transclude: [[file:noir/compiler/noirc_frontend/src/parser/parser/attributes.rs::11][InnerAttribute doc]] :lines 11-11 :src fundamental
+#+transclude: [[file:noir/compiler/noirc_frontend/src/parser/parser/attributes.rs::11][InnerAttribute doc]]  :lines 11-11 :src fundamental
 
 *************** TODO Relevance of this old comment and associated GH issue?
 Can be any valid [[SecondaryAttribute]] and is purely a syntactical convenience to apply to it's container versus attribute definitions piled at containers definition. See [[https://github.com/noir-lang/noir/issues/5875][issue]] for more.
@@ -248,7 +251,7 @@ CLOSED: [2025-06-05 Thu 20:03]
 
 Parser (sop): [[file:noir/compiler/noirc_frontend/src/parser/parser/item.rs::let attributes = self.parse_attributes();][parse_attributes() parent]]
 Parser: [[file:noir/compiler/noirc_frontend/src/parser/parser/attributes.rs::pub(super) fn parse_attributes(&mut self)][parse_attributes()]], [[file:noir/compiler/noirc_frontend/src/parser/parser/attributes.rs::fn parse_attribute(&mut self)][parse_attribute()]]
-#+transclude: [[file:noir/compiler/noirc_frontend/src/parser/parser/attributes.rs::20][Attributes doc]] :lines 20-20 :src fundamental
+#+transclude: [[file:noir/compiler/noirc_frontend/src/parser/parser/attributes.rs::20][Attributes doc]]  :lines 20-20 :src fundamental
 
 In parent all the parsed attributes are collected.
 
@@ -280,7 +283,7 @@ CLOSED: [2025-07-14 Mon 14:54]
 Parser: [[file:noir/compiler/noirc_frontend/src/parser/parser/modifiers.rs::fn parse_modifiers(&mut self, allow_mutable: bool)][parse_modifiers()]]
 
 #+name: ,ebnf_modifiers
-#+transclude: [[file:noir/compiler/noirc_frontend/src/parser/parser/modifiers.rs::17][Modifiers doc]] :lines 17-17 :src fundamental
+#+transclude: [[file:noir/compiler/noirc_frontend/src/parser/parser/modifiers.rs::17][Modifiers doc]]  :lines 17-17 :src fundamental
 
 *************** TODO Apparently Traits call parse_modifiers
 Using eglot to show the call hierarchy Traits apparently call this parser, so when we ge to Traits have a looksey I guess.
@@ -497,7 +500,7 @@ seq(
 Parser: [[file:noir/compiler/noirc_frontend/src/parser/parser/item.rs::if let Some(is_contract) = self.eat_mod_or_contract() {][parse_mod_or_contract() parent callsite]], [[file:noir/compiler/noirc_frontend/src/parser/parser/module.rs::pub(super) fn parse_mod_or_contract(][parse_mod_or_contract()]]
 
 #+name: ,ebnf_mod_or_contract
-#+transclude: [[file:noir/compiler/noirc_frontend/src/parser/parser/module.rs::12][ModOrContract doc]] :lines 12-13 :src fundamental
+#+transclude: [[file:noir/compiler/noirc_frontend/src/parser/parser/module.rs::12][ModOrContract doc]]  :lines 12-13 :src fundamental
 
 Only the [[#h:F5A79701-65C9-4FEA-83D8-2413C585A5FA][ItemVisibility]] modifier is applicable, all other [[#h:2A9D09A5-2E52-4B8C-ABA1-0B3B953F093C][Modifiers]] are parse errors. Eat =mod= or =contract= keywords, ~validate_secondary_attributes~. If the brace group is not hit it's a ~ItemKind::ModuleDecl~ (declaration), otherwise a real submodule.
 
@@ -583,7 +586,7 @@ Types: [[file:noir/compiler/noirc_frontend/src/ast/structure.rs::pub struct Stru
 Since [[#h:8E0DC05B-1ED6-47BE-9589-64DC06FAECCA][parse_many]] is used, and our callsite does not check, a trailing comma (the separator in use) is accepted.
 
 #+name: ,ebnf_struct_field
-#+transclude: [[file:noir/compiler/noirc_frontend/src/parser/parser/structs.rs::14][StructField doc]] :lines 14-14 :src fundamental
+#+transclude: [[file:noir/compiler/noirc_frontend/src/parser/parser/structs.rs::14][StructField doc]]  :lines 14-14 :src fundamental
 
 *************** TODO If this is general enough and in-use elsewhere like Impl or Enum then reduce it to 1.
 *************** END
@@ -855,7 +858,7 @@ Types: [[file:noir/compiler/noirc_frontend/src/ast/traits.rs::pub struct NoirTra
 Only [[#h:F5A79701-65C9-4FEA-83D8-2413C585A5FA][ItemVisibility]] modifier applicable, all other [[#h:2A9D09A5-2E52-4B8C-ABA1-0B3B953F093C][Modifiers]] are parse errors ([[#h:14698757-D7C8-4966-B84E-5DA1CAE3011E][see more]]).
 
 #+name: ,ebnf_trait
-#+transclude: [[file:noir/compiler/noirc_frontend/src/parser/parser/traits.rs::14][Trait doc]] :lines 14-14 :src fundamental
+#+transclude: [[file:noir/compiler/noirc_frontend/src/parser/parser/traits.rs::14][Trait doc]]  :lines 14-14 :src fundamental
 
 *************** TODO Any accomodations for validate_secondary_attributes which is called in Trait's parser?
 *************** END
@@ -898,7 +901,7 @@ Parser: [[file:noir/compiler/noirc_frontend/src/parser/parser/traits.rs::fn pars
 Via [[#h:8E0DC05B-1ED6-47BE-9589-64DC06FAECCA][parse_many]] split without separator until =}=: calls [[file:noir/compiler/noirc_frontend/src/parser/parser/traits.rs::fn parse_trait_item_in_list(&mut self)][parse_trait_item_in_list()]].
 
 #+name: ,ebnf_trait_body
-#+transclude: [[file:noir/compiler/noirc_frontend/src/parser/parser/traits.rs::45][TraitBody doc]] :lines 45-45 :src fundamental
+#+transclude: [[file:noir/compiler/noirc_frontend/src/parser/parser/traits.rs::45][TraitBody doc]]  :lines 45-45 :src fundamental
 
 ****** DONE TraitItem
 CLOSED: [2025-07-12 Sat 20:17]
@@ -918,7 +921,7 @@ Types: [[file:noir/compiler/noirc_frontend/src/ast/traits.rs::pub enum TraitItem
 Simple wrapper to the parsers of it's three AST types. For the three child AST types tree-sitter grammar fields for CST nodes can be inspired by enum member field names of ~TraitItem~.
 
 #+name: ,ebnf_trait_item
-#+transclude: [[file:noir/compiler/noirc_frontend/src/parser/parser/traits.rs::66][TraitItem doc]] :lines 66-69 :src fundamental
+#+transclude: [[file:noir/compiler/noirc_frontend/src/parser/parser/traits.rs::66][TraitItem doc]]  :lines 66-69 :src fundamental
 
 ****** DONE TraitType
 CLOSED: [2025-07-12 Sat 20:22]
@@ -944,7 +947,7 @@ seq(
 Parser: [[file:noir/compiler/noirc_frontend/src/parser/parser/traits.rs::fn parse_trait_type(&mut self)][parse_trait_type()]]
 
 #+name: ,ebnf_trait_type
-#+transclude: [[file:noir/compiler/noirc_frontend/src/parser/parser/traits.rs::86][TraitType doc]] :lines 86-86 :src fundamental
+#+transclude: [[file:noir/compiler/noirc_frontend/src/parser/parser/traits.rs::86][TraitType doc]]  :lines 86-86 :src fundamental
 
 ****** DONE TraitConstant
 CLOSED: [2025-07-12 Sat 20:22]
@@ -974,7 +977,7 @@ Parser: [[file:noir/compiler/noirc_frontend/src/parser/parser/traits.rs::fn pars
 Based-on: Rust's [[https://doc.rust-lang.org/reference/items/constant-items.html#grammar-ConstantItem][ConstantItem]]
 
 #+name: ,ebnf_trait_constant
-#+transclude: [[file:noir/compiler/noirc_frontend/src/parser/parser/traits.rs::105][TraitConstant doc]] :lines 105-105 :src fundamental
+#+transclude: [[file:noir/compiler/noirc_frontend/src/parser/parser/traits.rs::105][TraitConstant doc]]  :lines 105-105 :src fundamental
 
 *************** TODO Correct upstream EBNF comment
 Looks like it should be:
@@ -999,7 +1002,7 @@ Parser: [[file:noir/compiler/noirc_frontend/src/parser/parser/traits.rs::fn pars
 Optional body, allows =self=. Only ~Pattern::Identifier~ allowed in parameters, any other pattern is a parse error.
 
 #+name: ,ebnf_trait_function
-#+transclude: [[file:noir/compiler/noirc_frontend/src/parser/parser/traits.rs::134][TraitFunction doc]] :lines 134-134 :src fundamental
+#+transclude: [[file:noir/compiler/noirc_frontend/src/parser/parser/traits.rs::134][TraitFunction doc]]  :lines 134-134 :src fundamental
 
 *************** TODO Consider the parameters Pattern::Identifier restriction for inclusion into ts grammar?
 Any value in that, similar to other strict requirements elsewhere. May be more technically correct but also increases parser complexity, and at what /real world/ benefit.
@@ -1048,7 +1051,7 @@ All [[#h:2A9D09A5-2E52-4B8C-ABA1-0B3B953F093C][Modifiers]] except =unconstrained
 Parsing of identifier, only in this case, uses [[file:noir/compiler/noirc_frontend/src/parser/parser/global.rs::fn ident_to_pattern(ident: Ident, mutable: bool)][ident_to_pattern()]] which is a simple function I speculate exists because the mutable modifier appears /before/ keyword =global= but with LetStatement's it appears after =let=. For us, there's no change it's just an identifier.
 
 #+name: ,ebnf_global
-#+transclude: [[file:noir/compiler/noirc_frontend/src/parser/parser/global.rs::15][Global doc]] :lines 15-15 :src fundamental
+#+transclude: [[file:noir/compiler/noirc_frontend/src/parser/parser/global.rs::15][Global doc]]  :lines 15-15 :src fundamental
 
 *************** TODO validate_secondary_attributes in parse_global, any consequence for us?
 *************** END
@@ -1091,7 +1094,7 @@ choice(
 Parser: [[file:noir/compiler/noirc_frontend/src/parser/parser/types.rs::fn parse_type(&mut self)][parse_type()]], [[file:noir/compiler/noirc_frontend/src/parser/parser/types.rs::fn parse_type_or_error(&mut self)][parse_type_or_error()]]
 
 TODO: Look at enum ~UnresolvedTypeData~, read the doc string and look at it's elements. Good stuff.
-#+transclude: [[file:noir/compiler/noirc_frontend/src/ast/mod.rs][foobar]] :lines 104-106 :src foo
+#+transclude: [[file:noir/compiler/noirc_frontend/src/ast/mod.rs][foobar]]  :lines 104-106 :src foo
 
 TODO: Path from lexer.rs ~next_token()~ to the point where it checks for keywords.
 TODO: Put lookup_keyword under it's own heading and transclude the contents verbatim
@@ -1171,11 +1174,13 @@ Double check other grammars none appear to go deeper on primitive types (intenti
 
 Parser: [[file:noir/compiler/noirc_frontend/src/parser/parser/types.rs::fn parse_field_type(&mut self)][parse_field_type()]]
 
-******* SPEC IntegerType                                               :leaf:
+******* TODO IntegerType                                         :leaf:
 :PROPERTIES:
 :CUSTOM_ID: h:8343D34F-D36E-4E46-A343-A9A99A1F3200
 :END:
 :LOGBOOK:
+- State "TODO"       from "SPEC"       [2026-02-18 Wed 20:42] \\
+  v1.0.0-beta.19 changes implementation properties. Re-review callstack, all documentation herein. See parser.rs::308 eat_int now.
 - State "SPEC"       from "TOIMPL"     [2025-05-24 Sat 22:10]
 - State "TOIMPL"     from "TODO"       [2024-11-03 Sun 14:50]
 :END:
@@ -1192,7 +1197,7 @@ choice(...INTEGER_TYPES)
 Parser: [[file:noir/compiler/noirc_frontend/src/parser/parser/types.rs::fn parse_int_type(&mut self)][parse_int_type()]]
 
 Both signed and unsigned: 1, 8, 16, 32, and 64 bits.
-#+transclude: [[file:noir/compiler/noirc_frontend/src/ast/mod.rs::61][IntegerBitSize::allowed_sizes()]] :lines 61-65 :src rust
+#+transclude: [[file:noir/compiler/noirc_frontend/src/ast/mod.rs::61][IntegerBitSize::allowed_sizes()]]  :lines 61-65 :src rust
 
 *************** TODO Is there a bug in this version of Noir that doesn't allow 16-bit integers? See the above transclude missing ~Self::Sixteen~.
 *************** END
@@ -1338,7 +1343,7 @@ Return ~AST::UnresolvedTypeData::FormatString~.
 Parser: [[file:noir/compiler/noirc_frontend/src/parser/parser/types.rs::fn parse_comptime_type(&mut self)][parse_comptime_type()]]
 
 All ComptimeTypes returned as ~AST::UnresolvedTypeData::Quoted(X)~ where ~X~ is [[file:noir/compiler/noirc_frontend/src/hir_def/types.rs::pub enum QuotedType {][QuotedType]].
-#+transclude: [[file:noir/compiler/noirc_frontend/src/hir_def/types.rs::282][QuotedType]] :lines 282-296 :src rust
+#+transclude: [[file:noir/compiler/noirc_frontend/src/hir_def/types.rs::282][QuotedType]]  :lines 282-296 :src rust
 
 *************** TODO This feels strage, are those literal keywords allowed in source?
 This feels like stuff a preprocessing step would inline or something. If one can literally write these keywords and them be valid then sure.
@@ -1419,7 +1424,7 @@ Callsites:
   - [[file:noir/compiler/noirc_frontend/src/parser/parser/expression.rs::return Some(ExpressionKind::Literal(Literal::Unit));][in parse_parentheses_expression()]] (for: [[#h:DF57FFD8-C50B-406E-95E7-94C3BFC15DAC][ParenthesesExpression]], as: UnitLiteral)
 
 #+name: ,ebnf_unit_literal
-#+transclude: [[file:noir/compiler/noirc_frontend/src/parser/parser/expression.rs::685][UnitLiteral doc]] :lines 685-685 :src fundamental
+#+transclude: [[file:noir/compiler/noirc_frontend/src/parser/parser/expression.rs::685][UnitLiteral doc]]  :lines 685-685 :src fundamental
   
 *************** TODO Rule names according to locus of production
 If in parse_parentheses_type then UnitType, but if from Atom in ParenthesesExpression then UnitLiteral?
@@ -1602,7 +1607,7 @@ seq(
 Function capture environment syntax, e.g. =fn foo[Env]()= where =[Env]= is the environment specifier valid for the function to be called within.
 
 Parser: /within slice of parent/
-#+transclude: [[file:noir/compiler/noirc_frontend/src/parser/parser/types.rs::252][FunctionType CaptureEnvironment]] :lines 252-258 :src rust
+#+transclude: [[file:noir/compiler/noirc_frontend/src/parser/parser/types.rs::252][FunctionType CaptureEnvironment]]  :lines 252-258 :src rust
 
 ******* SPEC Parameter
 :PROPERTIES:
@@ -1627,7 +1632,7 @@ parameter_list: ($) => seq(
 #+end_src
 
 Parser: /within slice of parent/ and [[file:noir/compiler/noirc_frontend/src/parser/parser/types.rs::fn parse_parameter(&mut self)][parse_parameter()]]
-#+transclude: [[file:noir/compiler/noirc_frontend/src/parser/parser/types.rs::271][parse_many()]] :lines 271-275 :src rust
+#+transclude: [[file:noir/compiler/noirc_frontend/src/parser/parser/types.rs::271][parse_many()]]  :lines 271-275 :src rust
 
 ****** BLOCK TraitAsType
 :PROPERTIES:
@@ -1686,11 +1691,11 @@ This is from very early on and 'UnresolvedNamedType' isn't an actual thing, I've
 + (opt) [[#h:3267D7A4-7AA4-49FB-91FA-A9601BC6868A][GenericTypeArgs]]
 
 Parser: /within slice of parent/
-#+transclude: [[file:noir/compiler/noirc_frontend/src/parser/parser/types.rs::58][parent parser slice]] :lines 58-61 :src rust
+#+transclude: [[file:noir/compiler/noirc_frontend/src/parser/parser/types.rs::58][parent parser slice]]  :lines 58-61 :src rust
 
 Return: ~AST::UnresolvedTypeData::Named~.
 
-#+transclude: [[file:noir/compiler/noirc_frontend/src/ast/mod.rs::121][UnresolvedTypeData::Named doc]] :lines 121-122 :src rust
+#+transclude: [[file:noir/compiler/noirc_frontend/src/ast/mod.rs::121][UnresolvedTypeData::Named doc]]  :lines 121-122 :src rust
 
 ***** TODO TypeOrTypeExpression
 :PROPERTIES:
@@ -1709,7 +1714,7 @@ Parser: [[file:noir/compiler/noirc_frontend/src/parser/parser/type_expression.rs
 Type: [[file:noir/compiler/noirc_frontend/src/ast/mod.rs::pub struct UnresolvedType {][UnresolvedType struct]]
 
 #+name: ,ebnf_type_or_type_expression
-#+transclude: [[file:noir/compiler/noirc_frontend/src/parser/parser/type_expression.rs::195][TypeOrTypeExpression doc]] :lines 195-195 :src fundamental
+#+transclude: [[file:noir/compiler/noirc_frontend/src/parser/parser/type_expression.rs::195][TypeOrTypeExpression doc]]  :lines 195-195 :src fundamental
 
 Similar to [[#h:0DEF3192-4840-41B3-A941-714798677092][TypeExpression]]'s [[id:7A38952D-D669-4DD6-AF3A-065CB546CB21][Infix]] this also contains a heavily nested and confusing implementation with very long and similar reading function names that hurt one's head, it looks to be the same as TypeExpression and it does call those functions but it appears to use it's own wrappers as AST nodes are created ~UnresolvedTypeData~ on this path instead of ~UnresolvedTypeExpression~ on the other. It looks like this has no consequence for tree-sitter grammar so continue with that assumption for now.
 
@@ -1783,7 +1788,7 @@ prec(PRECEDENCE.unary, seq('-', <<r("type_expr")>>))
 #+end_src
 
 Parser: [[file:noir/compiler/noirc_frontend/src/parser/parser/type_expression.rs::fn parse_term_type_expression(&mut self)][parse_term_type_expression()]]
-#+transclude: [[file:noir/compiler/noirc_frontend/src/parser/parser/type_expression.rs::111][TermTypeExpression doc]] :lines 111-113 :src fundamental
+#+transclude: [[file:noir/compiler/noirc_frontend/src/parser/parser/type_expression.rs::111][TermTypeExpression doc]]  :lines 111-113 :src fundamental
 
 This parser is effectively defining =-= as the single valid unary operator and pretends it is a binary one by setting the =lhs= of that to 0. This is probably for some internal compiler reason, I'll treat this as the unary expression is is for the purpose of the CST.
 
@@ -1836,7 +1841,7 @@ seq('(', <<r("type_expr")>>, ')')
 #+end_src
 
 #+name: ,ebnf_parenthesized_type_expression
-#+transclude: [[file:noir/compiler/noirc_frontend/src/parser/parser/type_expression.rs::174][ParenthesizedTypeExpression doc]] :lines 174-174 :src fundamental
+#+transclude: [[file:noir/compiler/noirc_frontend/src/parser/parser/type_expression.rs::174][ParenthesizedTypeExpression doc]]  :lines 174-174 :src fundamental
 
 ***** TODO Path
 :PROPERTIES:
@@ -1874,7 +1879,7 @@ In all cases where Path is parsed via mentioned parsers if there are no path seg
 Parser: [[file:noir/compiler/noirc_frontend/src/parser/parser/path.rs::fn parse_path_impl(][parse_path_impl()]], [[file:noir/compiler/noirc_frontend/src/parser/parser/path.rs::fn parse_path(&mut self)][parse_path()]]
 
 #+name: ,ebnf_path
-#+transclude: [[file:noir/compiler/noirc_frontend/src/parser/parser/path.rs::31][Path doc]] :lines 31-31 :src fundamental
+#+transclude: [[file:noir/compiler/noirc_frontend/src/parser/parser/path.rs::31][Path doc]]  :lines 31-31 :src fundamental
 
 :callstack:
 - [-] [[file:noir/compiler/noirc_frontend/src/parser/parser/path.rs::fn parse_path_impl(][parse_path_impl()]]
@@ -1899,7 +1904,7 @@ If they are can reduce nesting complexity.
 :END:
 
 #+name: ,ebnf_turbofish
-#+transclude: [[file:noir/compiler/noirc_frontend/src/parser/parser/path.rs::33][Turbofish doc]] :lines 33-33 :src fundamental
+#+transclude: [[file:noir/compiler/noirc_frontend/src/parser/parser/path.rs::33][Turbofish doc]]  :lines 33-33 :src fundamental
 
 A /turbofish/ is syntax of the form ~::<Type>~ (i.e. generics).
 
@@ -2104,7 +2109,7 @@ Parser: [[file:noir/compiler/noirc_frontend/src/parser/parser/path.rs::let gener
 At parent callsite check for current token ~Token::DoubleColon~ (=::=) followed by ~Token::Less~ (=<=) is before parser is called.
 
 #+name: ,ebnf_path_generics
-#+transclude: [[file:noir/compiler/noirc_frontend/src/parser/parser/path.rs::157][PathGenerics doc]] :lines 157-157 :src fundamental
+#+transclude: [[file:noir/compiler/noirc_frontend/src/parser/parser/path.rs::157][PathGenerics doc]]  :lines 157-157 :src fundamental
 
 *************** TODO Currently ignoring the NamedTypeArg being errors for this rule, worth it to not do that?
 By ignoring it this subheading has no rule, simply use GenericTypeArgs directly.
@@ -2223,7 +2228,7 @@ Parser immediately calls [[file:noir/compiler/noirc_frontend/src/parser/parser/f
       - [X] [[file:noir/compiler/noirc_frontend/src/parser/parser/expression.rs::fn parse_block(&mut self)][parse_block()]] (is: [[#h:B34CADE5-71B4-41F2-AB54-00483EE593A6][Block]])
 
 #+name: ,ebnf_function
-#+transclude: [[file:noir/compiler/noirc_frontend/src/parser/parser/function.rs::34][Parser::parse_function()]] :lines 34-34 :src fundamental
+#+transclude: [[file:noir/compiler/noirc_frontend/src/parser/parser/function.rs::34][Parser::parse_function()]]  :lines 34-34 :src fundamental
 
 *************** TODO validate_attributes and document it if required
 Said call is within the parse_function_definition function, first expression.
@@ -2263,7 +2268,7 @@ seq(
 Parser: [[file:noir/compiler/noirc_frontend/src/parser/parser/function.rs::fn parse_function_parameters(&mut self, allow_self: bool)][parse_function_parameters()]]
 
 #+name: ,ebnf_function_parameters
-#+transclude: [[file:noir/compiler/noirc_frontend/src/parser/parser/function.rs::134][FunctionParameters doc]] :lines 129-133 :src fundamental
+#+transclude: [[file:noir/compiler/noirc_frontend/src/parser/parser/function.rs::134][FunctionParameters doc]]  :lines 129-133 :src fundamental
 
 ****** FunctionParametersList
 :PROPERTIES:
@@ -2381,7 +2386,7 @@ Parser: [[file:noir/compiler/noirc_frontend/src/parser/parser/generics.rs::fn pa
 Via [[#h:8E0DC05B-1ED6-47BE-9589-64DC06FAECCA][parse_many]] split on =,= until =>= call [[file:noir/compiler/noirc_frontend/src/parser/parser/generics.rs::fn parse_generic_in_list(&mut self)][parse_generic_in_list()]].
 
 #+name: ,ebnf_generics
-#+transclude: [[file:noir/compiler/noirc_frontend/src/parser/parser/generics.rs::13][Generics doc]] :lines 13-13 :src fundamental
+#+transclude: [[file:noir/compiler/noirc_frontend/src/parser/parser/generics.rs::13][Generics doc]]  :lines 13-13 :src fundamental
 
 *************** TODO Call this rule generics_list or type_parameters_list instead?
 All other list type rules have _list suffix.
@@ -2396,7 +2401,7 @@ CLOSED: [2025-07-12 Sat 22:06]
 **Inlined**, subheading only kept for reference.
 
 #+name: ,ebnf_generics_list
-#+transclude: [[file:noir/compiler/noirc_frontend/src/parser/parser/generics.rs::15][GenericsList doc]] :lines 15-15 :src fundamental
+#+transclude: [[file:noir/compiler/noirc_frontend/src/parser/parser/generics.rs::15][GenericsList doc]]  :lines 15-15 :src fundamental
 
 ****** BLOCK Generic
 :LOGBOOK:
@@ -2418,7 +2423,7 @@ Parser: [[file:noir/compiler/noirc_frontend/src/parser/parser/generics.rs::fn pa
 Simple wrapper for child AST nodes.
 
 #+name: ,ebnf_generic
-#+transclude: [[file:noir/compiler/noirc_frontend/src/parser/parser/generics.rs::37][Generic doc]] :lines 37-40 :src fundamental
+#+transclude: [[file:noir/compiler/noirc_frontend/src/parser/parser/generics.rs::37][Generic doc]]  :lines 37-40 :src fundamental
 
 ****** DONE VariableGeneric
 CLOSED: [2025-07-12 Sat 21:56]
@@ -2432,7 +2437,7 @@ Parser: [[file:noir/compiler/noirc_frontend/src/parser/parser/generics.rs::fn pa
 Effective alias for [[#h:65B0176B-B46F-4679-8535-C504870AC048][ident]].
 
 #+name: ,ebnf_variable_generic
-#+transclude: [[file:noir/compiler/noirc_frontend/src/parser/parser/generics.rs::57][VariableGeneric doc]] :lines 57-57 :src fundamental
+#+transclude: [[file:noir/compiler/noirc_frontend/src/parser/parser/generics.rs::57][VariableGeneric doc]]  :lines 57-57 :src fundamental
 
 ****** DONE NumericGeneric
 CLOSED: [2025-07-12 Sat 22:23]
@@ -2469,7 +2474,7 @@ Placeholder-ish name for now idk.
 *************** END
 
 #+name: ,ebnf_numeric_generic
-#+transclude: [[file:noir/compiler/noirc_frontend/src/parser/parser/generics.rs::62][NumericGeneric doc]] :lines 62-62 :src fundamental
+#+transclude: [[file:noir/compiler/noirc_frontend/src/parser/parser/generics.rs::62][NumericGeneric doc]]  :lines 62-62 :src fundamental
 
 ****** TODO ResolvedGeneric
 :LOGBOOK:
@@ -2509,7 +2514,7 @@ Final part of parser loops over generics from [[#h:8C6AF1F0-DBAC-4030-AEFC-8FBF6
 - Named :: =<A = B, C = D, E = F>=
 
 #+name: ,ebnf_generic_type_args
-#+transclude: [[file:noir/compiler/noirc_frontend/src/parser/parser/generics.rs::106][GenericTypeArgs doc]] :lines 106-106 :src fundamental
+#+transclude: [[file:noir/compiler/noirc_frontend/src/parser/parser/generics.rs::106][GenericTypeArgs doc]]  :lines 106-106 :src fundamental
 
 *************** TODO GenericTypeArgs EBNF update, and also it's optional
 If =<= is not eaten default GenericTypeArgs is returned, which is presumably empty (and in any case we didn't eat any syntax) so really GenericTypeArgs is optional wherever it appears.
@@ -2529,7 +2534,7 @@ CLOSED: [2025-07-13 Sun 17:21]
 **Inlined**, subheading only kept for reference.
 
 #+name: ,ebnf_generic_type_args_list
-#+transclude: [[file:noir/compiler/noirc_frontend/src/parser/parser/generics.rs::108][GenericTypeArgsList doc]] :lines 108-108 :src fundamental
+#+transclude: [[file:noir/compiler/noirc_frontend/src/parser/parser/generics.rs::108][GenericTypeArgsList doc]]  :lines 108-108 :src fundamental
 
 ******* DONE GenericTypeArg
 CLOSED: [2025-07-14 Mon 02:28]
@@ -2559,7 +2564,7 @@ First checks if current token is ~Token::Ident~ followed by ~Token::Assign~ (===
 Failure in attempt to parse OrderedTypeArg raises parser error ~ParsingRuleLabel::TypeOrTypeExpression~.
 
 #+name: ,ebnf_generic_type_arg
-#+transclude: [[file:noir/compiler/noirc_frontend/src/parser/parser/generics.rs::110][GenericTypeArg doc]] :lines 110-112 :src fundamental
+#+transclude: [[file:noir/compiler/noirc_frontend/src/parser/parser/generics.rs::110][GenericTypeArg doc]]  :lines 110-112 :src fundamental
 
 ******* DONE NamedTypeArg
 CLOSED: [2025-07-14 Mon 02:28]
@@ -2586,7 +2591,7 @@ NamedTypeArgs should have a wrapping node for clarity on their structure in the 
 Call to Type wrapped in ~parse_type_or_error~. Also called "associated types".
 
 #+name: ,ebnf_named_type_arg
-#+transclude: [[file:noir/compiler/noirc_frontend/src/parser/parser/generics.rs::114][NamedTypeArg doc]] :lines 114-114 :src fundamental
+#+transclude: [[file:noir/compiler/noirc_frontend/src/parser/parser/generics.rs::114][NamedTypeArg doc]]  :lines 114-114 :src fundamental
 
 ******* DONE OrderedTypeArg
 CLOSED: [2025-07-14 Mon 02:27]
@@ -2610,7 +2615,7 @@ OrderedTypeArgs should have no wrapping node and just defer to TypeOrTypeExpress
 If attempt to parse TypeOrTypeExpression yields ~None~ parser error ~ParsingRuleLabel::TypeOrTypeExpression~ is raised.
 
 #+name: ,ebnf_ordered_type_arg
-#+transclude: [[file:noir/compiler/noirc_frontend/src/parser/parser/generics.rs::116][OrderedTypeArg doc]] :lines 116-116 :src fundamental
+#+transclude: [[file:noir/compiler/noirc_frontend/src/parser/parser/generics.rs::116][OrderedTypeArg doc]]  :lines 116-116 :src fundamental
 
 *** SPEC WhereClause                                           :node:cluster:
 :PROPERTIES:
@@ -2700,7 +2705,7 @@ Via [[#h:8E0DC05B-1ED6-47BE-9589-64DC06FAECCA][parse_many]] inline split on =+= 
 ~parse_trait_bound_in_list~ checks [[file:noir/compiler/noirc_frontend/src/parser/parser/where_clause.rs::pub(crate) fn parse_trait_bound(&mut self)][parse_trait_bound()]] returns ~Some~ and returns that (which /is/ [[#h:161848E1-1F70-4DEF-9353-4C6BAF517C82][TraitBound]]), otherwise parse error.
 
 #+name: ,ebnf_trait_bounds
-#+transclude: [[file:noir/compiler/noirc_frontend/src/parser/parser/where_clause.rs::50][TraitBounds doc]] :lines 50-50 :src fundamental
+#+transclude: [[file:noir/compiler/noirc_frontend/src/parser/parser/where_clause.rs::50][TraitBounds doc]]  :lines 50-50 :src fundamental
 
 *************** TODO stop_if_separator_is_missing consequences
 Really tired right now, double check any undocumented BNF implications of this
@@ -2740,7 +2745,7 @@ Types: [[file:noir/compiler/noirc_frontend/src/ast/traits.rs::pub struct TraitBo
 A ~TraitBound~ is a single type path used to constrain a trait.
 
 #+name: ,ebnf_trait_bound
-#+transclude: [[file:noir/compiler/noirc_frontend/src/parser/parser/where_clause.rs::85][TraitBound doc]] :lines 85-85 :src fundamental
+#+transclude: [[file:noir/compiler/noirc_frontend/src/parser/parser/where_clause.rs::85][TraitBound doc]]  :lines 85-85 :src fundamental
 
 *** SPEC PatternOrSelf
 :PROPERTIES:
@@ -2761,7 +2766,7 @@ choice(
 #+end_src
 
 Parser: [[file:noir/compiler/noirc_frontend/src/parser/parser/pattern.rs::pub(crate) fn parse_pattern_or_self(&mut self)][parse_pattern_or_self()]]
-#+transclude: [[file:noir/compiler/noirc_frontend/src/parser/parser/pattern.rs::43][PatternOrSelf doc]] :lines 43-45 :src fundamental
+#+transclude: [[file:noir/compiler/noirc_frontend/src/parser/parser/pattern.rs::43][PatternOrSelf doc]]  :lines 43-45 :src fundamental
 
 Standard case:
 1. Check next token is not =:=, then;
@@ -2812,7 +2817,7 @@ prec(-1, seq(
 #+end_src
 
 Parser: [[file:noir/compiler/noirc_frontend/src/parser/parser/pattern.rs::pub(crate) fn parse_pattern(&mut self)][parse_pattern()]], [[file:noir/compiler/noirc_frontend/src/parser/parser/pattern.rs::pub(crate) fn parse_pattern_after_modifiers(][parse_pattern_after_modifiers()]], [[file:noir/compiler/noirc_frontend/src/parser/parser/pattern.rs::fn parse_pattern_no_mut(&mut self)][parse_pattern_no_mut()]]
-#+transclude: [[file:noir/compiler/noirc_frontend/src/parser/parser/pattern.rs::35][Pattern doc]] :lines 35-36 :src fundamental
+#+transclude: [[file:noir/compiler/noirc_frontend/src/parser/parser/pattern.rs::35][Pattern doc]]  :lines 35-36 :src fundamental
 
 ~parse_pattern~ optionally eats =mut= before calling ~parse_pattern_after_modifiers~ which itself optionally parses a PatternNoMut via ~parse_pattern_no_mut~ and that result is appropriately marked mutable (or not) and passed back as the return value for ~parse_pattern~. So, two levels of indirection.
 
@@ -2845,7 +2850,7 @@ choice(
 #+end_src
 
 Parser: [[file:noir/compiler/noirc_frontend/src/parser/parser/pattern.rs::fn parse_pattern_no_mut(&mut self)][parse_pattern_no_mut()]]
-#+transclude: [[file:noir/compiler/noirc_frontend/src/parser/parser/pattern.rs::112][PatternNoMut doc]] :lines 112-116 :src fundamental
+#+transclude: [[file:noir/compiler/noirc_frontend/src/parser/parser/pattern.rs::112][PatternNoMut doc]]  :lines 112-116 :src fundamental
 
 ***** BLOCK InternedPattern                                            :leaf:
 :PROPERTIES:
@@ -2896,7 +2901,7 @@ seq(
 #+end_src
 
 Parser: [[file:noir/compiler/noirc_frontend/src/parser/parser/pattern.rs::fn parse_tuple_pattern(&mut self)][parse_tuple_pattern()]]
-#+transclude: [[file:noir/compiler/noirc_frontend/src/parser/parser/pattern.rs::169][TuplePattern doc]] :lines 169-169 :src fundamental
+#+transclude: [[file:noir/compiler/noirc_frontend/src/parser/parser/pattern.rs::169][TuplePattern doc]]  :lines 169-169 :src fundamental
 
 ****** SPEC PatternList                                                :node:
 :PROPERTIES:
@@ -2918,7 +2923,7 @@ Parser: [[file:noir/compiler/noirc_frontend/src/parser/parser/pattern.rs::fn par
 
 Parser: [[file:noir/compiler/noirc_frontend/src/parser/parser/pattern.rs::fn parse_tuple_pattern_element(&mut self)][parse_tuple_pattern_element()]]
 Via [[#h:8E0DC05B-1ED6-47BE-9589-64DC06FAECCA][parse_many]] in [[#h:5EC2C25E-781B-4AA1-B01B-D37B761237F8][parent]], split by =,= until =)=, each parsed as [[#h:D349E307-F033-4D2A-A729-F2EE5B483065][Pattern]].
-#+transclude: [[file:noir/compiler/noirc_frontend/src/parser/parser/pattern.rs::171][PatternList doc]] :lines 171-171 :src fundamental
+#+transclude: [[file:noir/compiler/noirc_frontend/src/parser/parser/pattern.rs::171][PatternList doc]]  :lines 171-171 :src fundamental
 
 ***** DONE StructPattern
 CLOSED: [2025-07-25 Fri 03:03]
@@ -2944,7 +2949,7 @@ seq(
 #+end_src
 
 Parser: [[file:noir/compiler/noirc_frontend/src/parser/parser/pattern.rs::fn parse_struct_pattern(&mut self, path: Path, start_span: Span)][parse_struct_pattern()]]
-#+transclude: [[file:noir/compiler/noirc_frontend/src/parser/parser/pattern.rs::197][StructPattern doc]] :lines 197-201 :src fundamental
+#+transclude: [[file:noir/compiler/noirc_frontend/src/parser/parser/pattern.rs::197][StructPattern doc]]  :lines 197-201 :src fundamental
 
 ****** SPEC StructPatternFields                                        :node:
 :PROPERTIES:
@@ -3026,7 +3031,7 @@ seq(
 #+end_src
 
 Parser (sop): [[#h:464E9BE0-4EC7-4D73-A1F2-F9C581DFD8E3][PatternOrSelf]]
-#+transclude: [[file:noir/compiler/noirc_frontend/src/parser/parser/pattern.rs::19][SelfPattern doc]] :lines 19-19 :src rust
+#+transclude: [[file:noir/compiler/noirc_frontend/src/parser/parser/pattern.rs::19][SelfPattern doc]]  :lines 19-19 :src rust
 
 *************** TODO Update upstream in-code docs if =&self= is in-fact valid?
 In-code don't suggest so but parser logic (thus far) says it is. Going to proceed as if it is for now though.
@@ -3159,7 +3164,7 @@ prec(
 Parser: [[file:noir/compiler/noirc_frontend/src/parser/parser/expression.rs::fn parse_literal(&mut self)][parse_literal()]]
 
 #+name: ,ebnf_literal
-#+transclude: [[file:noir/compiler/noirc_frontend/src/parser/parser/expression.rs::564][Literal, QuoteExpression, ArrayExpression, BlockExpression EBNF]] :lines 564-579 :src fundamental
+#+transclude: [[file:noir/compiler/noirc_frontend/src/parser/parser/expression.rs::564][Literal, QuoteExpression, ArrayExpression, BlockExpression EBNF]]  :lines 564-579 :src fundamental
 
 **** TODO AtomOrUnaryRightExpression
 2025/07/23 TODO
@@ -3352,9 +3357,9 @@ seq(
 
 Parser: [[file:noir/compiler/noirc_frontend/src/parser/parser/expression.rs::if let Some(literal) = self.parse_array_literal() {][parse_array_literal() parent callsite]], [[file:noir/compiler/noirc_frontend/src/parser/parser/expression.rs::fn parse_array_literal(&mut self)][parse_array_literal()]]
 
-#+transclude: [[file:noir/compiler/noirc_frontend/src/parser/parser/expression.rs::577][ArrayExpression doc]] :lines 577-577 :src fundamental
+#+transclude: [[file:noir/compiler/noirc_frontend/src/parser/parser/expression.rs::577][ArrayExpression doc]]  :lines 577-577 :src fundamental
 
-#+transclude: [[file:noir/compiler/noirc_frontend/src/parser/parser/expression.rs::620][ArrayLiteral, StandardArrayLiteral, ArrayElements, RepeatedArrayLiteral docs]] :lines 620-628 :src fundamental
+#+transclude: [[file:noir/compiler/noirc_frontend/src/parser/parser/expression.rs::620][ArrayLiteral, StandardArrayLiteral, ArrayElements, RepeatedArrayLiteral docs]]  :lines 620-628 :src fundamental
 
 ***** DONE StandardArrayLiteral                                        :node:
 CLOSED: [2025-06-22 Sun 02:11]
@@ -3409,7 +3414,7 @@ seq('&', <<r("array_expression")>>)
 
 Parser: [[file:noir/compiler/noirc_frontend/src/parser/parser/expression.rs::if let Some(literal) = self.parse_slice_literal() {][parse_slice_literal() parent callsite]], [[file:noir/compiler/noirc_frontend/src/parser/parser/expression.rs::fn parse_slice_literal(&mut self)][parse_slice_literal()]]
 
-#+transclude: [[file:noir/compiler/noirc_frontend/src/parser/parser/expression.rs::670][SliceExpression doc]] :lines 670-670 :src fundamental
+#+transclude: [[file:noir/compiler/noirc_frontend/src/parser/parser/expression.rs::670][SliceExpression doc]]  :lines 670-670 :src fundamental
 
 **** TODO BlockExpression                                             :alias:
 :PROPERTIES:
@@ -3459,7 +3464,7 @@ Struct ~BlockExpression~ ([[file:noir/compiler/noirc_frontend/src/ast/expression
 *************** END
 
 #+name: ,ebnf_block
-#+transclude: [[file:noir/compiler/noirc_frontend/src/parser/parser/expression.rs::721][Block doc]] :lines 721-721 :src fundamental
+#+transclude: [[file:noir/compiler/noirc_frontend/src/parser/parser/expression.rs::721][Block doc]]  :lines 721-721 :src fundamental
 
 **** DONE If                                                          :alias:
 CLOSED: [2025-06-29 Sun 20:01]
@@ -3490,7 +3495,7 @@ Callsites:
   - [[file:noir/compiler/noirc_frontend/src/parser/parser/expression.rs::if let Some(kind) = self.parse_if_expr() {][in parse_atom_kind()]] (for: (TODO: Link Atom), as: IfExpression)
 
 #+name: ,ebnf_if_expression
-#+transclude: [[file:noir/compiler/noirc_frontend/src/parser/parser/expression.rs::442][IfExpression doc]] :lines 442-442 :src fundamental
+#+transclude: [[file:noir/compiler/noirc_frontend/src/parser/parser/expression.rs::442][IfExpression doc]]  :lines 442-442 :src fundamental
 
 *************** TODO This has ExpressionExceptConstructor stuff similar to ForRange
 Refactor accordingly, if appropriate.
@@ -3537,7 +3542,7 @@ Types: [[file:noir/compiler/noirc_frontend/src/ast/statement.rs::pub enum Statem
 Loop parsing attributes and [[#h:7BCA6405-C905-45AB-A3C7-1B7F6064454A][StatementKind]], each StatementKind is delimited by a semicolon.
 
 #+name: ,ebnf_statement
-#+transclude: [[file:noir/compiler/noirc_frontend/src/parser/parser/statement.rs::25][Statement doc]] :lines 25-25 :src fundamental
+#+transclude: [[file:noir/compiler/noirc_frontend/src/parser/parser/statement.rs::25][Statement doc]]  :lines 25-25 :src fundamental
 
 **** BLOCK StatementKind
 :PROPERTIES:
@@ -3566,11 +3571,11 @@ Types: [[file:noir/compiler/noirc_frontend/src/ast/statement.rs::pub struct Stat
 
 ~StatementKind::Semi~ is an ~Expression~ with a trailing semicolon, i.e. an expression-statement (TODO: link to PROJECT.org).
 
-#+transclude: [[file:noir/compiler/noirc_frontend/src/parser/parser/statement.rs::59][StatementKind doc]] :lines 59-70 :src fundamental
+#+transclude: [[file:noir/compiler/noirc_frontend/src/parser/parser/statement.rs::59][StatementKind doc]]  :lines 59-70 :src fundamental
 
 Top of parser function checks for a specially lexed ~TokenKind::InternedStatement~. If that is the next token a ~StatementKind::Interned~ of that statement is returned. Remember the return here returns at the function (i.e. ~parse_statement_kind()~ level).
 
-#+transclude: [[file:noir/compiler/noirc_frontend/src/parser/parser/statement.rs::91][TokenKind::InternedStatement check]] :lines 91-98 :src rust
+#+transclude: [[file:noir/compiler/noirc_frontend/src/parser/parser/statement.rs::91][TokenKind::InternedStatement check]]  :lines 91-98 :src rust
 
 *************** TODO Have we done/added stuff for interned statements yet? Lex notes for interned statements also?
 *************** END
@@ -3661,7 +3666,7 @@ Parser: [[file:noir/compiler/noirc_frontend/src/parser/parser/statement.rs::if s
 
 See [[#h:3F52F622-294C-463F-986F-DD38EB41EA89][add_semicolon]], ~StatementKind::Error~ always requires a semicolon.
 
-#+transclude: [[file:noir/compiler/noirc_frontend/src/parser/parser/statement.rs::76][ReturnStatement doc]] :lines 76-76 :src fundamental
+#+transclude: [[file:noir/compiler/noirc_frontend/src/parser/parser/statement.rs::76][ReturnStatement doc]]  :lines 76-76 :src fundamental
 
 *************** TODO Does the BNF doc have an error is is code missing that makes it actually optional?
 *************** END
@@ -3694,7 +3699,7 @@ Parser: [[file:noir/compiler/noirc_frontend/src/parser/parser/statement.rs::if s
 See [[#h:3F52F622-294C-463F-986F-DD38EB41EA89][add_semicolon]], ~StatementKind::Let~ always requires a semicolon.
 
 #+name: ,ebnf_let_statement
-#+transclude: [[file:noir/compiler/noirc_frontend/src/parser/parser/statement.rs::351][LetStatement doc]] :lines 351-351 :src fundamental
+#+transclude: [[file:noir/compiler/noirc_frontend/src/parser/parser/statement.rs::351][LetStatement doc]]  :lines 351-351 :src fundamental
 
 *************** TODO Change pattern field name to 'name'?
 Makes more sense I think
@@ -3733,7 +3738,7 @@ Parser: [[file:noir/compiler/noirc_frontend/src/parser/parser/statement.rs::if l
 
 See [[#h:3F52F622-294C-463F-986F-DD38EB41EA89][add_semicolon]], ~StatementKind::Constrain~ always requires a semicolon.
 
-#+transclude: [[file:noir/compiler/noirc_frontend/src/parser/parser/statement.rs::370][ConstrainStatement doc]] :lines 370-373 :src fundamental
+#+transclude: [[file:noir/compiler/noirc_frontend/src/parser/parser/statement.rs::370][ConstrainStatement doc]]  :lines 370-373 :src fundamental
 
 ***** DONE ComptimeStatement
 CLOSED: [2025-06-26 Thu 17:51]
@@ -3762,7 +3767,7 @@ seq(
 
 Parser: [[file:noir/compiler/noirc_frontend/src/parser/parser/statement.rs::if self.at_keyword(Keyword::Comptime) {][parse_comptime_statement() parent callsite]], [[file:noir/compiler/noirc_frontend/src/parser/parser/statement.rs::fn parse_comptime_statement(][parse_comptime_statement()]], [[file:noir/compiler/noirc_frontend/src/parser/parser/statement.rs::fn parse_comptime_statement_kind(][parse_comptime_statement_kind()]]
 
-#+transclude: [[file:noir/compiler/noirc_frontend/src/parser/parser/statement.rs::291][ComptimeStatement ComptimeBlock ComptimeLet ComptimeFor doc]] :lines 291-300 :src fundamental
+#+transclude: [[file:noir/compiler/noirc_frontend/src/parser/parser/statement.rs::291][ComptimeStatement ComptimeBlock ComptimeLet ComptimeFor doc]]  :lines 291-300 :src fundamental
 
 ****** ComptimeBlock                                                  :alias:
 :PROPERTIES:
@@ -3813,7 +3818,7 @@ Parser: [[file:noir/compiler/noirc_frontend/src/parser/parser/statement.rs::if l
 Types: [[file:noir/compiler/noirc_frontend/src/ast/statement.rs::pub struct ForLoopStatement {][ForLoopStatement struct]]
 
 #+name: ,ebnf_for_statement
-#+transclude: [[file:noir/compiler/noirc_frontend/src/parser/parser/statement.rs::227][ForStatement doc]] :lines 227-227 :src fundamental
+#+transclude: [[file:noir/compiler/noirc_frontend/src/parser/parser/statement.rs::227][ForStatement doc]]  :lines 227-227 :src fundamental
 
 ****** DONE ForRange
 CLOSED: [2025-06-26 Thu 17:47]
@@ -3839,7 +3844,7 @@ seq(
 Parser: [[file:noir/compiler/noirc_frontend/src/parser/parser/statement.rs::fn parse_for_range(&mut self)][parse_for_range()]]
 Types: [[file:noir/compiler/noirc_frontend/src/ast/statement.rs::pub enum ForRange {][ForRange enum]]
 
-#+transclude: [[file:noir/compiler/noirc_frontend/src/parser/parser/statement.rs::262][ForRange doc]] :lines 262-264 :src fundamental
+#+transclude: [[file:noir/compiler/noirc_frontend/src/parser/parser/statement.rs::262][ForRange doc]]  :lines 262-264 :src fundamental
 
 *************** TODO Is this the general range expression/statement for noir? Assuming it is for now and have aliased rule name as such
 *************** END
@@ -3863,7 +3868,7 @@ CLOSED: [2025-06-26 Thu 17:58]
 
 Parser: [[file:noir/compiler/noirc_frontend/src/parser/parser/statement.rs::if let Some(kind) = self.parse_if_expr() {][parse_if_expr() parent callsite]]
 
-#+transclude: [[file:noir/compiler/noirc_frontend/src/parser/parser/statement.rs::78][IfStatement doc]] :lines 78-78 :src fundamental
+#+transclude: [[file:noir/compiler/noirc_frontend/src/parser/parser/statement.rs::78][IfStatement doc]]  :lines 78-78 :src fundamental
 
 ***** DONE BlockStatement
 CLOSED: [2025-06-29 Sun 20:16]
@@ -3879,7 +3884,7 @@ CLOSED: [2025-06-29 Sun 20:16]
 
 Parser: [[file:noir/compiler/noirc_frontend/src/parser/parser/statement.rs::if let Some(block) = self.parse_block() {][parse_block() parent callsite]]
 
-#+transclude: [[file:noir/compiler/noirc_frontend/src/parser/parser/statement.rs::80][BlockStatement doc]] :lines 80-80 :src fundamental
+#+transclude: [[file:noir/compiler/noirc_frontend/src/parser/parser/statement.rs::80][BlockStatement doc]]  :lines 80-80 :src fundamental
 
 ***** DONE AssignStatement
 CLOSED: [2025-07-25 Fri 02:22]
@@ -3989,7 +3994,7 @@ seq(
 
 Parser: [[file:noir/compiler/noirc_frontend/src/parser/parser/arguments.rs::fn parse_arguments(&mut self)][parse_arguments()]]
 
-#+transclude: [[file:noir/compiler/noirc_frontend/src/parser/parser/arguments.rs::11][Arguments ArgumentsList doc]] :lines 11-13 :src fundamental
+#+transclude: [[file:noir/compiler/noirc_frontend/src/parser/parser/arguments.rs::11][Arguments ArgumentsList doc]]  :lines 11-13 :src fundamental
 
 *************** TODO EBNF feels unclear here, upstream patch?
 assert expects 1 or 2 params, assert_eq expects 2 or 3 so how is it the case that arguments list could only ever be up to 2 elements given how ArgumentsList is specified.
@@ -4088,7 +4093,7 @@ Both [[id:D6E2F320-99C6-49BE-972A-FCE3FD65EC38][ParenthesizedExpression]] and [[
 If only 1 Expression was parsed and there's no trailing comma ~ExpressionKind::Parenthesized~ returned, otherwise ~ExpressionKind::Tuple~.
 
 #+name: ,ebnf_parentheses_expression
-#+transclude: [[file:noir/compiler/noirc_frontend/src/parser/parser/expression.rs::680][ParenthesesExpression doc]] :lines 680-683 :src fundamental
+#+transclude: [[file:noir/compiler/noirc_frontend/src/parser/parser/expression.rs::680][ParenthesesExpression doc]]  :lines 680-683 :src fundamental
 
 **** DONE ParenthesizedExpression
 CLOSED: [2025-07-19 Sat 03:49]
@@ -4110,7 +4115,7 @@ Parser: /in parent, see [[#h:DF57FFD8-C50B-406E-95E7-94C3BFC15DAC][ParenthesesEx
 Similar to [[#h:CEEC13D7-39B2-434F-90D5-302AB44E2BBA][ParenthesizedTypeExpression]]. EBNF pattern only appears here and UnquoteExpression (TODO LINK).
 
 #+name: ,ebnf_parenthesized_expression
-#+transclude: [[file:noir/compiler/noirc_frontend/src/parser/parser/expression.rs::687][ParenthesizedExpression doc]] :lines 687-687 :src fundamental
+#+transclude: [[file:noir/compiler/noirc_frontend/src/parser/parser/expression.rs::687][ParenthesizedExpression doc]]  :lines 687-687 :src fundamental
 
 #+begin_example
 just fd "'(' Expression ')'" -C 2
@@ -4142,7 +4147,7 @@ seq(
 Parser: /in parent, see [[#h:DF57FFD8-C50B-406E-95E7-94C3BFC15DAC][ParenthesesExpression]]/
 
 #+name: ,ebnf_tuple_expression
-#+transclude: [[file:noir/compiler/noirc_frontend/src/parser/parser/expression.rs::689][TupleExpression doc]] :lines 689-689 :src fundamental
+#+transclude: [[file:noir/compiler/noirc_frontend/src/parser/parser/expression.rs::689][TupleExpression doc]]  :lines 689-689 :src fundamental
 
 **** DONE UnsafeExpression                                            :alias:
 CLOSED: [2025-07-19 Sat 04:01]
@@ -4161,7 +4166,7 @@ Callsites:
   - [[file:noir/compiler/noirc_frontend/src/parser/parser/expression.rs::if let Some(kind) = self.parse_unsafe_expr() {][in parse_atom_kind()]] (for: [[#h:14C02FBD-84BA-470B-92C3-8E9C55BCF375][Atom]])
 
 #+name: ,ebnf_unsafe_expression
-#+transclude: [[file:noir/compiler/noirc_frontend/src/parser/parser/expression.rs::372][UnsafeExpression doc]] :lines 372-372 :src fundamental
+#+transclude: [[file:noir/compiler/noirc_frontend/src/parser/parser/expression.rs::372][UnsafeExpression doc]]  :lines 372-372 :src fundamental
 
 **** DONE PathExpression
 CLOSED: [2025-07-19 Sat 17:30]
@@ -4182,7 +4187,7 @@ Grammar rule inlined at [[#h:167542CC-8CDE-49C1-9465-E5157C6A176F][Expression]].
 The [[#h:07167116-EAE4-475B-8C87-DE9075BAF88D][Path]] component of both [[#h:01A477BE-69D1-48DD-BCFE-4571CC5F3F73][VariableExpression]] and [[#h:33877732-BC96-4CE2-99F3-EDB01CB46420][ConstructorExpression]] are parsed inline here. If parameter ~allow_constructors~ is =true= and there's ={= then [[#h:33877732-BC96-4CE2-99F3-EDB01CB46420][ConstructorExpression]] is parsed.
 
 #+name: ,ebnf_path_expression
-#+transclude: [[file:noir/compiler/noirc_frontend/src/parser/parser/expression.rs::386][PathExpression doc]] :lines 386-388 :src fundamental
+#+transclude: [[file:noir/compiler/noirc_frontend/src/parser/parser/expression.rs::386][PathExpression doc]]  :lines 386-388 :src fundamental
 
 ***** VariableExpression                                              :alias:
 :PROPERTIES:
@@ -4192,7 +4197,7 @@ The [[#h:07167116-EAE4-475B-8C87-DE9075BAF88D][Path]] component of both [[#h:01A
 Alias for [[#h:07167116-EAE4-475B-8C87-DE9075BAF88D][Path]] except it is represented as an [[file:noir/compiler/noirc_frontend/src/ast/expression.rs::pub enum ExpressionKind {][ExpressionKind enum]] ~ExpressionKind::Variable~.
 
 #+name: ,ebnf_variable_expression
-#+transclude: [[file:noir/compiler/noirc_frontend/src/parser/parser/expression.rs::390][VariableExpression doc]] :lines 390-390 :src fundamental
+#+transclude: [[file:noir/compiler/noirc_frontend/src/parser/parser/expression.rs::390][VariableExpression doc]]  :lines 390-390 :src fundamental
 
 ***** DONE ConstructorExpression
 CLOSED: [2025-07-19 Sat 17:30]
@@ -4245,7 +4250,7 @@ Types: [[file:noir/compiler/noirc_frontend/src/ast/expression.rs::pub struct Con
 Looks to be akin to Rust struct expressions: https://doc.rust-lang.org/reference/expressions/struct-expr.html
 
 #+name: ,ebnf_constructor_expression
-#+transclude: [[file:noir/compiler/noirc_frontend/src/parser/parser/expression.rs::404][ConstructorExpression, ConstructorFields, ConstructorField doc]] :lines 404-408 :src fundamental
+#+transclude: [[file:noir/compiler/noirc_frontend/src/parser/parser/expression.rs::404][ConstructorExpression, ConstructorFields, ConstructorField doc]]  :lines 404-408 :src fundamental
 
 *************** TODO In parser UnresolvedType::from_path
 Does this mean OrderedGenerics are allowed in the Path? Investigate later.
@@ -4312,7 +4317,7 @@ Callsites:
   - [[file:noir/compiler/noirc_frontend/src/parser/parser/expression.rs::if let Some(kind) = self.parse_lambda() {][in parse_atom_kind()]] (for: [[#h:14C02FBD-84BA-470B-92C3-8E9C55BCF375][Atom]])
 
 #+name: ,ebnf_lambda
-#+transclude: [[file:noir/compiler/noirc_frontend/src/parser/parser/lambda.rs::10][Lambda doc]] :lines 10-10 :src fundamental
+#+transclude: [[file:noir/compiler/noirc_frontend/src/parser/parser/lambda.rs::10][Lambda doc]]  :lines 10-10 :src fundamental
 
 ***** DONE LambdaParameters
 CLOSED: [2025-07-19 Sat 20:26]
@@ -4375,7 +4380,7 @@ Callsites:
   - [[file:noir/compiler/noirc_frontend/src/parser/parser/expression.rs::if let Some(kind) = self.parse_comptime_expr() {][in parse_atom_kind()]] (for: [[#h:14C02FBD-84BA-470B-92C3-8E9C55BCF375][Atom]])
 
 #+name: ,ebnf_comptime_expression
-#+transclude: [[file:noir/compiler/noirc_frontend/src/parser/parser/expression.rs::481][ComptimeExpression]] :lines 481-481 :src fundamental
+#+transclude: [[file:noir/compiler/noirc_frontend/src/parser/parser/expression.rs::481][ComptimeExpression]]  :lines 481-481 :src fundamental
 
 **** DONE UnquoteExpression
 CLOSED: [2025-07-19 Sat 23:47]
@@ -4434,7 +4439,7 @@ Callsites:
   - [[file:noir/compiler/noirc_frontend/src/parser/parser/expression.rs::if let Some(kind) = self.parse_type_path_expr() {][in parse_atom_kind()]] (for: [[#h:14C02FBD-84BA-470B-92C3-8E9C55BCF375][Atom]])
 
 #+name: ,ebnf_type_path_expression
-#+transclude: [[file:noir/compiler/noirc_frontend/src/parser/parser/expression.rs::534][TypePathExpression doc]] :lines 534-534 :src fundamental
+#+transclude: [[file:noir/compiler/noirc_frontend/src/parser/parser/expression.rs::534][TypePathExpression doc]]  :lines 534-534 :src fundamental
     
 **** DONE AsTraitPath
 CLOSED: [2025-07-20 Sun 00:51]
@@ -4553,7 +4558,7 @@ Lexer (master): [[file:noir/compiler/noirc_frontend/src/lexer/lexer.rs::fn glue(
 Some tokens can contain more than 1 character, e.g. =!== (not equal-to), such tokens are formed by being 'glued' together during lexing.
 
 Starting glue tokens are: =<=, =>=, ===, =/=, =.=, =:=, =!=, =-=.
-#+transclude: [[file:noir/compiler/noirc_frontend/src/lexer/lexer.rs::115][Lexer.next_token() glue matches]] :lines 115-122 :src fundamental
+#+transclude: [[file:noir/compiler/noirc_frontend/src/lexer/lexer.rs::115][Lexer.next_token() glue matches]]  :lines 115-122 :src fundamental
 
 Since ~next_token~ (TODO: link) has already incremented the cursor when the [[file:noir/compiler/noirc_frontend/src/lexer/lexer.rs::fn glue(&mut self, prev_token: Token)][glue()]] lexer is called (in next_tokens pattern match arm), glue is given the prior (initial) ~Token~ it is to start attempting to match from and begins subsequently.
 
@@ -5148,7 +5153,7 @@ Parameter =kind= (~TokenKind~) is compared to the parsers current token kind, an
 
 Checking token kind goes down to [[file:noir/compiler/noirc_frontend/src/lexer/token.rs::355][SpannedToken.kind()]] to [[file:noir/compiler/noirc_frontend/src/lexer/token.rs::497][Token.kind()]] which is the following pattern match:
 
-#+transclude: [[file:noir/compiler/noirc_frontend/src/lexer/token.rs::498][Token.kind() pattern match]] :lines 498-522 :src rust
+#+transclude: [[file:noir/compiler/noirc_frontend/src/lexer/token.rs::498][Token.kind() pattern match]]  :lines 498-522 :src rust
 
 *** [[file:noir/compiler/noirc_frontend/src/parser/parser/path.rs::fn parse_path_impl(][Parser::parse_path_impl(allow_turbofish, allow_trailing_double_colon)]] :parser_fn:
 :PROPERTIES:
@@ -5269,15 +5274,15 @@ This is also currently a parser error if a comptime block is followed by a ; bec
 
 If none of Simple or Complex are triggered the final pattern match lines work as follows (snippet followed by explanation):
 
-#+transclude: [[file:noir/compiler/noirc_frontend/src/ast/statement.rs::124][Pattern non-terminal Expression]] :lines 124-127 :src fundamental
+#+transclude: [[file:noir/compiler/noirc_frontend/src/ast/statement.rs::124][Pattern non-terminal Expression]]  :lines 124-127 :src fundamental
 
 Any ~ExpressionKind~, which has =None= ~semi~ (i.e. no semicolon), and for which ~last_statement_in_block~ is =false= is a parser error. So this matches any Expression that is not the last in the block, and said Expressions require a semicolon.
 
-#+transclude: [[file:noir/compiler/noirc_frontend/src/ast/statement.rs::128][Pattern ExpressionStatement]] :lines 128-128 :src fundamental
+#+transclude: [[file:noir/compiler/noirc_frontend/src/ast/statement.rs::128][Pattern ExpressionStatement]]  :lines 128-128 :src fundamental
 
 Any ~ExpressionKind~, which has =Some= ~semi~ (i.e. a semicolon), at any position in the block is fine. It is considered a ~StatementKind::Semi~ (i.e. an [[#h:12F5ADF9-E496-4D5B-896E-5CE97D44BE3D][ExpressionStatement]]).
 
-#+transclude: [[file:noir/compiler/noirc_frontend/src/ast/statement.rs::129][Pattern terminal Expression]] :lines 129-129 :src fundamental
+#+transclude: [[file:noir/compiler/noirc_frontend/src/ast/statement.rs::129][Pattern terminal Expression]]  :lines 129-129 :src fundamental
 
 Any ~ExpressionKind~, which has =None= ~semi~ (i.e. no semicolon), and for which ~last_statement_in_block~ is =true= remains as an Expression.
 
@@ -5356,7 +5361,7 @@ const PRECEDENCE = {
 
 <<secondary_attributes>>
 
-module.exports = grammar({
+export default grammar({
     name: 'noir',
 
     externals: ($) => [
