@@ -1,4 +1,4 @@
-#+TODO: TODO(t@) TOIMPL(i@) SPEC(r@) BLOCK(b@) | DONE(d!)
+#+TODO: TODO(t@) TOIMPL(i@) SPEC(r@) BLOCK(b@) UPGR(u@) | DONE(d!)
 #+STARTUP: indent logdone logdrawer content lognoteclock-out
 # ------------------------------------------------------
 #+NOIR_TEMPLATE_URL: https://github.com/noir-lang/noir/blob/%h/%p#L%lC%c-L%lC%s
@@ -94,9 +94,10 @@ Parser: [[file:noir/compiler/noirc_frontend/src/parser/parser.rs::fn parse_modul
 #+name: ,ebnf_module
 #+transclude: [[file:noir/compiler/noirc_frontend/src/parser/parser.rs::122][Module doc]]  :lines 122-122 :src fundamental
 
-*** DONE DocComments                                                 :pseudo:
-CLOSED: [2025-06-05 Thu 16:59]
+*** TODO DocComments                                               :pseudo:
 :LOGBOOK:
+- State "UPGR"       from "DONE"       [2026-02-18 Wed 21:39] \\
+  Noir v1.0.0-beta.19
 - State "DONE"       from "TODO"       [2025-06-05 Thu 16:59]
 - State "TODO"       from              [2025-05-25 Sun 20:33] \\
   Restructure, putting {Inner,Outer}DocComments under this.
@@ -108,12 +109,13 @@ Calls [[#h:AC5A6E2C-59EC-44C6-9D1E-52553E56C3F9][eat_kind]] with ~TokenKind::{In
 
 A string of the matched comments contents is then returned. The contents (see lexing) exclude the glue-token prefix and (closing suffix for block comments).
 
-**** DONE InnerDocComments
-CLOSED: [2025-06-05 Thu 16:57]
+**** UPGR InnerDocComments
 :PROPERTIES:
 :CUSTOM_ID: h:C58B2CB4-FF62-49BB-AFFD-1BADF4462B9D
 :END:
 :LOGBOOK:
+- State "UPGR"       from "DONE"       [2026-02-18 Wed 21:39] \\
+  Noir v1.0.0-beta.19
 - State "DONE"       from "TODO"       [2025-06-05 Thu 16:57]
 :END:
 
@@ -126,12 +128,13 @@ Parser: [[file:noir/compiler/noirc_frontend/src/parser/parser/doc_comments.rs::f
 Not strictly related to this headline only, just while looking around. In token.rs enum BorrowedToken represents a token in noirs grammar. So, all the token types are there.
 *************** END
 
-**** DONE OuterDocComments
-CLOSED: [2025-06-05 Thu 16:57]
+**** UPGR OuterDocComments
 :PROPERTIES:
 :CUSTOM_ID: h:FB5478BF-5E66-4686-931B-733349F83FD8
 :END:
 :LOGBOOK:
+- State "UPGR"       from "DONE"       [2026-02-18 Wed 21:39] \\
+  Noir v1.0.0-beta.19
 - State "DONE"       from "TODO"       [2025-06-05 Thu 16:57]
 :END:
 
@@ -153,12 +156,13 @@ Parser: [[file:noir/compiler/noirc_frontend/src/parser/parser/item.rs::fn parse_
 - Parsed without separator (~Parser::parse_module_items~).
 - ~Parser::parse_module_item_in_list~.
 
-**** DONE ItemKind
-CLOSED: [2025-07-23 Wed 00:27]
+**** UPGR ItemKind
 :PROPERTIES:
 :CUSTOM_ID: h:D661B191-E117-4EB9-B6F7-322B7B67A79F
 :END:
 :LOGBOOK:
+- State "UPGR"       from "DONE"       [2026-02-18 Wed 21:39] \\
+  Noir v1.0.0-beta.19
 - State "DONE"       from "TODO"       [2025-07-23 Wed 00:27]
 :END:
 
@@ -183,12 +187,13 @@ TODO: Does this mean that in a list of attributes #[foo] #[bar] #![bing] #[bong]
 #+name: ,ebnf_item_kind
 #+transclude: [[file:noir/compiler/noirc_frontend/src/parser/parser/item.rs::97][ItemKind doc]]  :lines 97-108 :src fundamental
 
-***** DONE Attributes
-CLOSED: [2025-06-05 Thu 20:03]
+***** UPGR Attributes
 :PROPERTIES:
 :ID:       DA6150E7-E986-4749-A481-A95FF1368B74
 :END:
 :LOGBOOK:
+- State "UPGR"       from "DONE"       [2026-02-18 Wed 21:39] \\
+  Noir v1.0.0-beta.19
 - State "DONE"       from "TODO"       [2025-06-05 Thu 20:03]
 - State "TODO"       from              [2025-06-05 Thu 18:56] \\
   To contain Attributes and InnerAttribute
@@ -215,12 +220,13 @@ Primary or Secondary; depending on how many can be applied to a function.
 Attributes have some further captures in the Noir lexer, e.g. `foreign` captures a name afterwards. So do that also (and for the secondary attributes).
 *************** END
 
-****** DONE InnerAttribute                                             :leaf:
-CLOSED: [2025-06-05 Thu 20:03]
+****** UPGR InnerAttribute                                        :leaf:
 :PROPERTIES:
 :CUSTOM_ID: h:AE3747A8-8CA3-4B6D-AF09-3553CE24CD70
 :END:
 :LOGBOOK:
+- State "UPGR"       from "DONE"       [2026-02-18 Wed 21:39] \\
+  Noir v1.0.0-beta.19
 - State "DONE"       from "SPEC"       [2025-06-05 Thu 20:03]
 - State "SPEC"       from "TODO"       [2025-06-05 Thu 19:10]
 :END:
@@ -236,12 +242,13 @@ Parser: [[file:noir/compiler/noirc_frontend/src/parser/parser/attributes.rs::pub
 Can be any valid [[SecondaryAttribute]] and is purely a syntactical convenience to apply to it's container versus attribute definitions piled at containers definition. See [[https://github.com/noir-lang/noir/issues/5875][issue]] for more.
 *************** END
 
-****** DONE Attribute                                                  :leaf:
-CLOSED: [2025-06-05 Thu 20:03]
+****** UPGR Attribute                                             :leaf:
 :PROPERTIES:
 :CUSTOM_ID: h:FF901AEF-D40D-44AB-9BA6-C324F3531088
 :END:
 :LOGBOOK:
+- State "UPGR"       from "DONE"       [2026-02-18 Wed 21:39] \\
+  Noir v1.0.0-beta.19
 - State "DONE"       from "SPEC"       [2025-06-05 Thu 20:03]
 - State "SPEC"       from "TODO"       [2025-06-05 Thu 19:16]
 :END:
@@ -255,12 +262,13 @@ Parser: [[file:noir/compiler/noirc_frontend/src/parser/parser/attributes.rs::pub
 
 In parent all the parsed attributes are collected.
 
-***** DONE Modifiers
-CLOSED: [2025-07-14 Mon 14:54]
+***** UPGR Modifiers
 :PROPERTIES:
 :CUSTOM_ID: h:2A9D09A5-2E52-4B8C-ABA1-0B3B953F093C
 :END:
 :LOGBOOK:
+- State "UPGR"       from "DONE"       [2026-02-18 Wed 21:39] \\
+  Noir v1.0.0-beta.19
 - State "DONE"       from "SPEC"       [2025-07-14 Mon 14:54]
 - State "SPEC"       from "TODO"       [2025-05-20 Tue 18:06]
 :END:
@@ -289,12 +297,13 @@ Parser: [[file:noir/compiler/noirc_frontend/src/parser/parser/modifiers.rs::fn p
 Using eglot to show the call hierarchy Traits apparently call this parser, so when we ge to Traits have a looksey I guess.
 *************** END
 
-****** DONE ItemVisibility
-CLOSED: [2025-07-14 Mon 14:56]
+****** UPGR ItemVisibility
 :PROPERTIES:
 :CUSTOM_ID: h:F5A79701-65C9-4FEA-83D8-2413C585A5FA
 :END:
 :LOGBOOK:
+- State "UPGR"       from "DONE"       [2026-02-18 Wed 21:39] \\
+  Noir v1.0.0-beta.19
 - State "DONE"       from "SPEC"       [2025-07-14 Mon 14:56]
 - State "SPEC"       from "DONE"       [2025-06-05 Thu 20:14] \\
   Don't actually have any tests for this yet
@@ -317,12 +326,13 @@ ItemVisibility = ( 'pub' | 'pub' '(' 'crate' ')' )?
 
 Original EBNF: [[file:noir/compiler/noirc_frontend/src/parser/parser/item_visibility.rs::9][ItemVisibility doc]]
 
-***** DONE Use
-CLOSED: [2025-06-08 Sun 17:35]
+***** UPGR Use
 :PROPERTIES:
 :CUSTOM_ID: h:ADB184CE-E43C-423B-803F-DE1679A91829
 :END:
 :LOGBOOK:
+- State "UPGR"       from "DONE"       [2026-02-18 Wed 21:39] \\
+  Noir v1.0.0-beta.19
 - State "DONE"       from "TODO"       [2025-06-08 Sun 17:35]
 :END:
 
@@ -424,12 +434,13 @@ Parsed [[file:noir/compiler/noirc_frontend/src/ast/statement.rs::pub struct UseT
    parse_use_tree manually calls parse_path_kind which gets the path kind, and then parse_use_tree_without_kind which calls parse_path_after_kind. The latter function is as it says, the rest of the path after kind and this pattern is (essentially) the same as PathNoTurbofish so EBNF rule for Use stating PathKind PathNoTurbofish implies a paths' kind is parsed twice when it isn't, so that part of the rule is wrong.
 *************** END
 
-****** DONE UseTree
-CLOSED: [2025-06-08 Sun 17:35]
+****** UPGR UseTree
 :PROPERTIES:
 :CUSTOM_ID: h:19EAD845-0134-41CA-85BA-2E09E10D479B
 :END:
 :LOGBOOK:
+- State "UPGR"       from "DONE"       [2026-02-18 Wed 21:39] \\
+  Noir v1.0.0-beta.19
 - State "DONE"       from "TODO"       [2025-06-08 Sun 17:35]
 :END:
 
@@ -445,23 +456,25 @@ If ~trailing_double_colon~ and ={= then via [[#h:8E0DC05B-1ED6-47BE-9589-64DC06F
 
 Eventually, through UseTreeLists recurive calls, ~trailing_double_colon~ will be true and [[#h:E818DDE4-D341-4AEC-B785-028949A4B4A7][UseTreeAs]] will be parsed.
 
-****** DONE UseTreeList
-CLOSED: [2025-06-08 Sun 17:35]
+****** UPGR UseTreeList
 :PROPERTIES:
 :CUSTOM_ID: h:0C07D74C-165A-4128-BF20-EF7E937F7CAA
 :END:
 :LOGBOOK:
+- State "UPGR"       from "DONE"       [2026-02-18 Wed 21:39] \\
+  Noir v1.0.0-beta.19
 - State "DONE"       from "TODO"       [2025-06-08 Sun 17:35]
 :END:
 
 Parser: [[file:noir/compiler/noirc_frontend/src/parser/parser/use_tree.rs::let use_trees = self.parse_many(][parse_use_tree_in_list() parent callsite]], [[file:noir/compiler/noirc_frontend/src/parser/parser/use_tree.rs::fn parse_use_tree_in_list(&mut self)][parse_use_tree_in_list()]]
 
-****** DONE UseTreeAs
-CLOSED: [2025-06-08 Sun 17:35]
+****** UPGR UseTreeAs
 :PROPERTIES:
 :CUSTOM_ID: h:E818DDE4-D341-4AEC-B785-028949A4B4A7
 :END:
 :LOGBOOK:
+- State "UPGR"       from "DONE"       [2026-02-18 Wed 21:39] \\
+  Noir v1.0.0-beta.19
 - State "DONE"       from "TODO"       [2025-06-08 Sun 17:35]
 :END:
 
@@ -475,12 +488,13 @@ Functionally this is just checking =as= followed by an ident.
 Make it so.
 *************** END
 
-***** DONE ModOrContract
-CLOSED: [2025-06-08 Sun 21:02]
+***** UPGR ModOrContract
 :PROPERTIES:
 :CUSTOM_ID: h:9204514E-E5FC-488B-8066-66F0D9AF0C85
 :END:
 :LOGBOOK:
+- State "UPGR"       from "DONE"       [2026-02-18 Wed 21:39] \\
+  Noir v1.0.0-beta.19
 - State "DONE"       from "TODO"       [2025-06-08 Sun 21:02]
 :END:
 
@@ -506,12 +520,13 @@ Only the [[#h:F5A79701-65C9-4FEA-83D8-2413C585A5FA][ItemVisibility]] modifier is
 
 i.e. =mod foo;= is a module declaration and =mod { let x = 123; }= is a real module.
 
-***** DONE Struct
-CLOSED: [2025-07-14 Mon 14:51]
+***** UPGR Struct
 :PROPERTIES:
 :CUSTOM_ID: h:A53DF633-322A-464B-9947-E56B64A112C7
 :END:
 :LOGBOOK:
+- State "UPGR"       from "DONE"       [2026-02-18 Wed 21:39] \\
+  Noir v1.0.0-beta.19
 - State "DONE"       from "SPEC"       [2025-07-14 Mon 14:51]
 - State "SPEC"       from "DONE"       [2025-06-08 Sun 23:43] \\
   Need to test generics also.
@@ -550,12 +565,13 @@ Original EBNF: [[file:noir/compiler/noirc_frontend/src/parser/parser/structs.rs:
 Semicolon empty struct, and leading visibility modifier.
 *************** END
 
-****** DONE StructField
-CLOSED: [2025-06-08 Sun 23:43]
+****** UPGR StructField
 :PROPERTIES:
 :CUSTOM_ID: h:AE5E66EF-9D42-49F2-853D-5C1E7763416E
 :END:
 :LOGBOOK:
+- State "UPGR"       from "DONE"       [2026-02-18 Wed 21:39] \\
+  Noir v1.0.0-beta.19
 - State "DONE"       from "TODO"       [2025-06-08 Sun 23:43]
 :END:
 
@@ -594,12 +610,13 @@ Since [[#h:8E0DC05B-1ED6-47BE-9589-64DC06FAECCA][parse_many]] is used, and our c
 Parses item visibility. Update at remote after grammar is done.
 *************** END
 
-***** DONE Implementation
-CLOSED: [2025-07-22 Tue 23:40]
+***** UPGR Implementation
 :PROPERTIES:
 :CUSTOM_ID: h:954A182F-703F-48FC-85D3-37C11EC959A3
 :END:
 :LOGBOOK:
+- State "UPGR"       from "DONE"       [2026-02-18 Wed 21:39] \\
+  Noir v1.0.0-beta.19
 - State "DONE"       from "BLOCK"      [2025-07-22 Tue 23:40]
 - State "BLOCK"      from "TODO"       [2025-06-10 Tue 16:59] \\
   One child depends on Function and Function is also a top-level ItemKind so BLOCK until Function is done.
@@ -642,12 +659,13 @@ If =for= keyword is eaten and a pattern match on an ~UnresolvedType::Named~ can 
 
 ~UnresolvedType::Named~ ([[file:noir/compiler/noirc_frontend/src/ast/mod.rs::Named(Path, GenericTypeArgs, /*is_synthesized*/ bool),][src]]): struct type, or a type variable. Full enum: ~Named(Path, GenericTypeArgs)~.
 
-****** DONE TypeImpl
-CLOSED: [2025-07-22 Tue 23:40]
+****** UPGR TypeImpl
 :PROPERTIES:
 :CUSTOM_ID: h:2C79F6AF-9B0D-4246-809D-D5D91C742F09
 :END:
 :LOGBOOK:
+- State "UPGR"       from "DONE"       [2026-02-18 Wed 21:39] \\
+  Noir v1.0.0-beta.19
 - State "DONE"       from "TOIMPL"     [2025-07-22 Tue 23:40]
 - State "TOIMPL"     from "TODO"       [2025-06-09 Mon 14:34] \\
   Simple wrapper function.
@@ -658,12 +676,13 @@ Parser: [[file:noir/compiler/noirc_frontend/src/parser/parser/impls.rs::fn parse
 *************** TODO BNF error, whereclause is missing?
 *************** END
 
-******* DONE TypeImplBody
-CLOSED: [2025-07-22 Tue 23:40]
+******* UPGR TypeImplBody
 :PROPERTIES:
 :CUSTOM_ID: h:4E657C7B-45FD-45D0-84B2-DB55C1D09192
 :END:
 :LOGBOOK:
+- State "UPGR"       from "DONE"       [2026-02-18 Wed 21:39] \\
+  Noir v1.0.0-beta.19
 - State "DONE"       from "TOIMPL"     [2025-07-22 Tue 23:40]
 - State "TOIMPL"     from "TODO"       [2025-06-09 Mon 14:41]
 :END:
@@ -672,12 +691,13 @@ Parser: [[file:noir/compiler/noirc_frontend/src/parser/parser/impls.rs::fn parse
 
 Via [[#h:8E0DC05B-1ED6-47BE-9589-64DC06FAECCA][parse_many]] inline split without separator until =}= calls [[file:noir/compiler/noirc_frontend/src/parser/parser/impls.rs::fn parse_type_impl_method(&mut self)][parse_type_impl_method()]] which is a parser utility function for error recovery, there a lambda defines the parsing for each TypeImplItem.
 
-******* DONE TypeImplItem
-CLOSED: [2025-07-22 Tue 23:39]
+******* UPGR TypeImplItem
 :PROPERTIES:
 :CUSTOM_ID: h:268CE151-7A1D-48ED-A6ED-40219D809438
 :END:
 :LOGBOOK:
+- State "UPGR"       from "DONE"       [2026-02-18 Wed 21:39] \\
+  Noir v1.0.0-beta.19
 - State "DONE"       from "TODO"       [2025-07-22 Tue 23:39]
 :END:
 
@@ -685,12 +705,13 @@ Parser: [[file:noir/compiler/noirc_frontend/src/parser/parser/impls.rs::fn parse
 
 Parser is a lambda on call to ~parse_item_in_list~. Modifiers parsed here allow all except mutable ([[file:noir/compiler/noirc_frontend/src/parser/parser/impls.rs::let modifiers = parser.parse_modifiers(][src]]).
 
-****** DONE TraitImpl
-CLOSED: [2025-07-22 Tue 23:39]
+****** UPGR TraitImpl
 :PROPERTIES:
 :CUSTOM_ID: h:EBF1C149-1814-4314-AAFB-C5CF198DA61D
 :END:
 :LOGBOOK:
+- State "UPGR"       from "DONE"       [2026-02-18 Wed 21:39] \\
+  Noir v1.0.0-beta.19
 - State "DONE"       from "TODO"       [2025-07-22 Tue 23:39]
 :END:
 
@@ -700,12 +721,13 @@ Parser: [[file:noir/compiler/noirc_frontend/src/parser/parser/impls.rs::return I
 Is the where clause meant to be absent there?
 *************** END
 
-******* DONE TraitImplBody
-CLOSED: [2025-07-22 Tue 23:39]
+******* UPGR TraitImplBody
 :PROPERTIES:
 :CUSTOM_ID: h:AE12BD3E-D350-4D0C-88E7-2FC471E9FB9C
 :END:
 :LOGBOOK:
+- State "UPGR"       from "DONE"       [2026-02-18 Wed 21:39] \\
+  Noir v1.0.0-beta.19
 - State "DONE"       from "TODO"       [2025-07-22 Tue 23:39]
 :END:
 
@@ -748,12 +770,13 @@ Types: [[file:noir/compiler/noirc_frontend/src/ast/traits.rs::pub enum TraitImpl
 
 Simple wrapper which calls parsers for pgd types in order.
 
-******* DONE TraitImplType
-CLOSED: [2025-07-22 Tue 23:38]
+******* UPGR TraitImplType
 :PROPERTIES:
 :CUSTOM_ID: h:D3AE715D-AC3E-494A-9E32-0BAD666C2302
 :END:
 :LOGBOOK:
+- State "UPGR"       from "DONE"       [2026-02-18 Wed 21:39] \\
+  Noir v1.0.0-beta.19
 - State "DONE"       from "SPEC"       [2025-07-22 Tue 23:38]
 - State "SPEC"       from "TODO"       [2025-07-22 Tue 19:04] \\
   Parser examined
@@ -780,12 +803,13 @@ Parser: [[file:noir/compiler/noirc_frontend/src/parser/parser/impls.rs::fn parse
 Parser says it can eat an assign so it should be === and not =:=.
 *************** END
 
-******* DONE TraitImplConstant
-CLOSED: [2025-07-22 Tue 23:38]
+******* UPGR TraitImplConstant
 :PROPERTIES:
 :CUSTOM_ID: h:400F4495-94E9-4549-9E85-9FECC5F69E7A
 :END:
 :LOGBOOK:
+- State "UPGR"       from "DONE"       [2026-02-18 Wed 21:39] \\
+  Noir v1.0.0-beta.19
 - State "DONE"       from "SPEC"       [2025-07-22 Tue 23:38]
 - State "SPEC"       from "TODO"       [2025-07-22 Tue 19:17] \\
   Parser examined.
@@ -814,12 +838,13 @@ Extremely similar to [[#h:FD70AFA1-5D45-434E-A9D0-7E8F6DD38058][LetStatement]] a
 Parser states it requires an assignment so need ='=' Expression= in the EBNF.
 *************** END
 
-******* DONE TraitImplFunction
-CLOSED: [2025-07-22 Tue 19:33]
+******* UPGR TraitImplFunction
 :PROPERTIES:
 :CUSTOM_ID: h:668ACDEF-C6C3-46B2-AF64-3907253E7EA6
 :END:
 :LOGBOOK:
+- State "UPGR"       from "DONE"       [2026-02-18 Wed 21:39] \\
+  Noir v1.0.0-beta.19
 - State "DONE"       from "TODO"       [2025-07-22 Tue 19:33]
 :END:
 
@@ -829,12 +854,13 @@ This rule can be reduced to just [[#h:B3C4609F-307A-42A1-B420-DBBAB6CDE6E5][Func
 
 Parser: [[file:noir/compiler/noirc_frontend/src/parser/parser/impls.rs::fn parse_trait_impl_function(&mut self)][parse_trait_impl_function()]]
 
-***** DONE Trait
-CLOSED: [2025-07-14 Mon 02:33]
+***** UPGR Trait
 :PROPERTIES:
 :CUSTOM_ID: h:6C38714F-76B7-4472-A776-36023EB84873
 :END:
 :LOGBOOK:
+- State "UPGR"       from "DONE"       [2026-02-18 Wed 21:39] \\
+  Noir v1.0.0-beta.19
 - State "DONE"       from "TOIMPL"     [2025-07-14 Mon 02:33]
 - State "TOIMPL"     from "TODO"       [2025-07-10 Thu 15:34] \\
   parse_trait() examined
@@ -863,12 +889,13 @@ Only [[#h:F5A79701-65C9-4FEA-83D8-2413C585A5FA][ItemVisibility]] modifier applic
 *************** TODO Any accomodations for validate_secondary_attributes which is called in Trait's parser?
 *************** END
 
-****** DONE TraitBody
-CLOSED: [2025-07-26 Sat 00:36]
+****** UPGR TraitBody
 :PROPERTIES:
 :CUSTOM_ID: h:EE2A95CB-6562-465A-A80F-4D2DB57E91DA
 :END:
 :LOGBOOK:
+- State "UPGR"       from "DONE"       [2026-02-18 Wed 21:39] \\
+  Noir v1.0.0-beta.19
 - State "DONE"       from "BLOCK"      [2025-07-26 Sat 00:36]
 - State "BLOCK"      from "TOIMPL"     [2025-07-12 Sat 20:37] \\
   Blocked on TraitFunction, the rest is done
@@ -903,12 +930,13 @@ Via [[#h:8E0DC05B-1ED6-47BE-9589-64DC06FAECCA][parse_many]] split without separa
 #+name: ,ebnf_trait_body
 #+transclude: [[file:noir/compiler/noirc_frontend/src/parser/parser/traits.rs::45][TraitBody doc]]  :lines 45-45 :src fundamental
 
-****** DONE TraitItem
-CLOSED: [2025-07-12 Sat 20:17]
+****** UPGR TraitItem
 :PROPERTIES:
 :CUSTOM_ID: h:7D8A8173-EDB3-4E00-8483-DC25607F69E7
 :END:
 :LOGBOOK:
+- State "UPGR"       from "DONE"       [2026-02-18 Wed 21:39] \\
+  Noir v1.0.0-beta.19
 - State "DONE"       from "TOIMPL"     [2025-07-12 Sat 20:17]
 - State "TOIMPL"     from "TODO"       [2025-07-10 Thu 15:51] \\
   Parser examined
@@ -923,12 +951,13 @@ Simple wrapper to the parsers of it's three AST types. For the three child AST t
 #+name: ,ebnf_trait_item
 #+transclude: [[file:noir/compiler/noirc_frontend/src/parser/parser/traits.rs::66][TraitItem doc]]  :lines 66-69 :src fundamental
 
-****** DONE TraitType
-CLOSED: [2025-07-12 Sat 20:22]
+****** UPGR TraitType
 :PROPERTIES:
 :CUSTOM_ID: h:A05394C2-0FFE-431B-8686-AA12F4876025
 :END:
 :LOGBOOK:
+- State "UPGR"       from "DONE"       [2026-02-18 Wed 21:39] \\
+  Noir v1.0.0-beta.19
 - State "DONE"       from "SPEC"       [2025-07-12 Sat 20:22]
 - State "SPEC"       from "TODO"       [2025-07-10 Thu 15:57] \\
   Parser examined, ts grammar written
@@ -949,12 +978,13 @@ Parser: [[file:noir/compiler/noirc_frontend/src/parser/parser/traits.rs::fn pars
 #+name: ,ebnf_trait_type
 #+transclude: [[file:noir/compiler/noirc_frontend/src/parser/parser/traits.rs::86][TraitType doc]]  :lines 86-86 :src fundamental
 
-****** DONE TraitConstant
-CLOSED: [2025-07-12 Sat 20:22]
+****** UPGR TraitConstant
 :PROPERTIES:
 :CUSTOM_ID: h:02355489-DDCD-4E67-BB39-5DF3F0BC0A8A
 :END:
 :LOGBOOK:
+- State "UPGR"       from "DONE"       [2026-02-18 Wed 21:39] \\
+  Noir v1.0.0-beta.19
 - State "DONE"       from "SPEC"       [2025-07-12 Sat 20:22]
 - State "SPEC"       from "TOIMPL"     [2025-07-10 Thu 16:17] \\
   Parser examined, ts grammar written
@@ -986,9 +1016,10 @@ Looks like it should be:
 =?= added after the group since default_value in parser function can be None (which is valid) if no === is parsed. See [[file:noir/compiler/noirc_frontend/src/parser/parser/traits.rs::if self.eat_assign() { Some(self.parse_expression_or_error()) } else { None };][here]]
 *************** END
 
-****** DONE TraitFunction
-CLOSED: [2025-07-26 Sat 00:36]
+****** UPGR TraitFunction
 :LOGBOOK:
+- State "UPGR"       from "DONE"       [2026-02-18 Wed 21:39] \\
+  Noir v1.0.0-beta.19
 - State "DONE"       from "BLOCK"      [2025-07-26 Sat 00:36]
 - State "BLOCK"      from "TODO"       [2025-07-10 Thu 16:28] \\
   Parser examined, is it similar to Function so we can share rules? Once Function done implement this ts rule
@@ -1013,12 +1044,13 @@ TraitFunction = Modifiers Function
 results in the same behaviour for normal Function (as understood currently) except this allows optional body (unsure if normal function does, but we need to split those up into definition/declaration etc anyway). So FOR NOW its got it's entirely own ts rule (TraitFunction) but once Function is done I expect we can just de-duplicate this entirely and use a simple alias to have the CST be named ~trait_function~ or something.
 *************** END
 
-***** DONE Global
-CLOSED: [2025-07-14 Mon 14:30]
+***** UPGR Global
 :PROPERTIES:
 :CUSTOM_ID: h:C21A19F9-DC0C-4F17-9739-B92412D0C4FF
 :END:
 :LOGBOOK:
+- State "UPGR"       from "DONE"       [2026-02-18 Wed 21:39] \\
+  Noir v1.0.0-beta.19
 - State "DONE"       from "TODO"       [2025-07-14 Mon 14:30]
 :END:
 
@@ -1250,12 +1282,13 @@ Parser: [[file:noir/compiler/noirc_frontend/src/parser/parser/types.rs::fn parse
 
 Parses the literal /keyword/ =bool= *and not* literal words =true= or =false=.
 
-******* DONE StringType
-CLOSED: [2025-07-25 Fri 01:30]
+******* UPGR StringType
 :PROPERTIES:
 :CUSTOM_ID: h:C405DA7F-97A3-4DCF-8946-7480E43D2CC2
 :END:
 :LOGBOOK:
+- State "UPGR"       from "DONE"       [2026-02-18 Wed 21:39] \\
+  Noir v1.0.0-beta.19
 - State "DONE"       from "BLOCK"      [2025-07-25 Fri 01:30]
 - State "BLOCK"      from "TODO"       [2024-11-16 Sat 18:26] \\
   TypeExpression completion.
@@ -1273,12 +1306,13 @@ seq(
 
 Parser: [[file:noir/compiler/noirc_frontend/src/parser/parser/types.rs::fn parse_str_type(&mut self)][parse_str_type()]]
 
-******* DONE FormatStringType
-CLOSED: [2025-07-25 Fri 01:30]
+******* UPGR FormatStringType
 :PROPERTIES:
 :CUSTOM_ID: h:12C0CC82-5210-45ED-97F4-0266E1CAA6F1
 :END:
 :LOGBOOK:
+- State "UPGR"       from "DONE"       [2026-02-18 Wed 21:39] \\
+  Noir v1.0.0-beta.19
 - State "DONE"       from "SPEC"       [2025-07-25 Fri 01:30]
 - State "SPEC"       from "TOIMPL"     [2025-05-24 Sat 22:16]
 - State "TOIMPL"     from "TODO"       [2024-11-16 Sat 18:24]
@@ -1465,12 +1499,13 @@ If only one Type and no trailing comma return ~AST::UnresolvedTypeData::Parenthe
 Is there a meaningful difference here for tree-sitter purposes?
 *************** END
 
-****** DONE ArrayOrSliceType
-CLOSED: [2025-07-25 Fri 01:23]
+****** UPGR ArrayOrSliceType
 :PROPERTIES:
 :CUSTOM_ID: h:FAB3845D-97FD-454B-B8C8-09FEEB41FC3D
 :END:
 :LOGBOOK:
+- State "UPGR"       from "DONE"       [2026-02-18 Wed 21:39] \\
+  Noir v1.0.0-beta.19
 - State "DONE"       from "SPEC"       [2025-07-25 Fri 01:23]
 - State "SPEC"       from "BLOCK"      [2025-05-24 Sat 23:05] \\
   More complete as Type/TypeExpression increase in completeness.
@@ -1503,12 +1538,13 @@ Parser: [[file:noir/compiler/noirc_frontend/src/parser/parser/types.rs::fn parse
 What about the &[0; 2] syntax for slice literals? This node doesn't appear to do any ampersand parsing? Check higher up the call chain though since there's A LOT of nesting and what not going on currently.
 *************** END
 
-****** DONE MutableReferenceType
-CLOSED: [2025-07-24 Thu 18:18]
+****** UPGR MutableReferenceType
 :PROPERTIES:
 :CUSTOM_ID: h:C1EF6337-B3F1-44D9-B5E6-FF5A0215FCC5
 :END:
 :LOGBOOK:
+- State "UPGR"       from "DONE"       [2026-02-18 Wed 21:39] \\
+  Noir v1.0.0-beta.19
 - State "DONE"       from "SPEC"       [2025-07-24 Thu 18:18]
 - State "SPEC"       from "BLOCK"      [2025-05-24 Sat 23:09] \\
   More complete alongside Type.
@@ -1528,12 +1564,13 @@ seq(
 Parser: [[file:noir/compiler/noirc_frontend/src/parser/parser/types.rs::fn parses_mutable_reference_type(&mut self)][parse_mutable_reference_type()]]
 Types: [[file:noir/compiler/noirc_frontend/src/ast/mod.rs::MutableReference(Box<UnresolvedType>),][UnresolvedTypeData::MutableReference]] ~AST::UnresolvedTypeData::MutableReference~
 
-****** DONE FunctionType
-CLOSED: [2025-07-24 Thu 03:20]
+****** UPGR FunctionType
 :PROPERTIES:
 :CUSTOM_ID: h:96043AA8-9EC3-4E80-AA5D-CBFFE60A9072
 :END:
 :LOGBOOK:
+- State "UPGR"       from "DONE"       [2026-02-18 Wed 21:39] \\
+  Noir v1.0.0-beta.19
 - State "DONE"       from "SPEC"       [2025-07-24 Thu 03:20]
 - State "SPEC"       from "BLOCK"      [2025-05-24 Sat 23:13] \\
   More complete alongside Type.
@@ -1579,12 +1616,13 @@ Return: ~AST::UnresolvedTypeData::Function~.
 Nothing in Noirc exists for this yet
 *************** END
 
-******* DONE CaptureEnvironment
-CLOSED: [2025-07-24 Thu 03:19]
+******* UPGR CaptureEnvironment
 :PROPERTIES:
 :CUSTOM_ID: h:4E68CB10-4122-4C09-B99F-DE7F57651E02
 :END:
 :LOGBOOK:
+- State "UPGR"       from "DONE"       [2026-02-18 Wed 21:39] \\
+  Noir v1.0.0-beta.19
 - State "DONE"       from "SPEC"       [2025-07-24 Thu 03:19]
 - State "SPEC"       from "BLOCK"      [2025-05-24 Sat 23:22] \\
   More complete alongside Type.
@@ -1718,12 +1756,13 @@ Type: [[file:noir/compiler/noirc_frontend/src/ast/mod.rs::pub struct UnresolvedT
 
 Similar to [[#h:0DEF3192-4840-41B3-A941-714798677092][TypeExpression]]'s [[id:7A38952D-D669-4DD6-AF3A-065CB546CB21][Infix]] this also contains a heavily nested and confusing implementation with very long and similar reading function names that hurt one's head, it looks to be the same as TypeExpression and it does call those functions but it appears to use it's own wrappers as AST nodes are created ~UnresolvedTypeData~ on this path instead of ~UnresolvedTypeExpression~ on the other. It looks like this has no consequence for tree-sitter grammar so continue with that assumption for now.
 
-***** DONE TypeExpression
-CLOSED: [2025-06-22 Sun 02:13]
+***** UPGR TypeExpression
 :PROPERTIES:
 :CUSTOM_ID: h:0DEF3192-4840-41B3-A941-714798677092
 :END:
 :LOGBOOK:
+- State "UPGR"       from "DONE"       [2026-02-18 Wed 21:39] \\
+  Noir v1.0.0-beta.19
 - State "DONE"       from "TOIMPL"     [2025-06-22 Sun 02:13]
 - State "TOIMPL"     from "TODO"       [2024-11-16 Sat 20:20]
 :END:
@@ -1773,12 +1812,13 @@ The entire call-tree from AddOrSubtractTypeExpression's parser [[file:noir/compi
 }
 #+end_src
 
-****** DONE TermTypeExpression
-CLOSED: [2025-06-22 Sun 02:12]
+****** UPGR TermTypeExpression
 :PROPERTIES:
 :CUSTOM_ID: h:414EDA73-C80F-4081-A2FC-D4C7DFEDC964
 :END:
 :LOGBOOK:
+- State "UPGR"       from "DONE"       [2026-02-18 Wed 21:39] \\
+  Noir v1.0.0-beta.19
 - State "DONE"       from "TOIMPL"     [2025-06-22 Sun 02:12]
 :END:
 
@@ -1798,12 +1838,13 @@ The parser continually eats =-= forming that "binary" (really, unary) expression
 Teeny tiny change, fix if not already done as it seems Noir is now at 0.38.0 so some updating will be required anyway.
 *************** END
 
-****** DONE AtomTypeExpression
-CLOSED: [2025-07-14 Mon 02:36]
+****** UPGR AtomTypeExpression
 :PROPERTIES:
 :CUSTOM_ID: h:4E7B0693-6BFF-4B90-A0FB-6BD577A41989
 :END:
 :LOGBOOK:
+- State "UPGR"       from "DONE"       [2026-02-18 Wed 21:39] \\
+  Noir v1.0.0-beta.19
 - State "DONE"       from "SPEC"       [2025-07-14 Mon 02:36]
 - State "SPEC"       from "TODO"       [2025-06-22 Sun 02:12] \\
   Still needs Path completed for full test coverage.
@@ -1824,12 +1865,13 @@ Parser: [[file:noir/compiler/noirc_frontend/src/parser/parser/type_expression.rs
 
 All children here either alias calls to other literals or other AST nodes in a simple way, so they have been completely inlined.
 
-******* DONE ParenthesizedTypeExpression
-CLOSED: [2025-07-19 Sat 03:12]
+******* UPGR ParenthesizedTypeExpression
 :PROPERTIES:
 :CUSTOM_ID: h:CEEC13D7-39B2-434F-90D5-302AB44E2BBA
 :END:
 :LOGBOOK:
+- State "UPGR"       from "DONE"       [2026-02-18 Wed 21:39] \\
+  Noir v1.0.0-beta.19
 - State "DONE"       from              [2025-07-19 Sat 03:12]
 :END:
 
@@ -2092,12 +2134,13 @@ Original EBNF: [[file:noir/compiler/noirc_frontend/src/parser/parser/path.rs::17
 Remove the =| nothing= and instead wrap everything in =( ... )?= to properly mark it as optional. Also missing assignment equals sign.
 *************** END
 
-****** DONE PathGenerics
-CLOSED: [2025-07-13 Sun 20:31]
+****** UPGR PathGenerics
 :PROPERTIES:
 :CUSTOM_ID: h:F8EF693C-A6E2-4D57-BE08-103479D4270D
 :END:
 :LOGBOOK:
+- State "UPGR"       from "DONE"       [2026-02-18 Wed 21:39] \\
+  Noir v1.0.0-beta.19
 - State "DONE"       from "TOIMPL"     [2025-07-13 Sun 20:31]
 - State "TOIMPL"     from "TODO"       [2024-11-13 Wed 19:28]
 :END:
@@ -2118,12 +2161,13 @@ By ignoring it this subheading has no rule, simply use GenericTypeArgs directly.
 As the parsing function for PathGenerics shows, any NamedArgs will return a parser error.
 *************** END
 
-***** DONE TypeAlias
-CLOSED: [2025-07-23 Wed 00:24]
+***** UPGR TypeAlias
 :PROPERTIES:
 :CUSTOM_ID: h:220925BB-96BF-4D6F-B7E1-EA39B98A8F05
 :END:
 :LOGBOOK:
+- State "UPGR"       from "DONE"       [2026-02-18 Wed 21:39] \\
+  Noir v1.0.0-beta.19
 - State "DONE"       from "TODO"       [2025-07-23 Wed 00:24]
 - State "TODO"       from              [2025-07-22 Tue 23:44]
 :END:
@@ -2145,12 +2189,13 @@ Parser: [[file:noir/compiler/noirc_frontend/src/parser/parser/type_alias.rs::fn 
 Types: [[file:noir/compiler/noirc_frontend/src/ast/type_alias.rs::pub struct NoirTypeAlias {][NoirTypeAlias struct]]
 Only [[#h:F5A79701-65C9-4FEA-83D8-2413C585A5FA][ItemVisibility]] modifier applicable, all other [[#h:2A9D09A5-2E52-4B8C-ABA1-0B3B953F093C][Modifiers]] are parse errors ([[#h:14698757-D7C8-4966-B84E-5DA1CAE3011E][see more]]).
 
-***** DONE Function
-CLOSED: [2025-07-22 Tue 02:50]
+***** UPGR Function
 :PROPERTIES:
 :CUSTOM_ID: h:B3C4609F-307A-42A1-B420-DBBAB6CDE6E5
 :END:
 :LOGBOOK:
+- State "UPGR"       from "DONE"       [2026-02-18 Wed 21:39] \\
+  Noir v1.0.0-beta.19
 - State "DONE"       from "TODO"       [2025-07-22 Tue 02:50]
 :END:
 
@@ -2240,12 +2285,13 @@ See the function.rs file top struct and also what parse_function_definition retu
 TraitFunction is a new type (in Noirc).
 *************** END
 
-****** DONE FunctionParameters
-CLOSED: [2025-07-22 Tue 02:49]
+****** UPGR FunctionParameters
 :PROPERTIES:
 :CUSTOM_ID: h:B635EAF3-0AE1-47E0-8817-7174186912D8
 :END:
 :LOGBOOK:
+- State "UPGR"       from "DONE"       [2026-02-18 Wed 21:39] \\
+  Noir v1.0.0-beta.19
 - State "DONE"       from "TODO"       [2025-07-22 Tue 02:49]
 :END:
 
@@ -2279,12 +2325,13 @@ Parser: [[file:noir/compiler/noirc_frontend/src/parser/parser/function.rs::fn pa
 
 Via [[#h:8E0DC05B-1ED6-47BE-9589-64DC06FAECCA][parse_many]] in parent, split by =,= until =)=, each parsed as [[#h:9554D746-C88F-4E3D-B065-B1A5C5F9B57B][FunctionParameter]].
 
-****** DONE FunctionParameter
-CLOSED: [2025-07-22 Tue 02:48]
+****** UPGR FunctionParameter
 :PROPERTIES:
 :CUSTOM_ID: h:9554D746-C88F-4E3D-B065-B1A5C5F9B57B
 :END:
 :LOGBOOK:
+- State "UPGR"       from "DONE"       [2026-02-18 Wed 21:39] \\
+  Noir v1.0.0-beta.19
 - State "DONE"       from "TODO"       [2025-07-22 Tue 02:48]
 :END:
 
@@ -2324,12 +2371,13 @@ fn parse_function_parameters
 Tired, perhaps parse_function_parameter, pattern_param, self_pattern_param have things of consequence in them (or not). It has ~self~ vs ~Self~ in it which is a straight identifier in the former case and a path to an identifier in the latter.
 *************** END
 
-***** DONE Visibility
-CLOSED: [2025-07-22 Tue 02:48]
+***** UPGR Visibility
 :PROPERTIES:
 :CUSTOM_ID: h:17BBA21C-65D3-447D-93DE-2F13E16575C5
 :END:
 :LOGBOOK:
+- State "UPGR"       from "DONE"       [2026-02-18 Wed 21:39] \\
+  Noir v1.0.0-beta.19
 - State "DONE"       from "SPEC"       [2025-07-22 Tue 02:48]
 - State "SPEC"       from "SPEC"       [2025-07-14 Mon 15:16] \\
   Re-mark spec after fixing accidental inline of =call_data(= instead of =call_data=. Plus reviewing Function downwards now that significant progress made elsewhere.
@@ -2360,12 +2408,13 @@ Original EBNF: [[file:noir/compiler/noirc_frontend/src/parser/parser/function.rs
 *************** TODO Update Visibility EBNF
 *************** END
 
-***** DONE Generics
-CLOSED: [2025-07-14 Mon 02:30]
+***** UPGR Generics
 :PROPERTIES:
 :CUSTOM_ID: h:BA1422E4-AB97-4099-8346-5845CA9223A1
 :END:
 :LOGBOOK:
+- State "UPGR"       from "DONE"       [2026-02-18 Wed 21:39] \\
+  Noir v1.0.0-beta.19
 - State "DONE"       from "TODO"       [2025-07-14 Mon 02:30]
 :END:
 
@@ -2392,9 +2441,10 @@ Via [[#h:8E0DC05B-1ED6-47BE-9589-64DC06FAECCA][parse_many]] split on =,= until =
 All other list type rules have _list suffix.
 *************** END
 
-****** DONE GenericsList
-CLOSED: [2025-07-12 Sat 22:06]
+****** UPGR GenericsList
 :LOGBOOK:
+- State "UPGR"       from "DONE"       [2026-02-18 Wed 21:39] \\
+  Noir v1.0.0-beta.19
 - State "DONE"       from              [2025-07-12 Sat 22:06]
 :END:
 
@@ -2425,9 +2475,10 @@ Simple wrapper for child AST nodes.
 #+name: ,ebnf_generic
 #+transclude: [[file:noir/compiler/noirc_frontend/src/parser/parser/generics.rs::37][Generic doc]]  :lines 37-40 :src fundamental
 
-****** DONE VariableGeneric
-CLOSED: [2025-07-12 Sat 21:56]
+****** UPGR VariableGeneric
 :LOGBOOK:
+- State "UPGR"       from "DONE"       [2026-02-18 Wed 21:39] \\
+  Noir v1.0.0-beta.19
 - State "DONE"       from "TOIMPL"     [2025-07-12 Sat 21:56]
 - State "TOIMPL"     from "TODO"       [2024-11-03 Sun 05:25]
 :END:
@@ -2439,9 +2490,10 @@ Effective alias for [[#h:65B0176B-B46F-4679-8535-C504870AC048][ident]].
 #+name: ,ebnf_variable_generic
 #+transclude: [[file:noir/compiler/noirc_frontend/src/parser/parser/generics.rs::57][VariableGeneric doc]]  :lines 57-57 :src fundamental
 
-****** DONE NumericGeneric
-CLOSED: [2025-07-12 Sat 22:23]
+****** UPGR NumericGeneric
 :LOGBOOK:
+- State "UPGR"       from "DONE"       [2026-02-18 Wed 21:39] \\
+  Noir v1.0.0-beta.19
 - State "DONE"       from "SPEC"       [2025-07-12 Sat 22:23]
 - State "SPEC"       from "TOIMPL"     [2025-07-12 Sat 22:04]
 - State "TOIMPL"     from "TODO"       [2024-11-03 Sun 05:26]
@@ -2482,12 +2534,13 @@ Placeholder-ish name for now idk.
   Quoted expression stuff, do as the very last thing
 :END:
 
-****** DONE GenericTypeArgs
-CLOSED: [2025-07-14 Mon 02:28]
+****** UPGR GenericTypeArgs
 :PROPERTIES:
 :CUSTOM_ID: h:3267D7A4-7AA4-49FB-91FA-A9601BC6868A
 :END:
 :LOGBOOK:
+- State "UPGR"       from "DONE"       [2026-02-18 Wed 21:39] \\
+  Noir v1.0.0-beta.19
 - State "DONE"       from "SPEC"       [2025-07-14 Mon 02:28]
 - State "SPEC"       from "TOIMPL"     [2025-05-24 Sat 20:16]
 - State "TOIMPL"     from "TODO"       [2024-11-13 Wed 19:10]
@@ -2520,12 +2573,13 @@ Final part of parser loops over generics from [[#h:8C6AF1F0-DBAC-4030-AEFC-8FBF6
 If =<= is not eaten default GenericTypeArgs is returned, which is presumably empty (and in any case we didn't eat any syntax) so really GenericTypeArgs is optional wherever it appears.
 *************** END
 
-******* DONE GenericTypeArgsList
-CLOSED: [2025-07-13 Sun 17:21]
+******* UPGR GenericTypeArgsList
 :PROPERTIES:
 :CUSTOM_ID: h:8C6AF1F0-DBAC-4030-AEFC-8FBF6B069EAD
 :END:
 :LOGBOOK:
+- State "UPGR"       from "DONE"       [2026-02-18 Wed 21:39] \\
+  Noir v1.0.0-beta.19
 - State "DONE"       from "SPEC"       [2025-07-13 Sun 17:21]
 - State "SPEC"       from "TOIMPL"     [2025-05-24 Sat 20:16]
 - State "TOIMPL"     from "TODO"       [2024-11-13 Wed 19:09]
@@ -2536,12 +2590,13 @@ CLOSED: [2025-07-13 Sun 17:21]
 #+name: ,ebnf_generic_type_args_list
 #+transclude: [[file:noir/compiler/noirc_frontend/src/parser/parser/generics.rs::108][GenericTypeArgsList doc]]  :lines 108-108 :src fundamental
 
-******* DONE GenericTypeArg
-CLOSED: [2025-07-14 Mon 02:28]
+******* UPGR GenericTypeArg
 :PROPERTIES:
 :CUSTOM_ID: h:B2EDBA96-AA93-449F-A8EB-5636CCFC4F1C
 :END:
 :LOGBOOK:
+- State "UPGR"       from "DONE"       [2026-02-18 Wed 21:39] \\
+  Noir v1.0.0-beta.19
 - State "DONE"       from "SPEC"       [2025-07-14 Mon 02:28]
 - State "SPEC"       from "TOIMPL"     [2025-05-24 Sat 20:16]
 - State "TOIMPL"     from "TODO"       [2024-11-13 Wed 19:07]
@@ -2566,12 +2621,13 @@ Failure in attempt to parse OrderedTypeArg raises parser error ~ParsingRuleLabel
 #+name: ,ebnf_generic_type_arg
 #+transclude: [[file:noir/compiler/noirc_frontend/src/parser/parser/generics.rs::110][GenericTypeArg doc]]  :lines 110-112 :src fundamental
 
-******* DONE NamedTypeArg
-CLOSED: [2025-07-14 Mon 02:28]
+******* UPGR NamedTypeArg
 :PROPERTIES:
 :CUSTOM_ID: h:8314C368-924E-4B8B-A881-66C9F46D6833
 :END:
 :LOGBOOK:
+- State "UPGR"       from "DONE"       [2026-02-18 Wed 21:39] \\
+  Noir v1.0.0-beta.19
 - State "DONE"       from "SPEC"       [2025-07-14 Mon 02:28]
 - State "SPEC"       from "TOIMPL"     [2025-05-24 Sat 20:05]
 - State "TOIMPL"     from "TODO"       [2024-11-13 Wed 18:56]
@@ -2593,12 +2649,13 @@ Call to Type wrapped in ~parse_type_or_error~. Also called "associated types".
 #+name: ,ebnf_named_type_arg
 #+transclude: [[file:noir/compiler/noirc_frontend/src/parser/parser/generics.rs::114][NamedTypeArg doc]]  :lines 114-114 :src fundamental
 
-******* DONE OrderedTypeArg
-CLOSED: [2025-07-14 Mon 02:27]
+******* UPGR OrderedTypeArg
 :PROPERTIES:
 :CUSTOM_ID: h:43662F12-2EC8-47E8-B5B8-DFF8A1226EB2
 :END:
 :LOGBOOK:
+- State "UPGR"       from "DONE"       [2026-02-18 Wed 21:39] \\
+  Noir v1.0.0-beta.19
 - State "DONE"       from "SPEC"       [2025-07-14 Mon 02:27]
 - State "SPEC"       from "TOIMPL"     [2025-05-24 Sat 20:04] \\
   Effectively just an alias of TypeOrTypeExpression
@@ -2925,12 +2982,13 @@ Parser: [[file:noir/compiler/noirc_frontend/src/parser/parser/pattern.rs::fn par
 Via [[#h:8E0DC05B-1ED6-47BE-9589-64DC06FAECCA][parse_many]] in [[#h:5EC2C25E-781B-4AA1-B01B-D37B761237F8][parent]], split by =,= until =)=, each parsed as [[#h:D349E307-F033-4D2A-A729-F2EE5B483065][Pattern]].
 #+transclude: [[file:noir/compiler/noirc_frontend/src/parser/parser/pattern.rs::171][PatternList doc]]  :lines 171-171 :src fundamental
 
-***** DONE StructPattern
-CLOSED: [2025-07-25 Fri 03:03]
+***** UPGR StructPattern
 :PROPERTIES:
 :CUSTOM_ID: h:44A2D194-B244-4E4C-B53E-2FCF3F4165E2
 :END:
 :LOGBOOK:
+- State "UPGR"       from "DONE"       [2026-02-18 Wed 21:39] \\
+  Noir v1.0.0-beta.19
 - State "DONE"       from "SPEC"       [2025-07-25 Fri 03:03]
 - State "SPEC"       from "BLOCK"      [2025-06-12 Thu 17:26]
 - State "BLOCK"      from "TODO"       [2024-11-13 Wed 02:22] \\
@@ -3011,12 +3069,13 @@ Parser: [[file:noir/compiler/noirc_frontend/src/parser/parser/pattern.rs::fn par
 + [[#h:65B0176B-B46F-4679-8535-C504870AC048][ident]] (token)
 :end:
 
-**** DONE SelfPattern
-CLOSED: [2025-07-24 Thu 18:19]
+**** UPGR SelfPattern
 :PROPERTIES:
 :CUSTOM_ID: h:5B14A337-12EC-477C-8269-961094FAB41B
 :END:
 :LOGBOOK:
+- State "UPGR"       from "DONE"       [2026-02-18 Wed 21:39] \\
+  Noir v1.0.0-beta.19
 - State "DONE"       from "SPEC"       [2025-07-24 Thu 18:19]
 - State "SPEC"       from "TODO"       [2025-06-12 Thu 16:26]
 :END:
@@ -3189,9 +3248,10 @@ prec(PRECEDENCE.unary, seq(
 Parser: [[file:noir/compiler/noirc_frontend/src/parser/parser/expression.rs::fn parse_unary_op(&mut self)][parse_unary_op()]]
 Types: [[file:noir/compiler/noirc_frontend/src/ast/expression.rs::pub enum UnaryOp {][UnaryOp enum]]
 
-**** DONE CallExpression
-CLOSED: [2025-07-23 Wed 01:10]
+**** UPGR CallExpression
 :LOGBOOK:
+- State "UPGR"       from "DONE"       [2026-02-18 Wed 21:39] \\
+  Noir v1.0.0-beta.19
 - State "DONE"       from "TODO"       [2025-07-23 Wed 01:10]
 - State "TODO"       from              [2025-07-23 Wed 00:37]
 :END:
@@ -3264,9 +3324,10 @@ Types: [[file:noir/compiler/noirc_frontend/src/ast/expression.rs::pub struct Mem
 
 2025/07/23: Does it need it's own CST node...?
 
-**** DONE CastExpression
-CLOSED: [2025-07-23 Wed 01:41]
+**** UPGR CastExpression
 :LOGBOOK:
+- State "UPGR"       from "DONE"       [2026-02-18 Wed 21:39] \\
+  Noir v1.0.0-beta.19
 - State "DONE"       from "TODO"       [2025-07-23 Wed 01:41]
 - State "TODO"       from              [2025-07-23 Wed 00:37]
 :END:
@@ -3283,9 +3344,10 @@ prec(PRECEDENCE.cast, seq(
 Parser: [[file:noir/compiler/noirc_frontend/src/parser/parser/expression.rs::fn parse_cast(&mut self, atom: Expression, start_span: Span)][parse_cast()]]
 Types: [[file:noir/compiler/noirc_frontend/src/ast/expression.rs::pub struct CastExpression {][CastExpression struct]]
 
-**** DONE IndexExpression
-CLOSED: [2025-07-23 Wed 01:41]
+**** UPGR IndexExpression
 :LOGBOOK:
+- State "UPGR"       from "DONE"       [2026-02-18 Wed 21:39] \\
+  Noir v1.0.0-beta.19
 - State "DONE"       from "TODO"       [2025-07-23 Wed 01:41]
 - State "TODO"       from              [2025-07-23 Wed 00:37]
 :END:
@@ -3303,12 +3365,13 @@ prec(PRECEDENCE.cast, seq(
 Parser: [[file:noir/compiler/noirc_frontend/src/parser/parser/expression.rs::fn parse_index(&mut self, atom: Expression, start_span: Span)][parse_index()]]
 Types: [[file:noir/compiler/noirc_frontend/src/ast/expression.rs::pub struct IndexExpression {][IndexExpression struct]]
 
-**** DONE QuoteExpression
-CLOSED: [2025-07-26 Sat 03:02]
+**** UPGR QuoteExpression
 :PROPERTIES:
 :ID:       CF0A439A-EFBB-466E-8F5F-7A8827EB703E
 :END:
 :LOGBOOK:
+- State "UPGR"       from "DONE"       [2026-02-18 Wed 21:39] \\
+  Noir v1.0.0-beta.19
 - State "DONE"       from "TODO"       [2025-07-26 Sat 03:02]
 - State "TODO"       from              [2025-06-17 Tue 18:15] \\
   Top-level recursion, see quote literal, deferring ultimately.
@@ -3321,12 +3384,13 @@ Implemented at: [[#h:3F001F84-17D8-4B0D-912F-67AF98F72CD4][quote]].
 See Literals EBNF for QuoteExpression, the braces can be one of three kinds (brackets, braces, parens) as long as it's a matching pair.
 *************** END
 
-**** DONE ArrayExpression
-CLOSED: [2025-06-22 Sun 02:11]
+**** UPGR ArrayExpression
 :PROPERTIES:
 :CUSTOM_ID: h:48EA91F0-AB43-4FEF-94F1-3837C634CF38
 :END:
 :LOGBOOK:
+- State "UPGR"       from "DONE"       [2026-02-18 Wed 21:39] \\
+  Noir v1.0.0-beta.19
 - State "DONE"       from "TODO"       [2025-06-22 Sun 02:11]
 - State "TODO"       from              [2025-06-21 Sat 16:38]
 :END:
@@ -3361,12 +3425,13 @@ Parser: [[file:noir/compiler/noirc_frontend/src/parser/parser/expression.rs::if 
 
 #+transclude: [[file:noir/compiler/noirc_frontend/src/parser/parser/expression.rs::620][ArrayLiteral, StandardArrayLiteral, ArrayElements, RepeatedArrayLiteral docs]]  :lines 620-628 :src fundamental
 
-***** DONE StandardArrayLiteral                                        :node:
-CLOSED: [2025-06-22 Sun 02:11]
+***** UPGR StandardArrayLiteral                                    :node:
 :PROPERTIES:
 :CUSTOM_ID: h:D27534C1-90A8-4A0C-A601-55A631D16C89
 :END:
 :LOGBOOK:
+- State "UPGR"       from "DONE"       [2026-02-18 Wed 21:39] \\
+  Noir v1.0.0-beta.19
 - State "DONE"       from "TODO"       [2025-06-22 Sun 02:11]
 - State "TODO"       from              [2025-06-21 Sat 16:54]
 :END:
@@ -3383,12 +3448,13 @@ Here StandardArrayLiteral and ArrayElements form the same kind of "Foo" in a "Fo
 
 Parser at parent. Returns ~ArrayLiteral::Standard~
 
-***** DONE RepeatedArrayLiteral                                        :node:
-CLOSED: [2025-06-22 Sun 02:11]
+***** UPGR RepeatedArrayLiteral                                    :node:
 :PROPERTIES:
 :CUSTOM_ID: h:437EA6B2-BF82-44D3-8B1F-ABA5BD8B3675
 :END:
 :LOGBOOK:
+- State "UPGR"       from "DONE"       [2026-02-18 Wed 21:39] \\
+  Noir v1.0.0-beta.19
 - State "DONE"       from "TODO"       [2025-06-22 Sun 02:11]
 - State "TODO"       from              [2025-06-21 Sat 16:54]
 :END:
@@ -3398,12 +3464,13 @@ CLOSED: [2025-06-22 Sun 02:11]
 
 Parser at parent. Returns ~ArrayLiteral::Repeated~.
 
-**** DONE SliceExpression
-CLOSED: [2025-06-24 Tue 16:48]
+**** UPGR SliceExpression
 :PROPERTIES:
 :CUSTOM_ID: h:C6FDB5DB-21D9-46A2-A4E8-DEE2AFFD1F6F
 :END:
 :LOGBOOK:
+- State "UPGR"       from "DONE"       [2026-02-18 Wed 21:39] \\
+  Noir v1.0.0-beta.19
 - State "DONE"       from              [2025-06-24 Tue 16:48]
 :END:
 
@@ -3466,12 +3533,13 @@ Struct ~BlockExpression~ ([[file:noir/compiler/noirc_frontend/src/ast/expression
 #+name: ,ebnf_block
 #+transclude: [[file:noir/compiler/noirc_frontend/src/parser/parser/expression.rs::721][Block doc]]  :lines 721-721 :src fundamental
 
-**** DONE If                                                          :alias:
-CLOSED: [2025-06-29 Sun 20:01]
+**** UPGR If                                                       :alias:
 :PROPERTIES:
 :CUSTOM_ID: h:16951F18-730F-4A1F-84C9-3A1F78F67DF0
 :END:
 :LOGBOOK:
+- State "UPGR"       from "DONE"       [2026-02-18 Wed 21:39] \\
+  Noir v1.0.0-beta.19
 - State "DONE"       from "TODO"       [2025-06-29 Sun 20:01]
 - State "TODO"       from              [2025-06-26 Thu 17:58]
 :END:
@@ -3605,12 +3673,13 @@ _block_ending_statements: ($) => choice(
 )
 #+end_src
 
-***** DONE BreakStatement
-CLOSED: [2025-06-24 Tue 17:43]
+***** UPGR BreakStatement
 :PROPERTIES:
 :CUSTOM_ID: h:71AB7D76-FD24-4B91-A187-E9968024DC0C
 :END:
 :LOGBOOK:
+- State "UPGR"       from "DONE"       [2026-02-18 Wed 21:39] \\
+  Noir v1.0.0-beta.19
 - State "DONE"       from "TOIMPL"     [2025-06-24 Tue 17:43]
 - State "TOIMPL"     from "TODO"       [2025-05-20 Tue 19:03]
 - State "TODO"       from              [2025-05-20 Tue 18:16]
@@ -3627,12 +3696,13 @@ See [[#h:3F52F622-294C-463F-986F-DD38EB41EA89][add_semicolon]], ~StatementKind::
 
 Takes nothing (unlike say Rust where an expression can follow), only the keyword.
 
-***** DONE ContinueStatement
-CLOSED: [2025-06-24 Tue 17:47]
+***** UPGR ContinueStatement
 :PROPERTIES:
 :CUSTOM_ID: h:6616DE79-93E3-42AA-9633-4A29251F5BA0
 :END:
 :LOGBOOK:
+- State "UPGR"       from "DONE"       [2026-02-18 Wed 21:39] \\
+  Noir v1.0.0-beta.19
 - State "DONE"       from "TOIMPL"     [2025-06-24 Tue 17:47]
 - State "TOIMPL"     from "TODO"       [2025-05-20 Tue 19:07]
 - State "TODO"       from              [2025-05-20 Tue 18:16]
@@ -3647,12 +3717,13 @@ Parser: [[file:noir/compiler/noirc_frontend/src/parser/parser/statement.rs::if s
 
 See [[#h:3F52F622-294C-463F-986F-DD38EB41EA89][add_semicolon]], ~StatementKind::Continue~ always requires a semicolon.
 
-***** DONE ReturnStatement
-CLOSED: [2025-06-25 Wed 14:06]
+***** UPGR ReturnStatement
 :PROPERTIES:
 :CUSTOM_ID: h:17935AE3-A964-49D1-927B-E67D035FD8D7
 :END:
 :LOGBOOK:
+- State "UPGR"       from "DONE"       [2026-02-18 Wed 21:39] \\
+  Noir v1.0.0-beta.19
 - State "DONE"       from "TODO"       [2025-06-25 Wed 14:06]
 - State "TODO"       from              [2025-05-20 Tue 18:16]
 :END:
@@ -3713,12 +3784,13 @@ I don't think we need to do that these attributes come from Statement, so long a
 *************** TODO Noirc EBNF for pattern needs to be capital P since it's a proper AST node?
 *************** END
 
-***** DONE ConstrainStatement
-CLOSED: [2025-06-26 Thu 16:15]
+***** UPGR ConstrainStatement
 :PROPERTIES:
 :CUSTOM_ID: h:25216601-CAF6-4246-8289-B106F9A9166B
 :END:
 :LOGBOOK:
+- State "UPGR"       from "DONE"       [2026-02-18 Wed 21:39] \\
+  Noir v1.0.0-beta.19
 - State "DONE"       from "TODO"       [2025-06-26 Thu 16:15]
 - State "TODO"       from              [2025-05-20 Tue 18:16]
 :END:
@@ -3740,12 +3812,13 @@ See [[#h:3F52F622-294C-463F-986F-DD38EB41EA89][add_semicolon]], ~StatementKind::
 
 #+transclude: [[file:noir/compiler/noirc_frontend/src/parser/parser/statement.rs::370][ConstrainStatement doc]]  :lines 370-373 :src fundamental
 
-***** DONE ComptimeStatement
-CLOSED: [2025-06-26 Thu 17:51]
+***** UPGR ComptimeStatement
 :PROPERTIES:
 :CUSTOM_ID: h:A0796B1B-462F-4DC6-BE7D-F1D87112AFD4
 :END:
 :LOGBOOK:
+- State "UPGR"       from "DONE"       [2026-02-18 Wed 21:39] \\
+  Noir v1.0.0-beta.19
 - State "DONE"       from "SPEC"       [2025-06-26 Thu 17:51]
 - State "SPEC"       from "TODO"       [2025-06-26 Thu 16:29] \\
   Doing ForStatement before tests since it depends on that
@@ -3820,12 +3893,13 @@ Types: [[file:noir/compiler/noirc_frontend/src/ast/statement.rs::pub struct ForL
 #+name: ,ebnf_for_statement
 #+transclude: [[file:noir/compiler/noirc_frontend/src/parser/parser/statement.rs::227][ForStatement doc]]  :lines 227-227 :src fundamental
 
-****** DONE ForRange
-CLOSED: [2025-06-26 Thu 17:47]
+****** UPGR ForRange
 :PROPERTIES:
 :CUSTOM_ID: h:C859B697-6DDD-4F6D-B70B-BF0A9FBA6E80
 :END:
 :LOGBOOK:
+- State "UPGR"       from "DONE"       [2026-02-18 Wed 21:39] \\
+  Noir v1.0.0-beta.19
 - State "DONE"       from "TODO"       [2025-06-26 Thu 17:47]
 - State "TODO"       from              [2025-06-26 Thu 16:42] \\
   ExpressionExceptConstructor look into this 'constructor'
@@ -3854,12 +3928,13 @@ Quick glance looks like no constructors means no paths or a function call, look 
 UPDATE: Constructor pattern here looks to be like =Foo {}= i.e. the braces, which I guess makes sense. So the parsing rule is expression except something that looks like it has braces and is for a Struct which would .'. be a constructor, HOWEVER block-scoped expressions should be fine, like ={1 + 1 }=, because they don't have a leading identifier =Foo { 1 + 1 }= making them NOT constructors.
 *************** END
 
-***** DONE IfStatement
-CLOSED: [2025-06-26 Thu 17:58]
+***** UPGR IfStatement
 :PROPERTIES:
 :CUSTOM_ID: h:BB36CCC8-4FE6-4529-A365-69F0011CEC2A
 :END:
 :LOGBOOK:
+- State "UPGR"       from "DONE"       [2026-02-18 Wed 21:39] \\
+  Noir v1.0.0-beta.19
 - State "DONE"       from "TODO"       [2025-06-26 Thu 17:58]
 - State "TODO"       from              [2025-05-20 Tue 18:16]
 :END:
@@ -3870,12 +3945,13 @@ Parser: [[file:noir/compiler/noirc_frontend/src/parser/parser/statement.rs::if l
 
 #+transclude: [[file:noir/compiler/noirc_frontend/src/parser/parser/statement.rs::78][IfStatement doc]]  :lines 78-78 :src fundamental
 
-***** DONE BlockStatement
-CLOSED: [2025-06-29 Sun 20:16]
+***** UPGR BlockStatement
 :PROPERTIES:
 :CUSTOM_ID: h:B305BFF3-A865-4292-A8E5-5448D38CE872
 :END:
 :LOGBOOK:
+- State "UPGR"       from "DONE"       [2026-02-18 Wed 21:39] \\
+  Noir v1.0.0-beta.19
 - State "DONE"       from "TODO"       [2025-06-29 Sun 20:16]
 - State "TODO"       from              [2025-05-20 Tue 18:16]
 :END:
@@ -3886,12 +3962,13 @@ Parser: [[file:noir/compiler/noirc_frontend/src/parser/parser/statement.rs::if l
 
 #+transclude: [[file:noir/compiler/noirc_frontend/src/parser/parser/statement.rs::80][BlockStatement doc]]  :lines 80-80 :src fundamental
 
-***** DONE AssignStatement
-CLOSED: [2025-07-25 Fri 02:22]
+***** UPGR AssignStatement
 :PROPERTIES:
 :CUSTOM_ID: h:D8D0BBE8-6152-479B-8C19-282B2B56C4A9
 :END:
 :LOGBOOK:
+- State "UPGR"       from "DONE"       [2026-02-18 Wed 21:39] \\
+  Noir v1.0.0-beta.19
 - State "DONE"       from "BLOCK"      [2025-07-25 Fri 02:22]
 - State "BLOCK"      from "SPEC"       [2025-07-08 Tue 22:21] \\
   See entry at this time for StatementKind.
@@ -3969,12 +4046,13 @@ Between Block 1 and Block 2 an [[#h:167542CC-8CDE-49C1-9465-E5157C6A176F][Expres
 
 If none of the blocks' guards are triggered an [[file:PROJECT.org::#h:9255C4E4-03B0-4A3B-B3AE-454FF2A53D57][expression statement]] (~StatementKind::Expression~) of the in-between parsed Expression is returned.
 
-*** DONE Arguments
-CLOSED: [2025-06-26 Thu 16:15]
+*** UPGR Arguments
 :PROPERTIES:
 :CUSTOM_ID: h:FB4BC935-116B-4C56-B866-3842C5CA9B5F
 :END:
 :LOGBOOK:
+- State "UPGR"       from "DONE"       [2026-02-18 Wed 21:39] \\
+  Noir v1.0.0-beta.19
 - State "DONE"       from "TODO"       [2025-06-26 Thu 16:15]
 - State "TODO"       from              [2025-06-26 Thu 15:54]
 :END:
@@ -4057,12 +4135,13 @@ field('type', optional(<<r("type_annotation")>>)), // Inlined Noirc: OptionalTyp
 #+name: ,ebnf_optional_type_annotation
 #+transclude: [[file:noir/compiler/noirc_frontend/src/parser/parser/types.rs::409][OptionalTypeAnnotation doc]] :lines 409-409 :src fundamental
 
-*** DONE Atom
-CLOSED: [2025-07-20 Sun 00:54]
+*** UPGR Atom
 :PROPERTIES:
 :CUSTOM_ID: h:14C02FBD-84BA-470B-92C3-8E9C55BCF375
 :END:
 :LOGBOOK:
+- State "UPGR"       from "DONE"       [2026-02-18 Wed 21:39] \\
+  Noir v1.0.0-beta.19
 - State "DONE"       from "TODO"       [2025-07-20 Sun 00:54]
 - State "TODO"       from              [2025-07-19 Sat 01:05] \\
   Under Term which is under Expression
@@ -4072,12 +4151,13 @@ Parser: [[file:noir/compiler/noirc_frontend/src/parser/parser/expression.rs::fn 
 
 Grammar rule inlined at [[#h:167542CC-8CDE-49C1-9465-E5157C6A176F][Expression]].
 
-**** DONE ParenthesesExpression
-CLOSED: [2025-07-19 Sat 03:49]
+**** UPGR ParenthesesExpression
 :PROPERTIES:
 :CUSTOM_ID: h:DF57FFD8-C50B-406E-95E7-94C3BFC15DAC
 :END:
 :LOGBOOK:
+- State "UPGR"       from "DONE"       [2026-02-18 Wed 21:39] \\
+  Noir v1.0.0-beta.19
 - State "DONE"       from "TODO"       [2025-07-19 Sat 03:49]
 - State "TODO"       from              [2025-07-19 Sat 01:25]
 :END:
@@ -4095,12 +4175,13 @@ If only 1 Expression was parsed and there's no trailing comma ~ExpressionKind::P
 #+name: ,ebnf_parentheses_expression
 #+transclude: [[file:noir/compiler/noirc_frontend/src/parser/parser/expression.rs::680][ParenthesesExpression doc]]  :lines 680-683 :src fundamental
 
-**** DONE ParenthesizedExpression
-CLOSED: [2025-07-19 Sat 03:49]
+**** UPGR ParenthesizedExpression
 :PROPERTIES:
 :ID:       D6E2F320-99C6-49BE-972A-FCE3FD65EC38
 :END:
 :LOGBOOK:
+- State "UPGR"       from "DONE"       [2026-02-18 Wed 21:39] \\
+  Noir v1.0.0-beta.19
 - State "DONE"       from "TODO"       [2025-07-19 Sat 03:49]
 - State "TODO"       from              [2025-07-19 Sat 03:02]
 :END:
@@ -4121,12 +4202,13 @@ Similar to [[#h:CEEC13D7-39B2-434F-90D5-302AB44E2BBA][ParenthesizedTypeExpressio
 just fd "'(' Expression ')'" -C 2
 #+end_example
 
-**** DONE TupleExpression
-CLOSED: [2025-07-19 Sat 03:49]
+**** UPGR TupleExpression
 :PROPERTIES:
 :CUSTOM_ID: h:C5D99479-D00F-4719-852B-947B388EDD59
 :END:
 :LOGBOOK:
+- State "UPGR"       from "DONE"       [2026-02-18 Wed 21:39] \\
+  Noir v1.0.0-beta.19
 - State "DONE"       from "TODO"       [2025-07-19 Sat 03:49]
 - State "TODO"       from              [2025-07-19 Sat 03:21]
 :END:
@@ -4149,12 +4231,13 @@ Parser: /in parent, see [[#h:DF57FFD8-C50B-406E-95E7-94C3BFC15DAC][ParenthesesEx
 #+name: ,ebnf_tuple_expression
 #+transclude: [[file:noir/compiler/noirc_frontend/src/parser/parser/expression.rs::689][TupleExpression doc]]  :lines 689-689 :src fundamental
 
-**** DONE UnsafeExpression                                            :alias:
-CLOSED: [2025-07-19 Sat 04:01]
+**** UPGR UnsafeExpression                                         :alias:
 :PROPERTIES:
 :CUSTOM_ID: h:AE41A3D6-2311-40DB-998F-1E15B5A0C07D
 :END:
 :LOGBOOK:
+- State "UPGR"       from "DONE"       [2026-02-18 Wed 21:39] \\
+  Noir v1.0.0-beta.19
 - State "DONE"       from "TODO"       [2025-07-19 Sat 04:01]
 - State "TODO"       from              [2025-07-19 Sat 03:55]
 :END:
@@ -4168,12 +4251,13 @@ Callsites:
 #+name: ,ebnf_unsafe_expression
 #+transclude: [[file:noir/compiler/noirc_frontend/src/parser/parser/expression.rs::372][UnsafeExpression doc]]  :lines 372-372 :src fundamental
 
-**** DONE PathExpression
-CLOSED: [2025-07-19 Sat 17:30]
+**** UPGR PathExpression
 :PROPERTIES:
 :CUSTOM_ID: h:3884C486-9CDF-4A3A-B486-8F7BE0A21494
 :END:
 :LOGBOOK:
+- State "UPGR"       from "DONE"       [2026-02-18 Wed 21:39] \\
+  Noir v1.0.0-beta.19
 - State "DONE"       from "TODO"       [2025-07-19 Sat 17:30]
 - State "TODO"       from              [2025-07-19 Sat 04:03]
 :END:
@@ -4199,12 +4283,13 @@ Alias for [[#h:07167116-EAE4-475B-8C87-DE9075BAF88D][Path]] except it is represe
 #+name: ,ebnf_variable_expression
 #+transclude: [[file:noir/compiler/noirc_frontend/src/parser/parser/expression.rs::390][VariableExpression doc]]  :lines 390-390 :src fundamental
 
-***** DONE ConstructorExpression
-CLOSED: [2025-07-19 Sat 17:30]
+***** UPGR ConstructorExpression
 :PROPERTIES:
 :CUSTOM_ID: h:33877732-BC96-4CE2-99F3-EDB01CB46420
 :END:
 :LOGBOOK:
+- State "UPGR"       from "DONE"       [2026-02-18 Wed 21:39] \\
+  Noir v1.0.0-beta.19
 - State "DONE"       from "SPEC"       [2025-07-19 Sat 17:30]
 - State "SPEC"       from "TODO"       [2025-07-19 Sat 16:37] \\
   Parser examined.
@@ -4268,12 +4353,13 @@ Parser: [[file:noir/compiler/noirc_frontend/src/parser/parser/expression.rs::let
 
 Via [[#h:8E0DC05B-1ED6-47BE-9589-64DC06FAECCA][parse_many]] split at =,= until =}= each calls [[#h:6EE8711B-E124-4A46-B468-1C2F493C160A][ConstructorField]].
 
-****** DONE ConstructorField
-CLOSED: [2025-07-19 Sat 17:30]
+****** UPGR ConstructorField
 :PROPERTIES:
 :CUSTOM_ID: h:6EE8711B-E124-4A46-B468-1C2F493C160A
 :END:
 :LOGBOOK:
+- State "UPGR"       from "DONE"       [2026-02-18 Wed 21:39] \\
+  Noir v1.0.0-beta.19
 - State "DONE"       from "SPEC"       [2025-07-19 Sat 17:30]
 - State "SPEC"       from "TODO"       [2025-07-19 Sat 16:37] \\
   Parser examined.
@@ -4284,12 +4370,13 @@ Parser: [[file:noir/compiler/noirc_frontend/src/parser/parser/expression.rs::fn 
 
 Parser technically allows === instead of =:= but it does raise a parse error so we'll ignore that in the tree-sitter grammar and only allow =:=.
 
-**** DONE Lambda
-CLOSED: [2025-07-19 Sat 20:26]
+**** UPGR Lambda
 :PROPERTIES:
 :CUSTOM_ID: h:5F28CD6F-4D91-40CD-81F1-D3BD63E77839
 :END:
 :LOGBOOK:
+- State "UPGR"       from "DONE"       [2026-02-18 Wed 21:39] \\
+  Noir v1.0.0-beta.19
 - State "DONE"       from "TODO"       [2025-07-19 Sat 20:26]
 - State "TODO"       from              [2025-07-19 Sat 17:40]
 :END:
@@ -4319,9 +4406,10 @@ Callsites:
 #+name: ,ebnf_lambda
 #+transclude: [[file:noir/compiler/noirc_frontend/src/parser/parser/lambda.rs::10][Lambda doc]]  :lines 10-10 :src fundamental
 
-***** DONE LambdaParameters
-CLOSED: [2025-07-19 Sat 20:26]
+***** UPGR LambdaParameters
 :LOGBOOK:
+- State "UPGR"       from "DONE"       [2026-02-18 Wed 21:39] \\
+  Noir v1.0.0-beta.19
 - State "DONE"       from              [2025-07-19 Sat 20:26]
 :END:
 
@@ -4344,12 +4432,13 @@ Parser: [[file:noir/compiler/noirc_frontend/src/parser/parser/lambda.rs::fn pars
 
 Via [[#h:8E0DC05B-1ED6-47BE-9589-64DC06FAECCA][parse_many]] split at =,= until =|= call [[#h:947E0384-AC3E-4F56-9413-AD806BCCBBD7][LambdaParameter]].
 
-***** DONE LambdaParameter
-CLOSED: [2025-07-19 Sat 20:26]
+***** UPGR LambdaParameter
 :PROPERTIES:
 :CUSTOM_ID: h:947E0384-AC3E-4F56-9413-AD806BCCBBD7
 :END:
 :LOGBOOK:
+- State "UPGR"       from "DONE"       [2026-02-18 Wed 21:39] \\
+  Noir v1.0.0-beta.19
 - State "DONE"       from              [2025-07-19 Sat 20:26]
 :END:
 
@@ -4363,12 +4452,13 @@ seq(
 
 Parser: [[file:noir/compiler/noirc_frontend/src/parser/parser/lambda.rs::fn parse_lambda_parameter(&mut self)][parse_lambda_parameter()]]
 
-**** DONE ComptimeExpression                                          :alias:
-CLOSED: [2025-07-19 Sat 23:17]
+**** UPGR ComptimeExpression                                       :alias:
 :PROPERTIES:
 :CUSTOM_ID: h:6424BB7B-2E77-4E26-84EC-D574E74F0520
 :END:
 :LOGBOOK:
+- State "UPGR"       from "DONE"       [2026-02-18 Wed 21:39] \\
+  Noir v1.0.0-beta.19
 - State "DONE"       from "TODO"       [2025-07-19 Sat 23:17]
 - State "TODO"       from              [2025-07-19 Sat 20:30]
 :END:
@@ -4382,12 +4472,13 @@ Callsites:
 #+name: ,ebnf_comptime_expression
 #+transclude: [[file:noir/compiler/noirc_frontend/src/parser/parser/expression.rs::481][ComptimeExpression]]  :lines 481-481 :src fundamental
 
-**** DONE UnquoteExpression
-CLOSED: [2025-07-19 Sat 23:47]
+**** UPGR UnquoteExpression
 :PROPERTIES:
 :CUSTOM_ID: h:99953D79-E89B-49B8-B23D-E3CE1F8B4B0D
 :END:
 :LOGBOOK:
+- State "UPGR"       from "DONE"       [2026-02-18 Wed 21:39] \\
+  Noir v1.0.0-beta.19
 - State "DONE"       from "TODO"       [2025-07-19 Sat 23:47]
 - State "TODO"       from              [2025-07-19 Sat 23:31]
 :END:
@@ -4421,12 +4512,13 @@ Callsites:
 *************** TODO EBNF update, identifier should be Path
 *************** END
 
-**** DONE TypePathExpression                                          :alias:
-CLOSED: [2025-07-20 Sun 00:14]
+**** UPGR TypePathExpression                                       :alias:
 :PROPERTIES:
 :CUSTOM_ID: h:B4802C06-9963-41FB-B929-95C82597FE3A
 :END:
 :LOGBOOK:
+- State "UPGR"       from "DONE"       [2026-02-18 Wed 21:39] \\
+  Noir v1.0.0-beta.19
 - State "DONE"       from "TODO"       [2025-07-20 Sun 00:14]
 - State "TODO"       from              [2025-07-19 Sat 23:31]
 :END:
@@ -4441,12 +4533,13 @@ Callsites:
 #+name: ,ebnf_type_path_expression
 #+transclude: [[file:noir/compiler/noirc_frontend/src/parser/parser/expression.rs::534][TypePathExpression doc]]  :lines 534-534 :src fundamental
     
-**** DONE AsTraitPath
-CLOSED: [2025-07-20 Sun 00:51]
+**** UPGR AsTraitPath
 :PROPERTIES:
 :CUSTOM_ID: h:274AC665-0EC2-4B68-9F24-CF867F19FCAC
 :END:
 :LOGBOOK:
+- State "UPGR"       from "DONE"       [2026-02-18 Wed 21:39] \\
+  Noir v1.0.0-beta.19
 - State "DONE"       from "TODO"       [2025-07-20 Sun 00:51]
 - State "TODO"       from              [2025-07-19 Sat 23:31]
 :END:
@@ -4566,12 +4659,13 @@ Since ~next_token~ (TODO: link) has already incremented the cursor when the [[fi
 I've taken notes on this before, put glue stuff here as appropriate.
 *************** END
 
-**** DONE comment                                                       :lex:
-CLOSED: [2025-06-05 Thu 16:39]
+**** UPGR comment                                                    :lex:
 :PROPERTIES:
 :CUSTOM_ID: h:E866B8E1-2736-4A62-938B-0FD416C4A088
 :END:
 :LOGBOOK:
+- State "UPGR"       from "DONE"       [2026-02-18 Wed 21:39] \\
+  Noir v1.0.0-beta.19
 - State "DONE"       from "TODO"       [2025-06-05 Thu 16:39]
 - State "TODO"       from              [2025-05-25 Sun 18:05] \\
   Need to document how this is lexed since parser grabs it by Token type only.
@@ -4603,12 +4697,13 @@ Comments can optionally have a [[file:noir/compiler/noirc_frontend/src/lexer/tok
 *************** TODO Outer comments are... and Inner comments are...?
 *************** END
 
-***** DONE line_comment
-CLOSED: [2025-05-27 Tue 19:08]
+***** UPGR line_comment
 :PROPERTIES:
 :CUSTOM_ID: h:155F78B1-495B-4F49-BFED-82369979A23E
 :END:
 :LOGBOOK:
+- State "UPGR"       from "DONE"       [2026-02-18 Wed 21:39] \\
+  Noir v1.0.0-beta.19
 - State "DONE"       from "TODO"       [2025-05-27 Tue 19:08]
 - State "TODO"       from              [2025-05-25 Sun 19:00]
 :END:
@@ -4666,12 +4761,13 @@ So =////= has no DocStyle.
 So a comment like // Foo is parsed as "Foo" (but we know its a comment), the leading characters are dropped. Shall we do this too for ts? Likely we have a comment node and then a "value" or "contents" field on it which is everything after the leading token type
 *************** END
 
-***** DONE block_comment
-CLOSED: [2025-06-04 Wed 19:29]
+***** UPGR block_comment
 :PROPERTIES:
 :CUSTOM_ID: h:5B512D17-7FD5-4FD5-B4AA-C1B27A9E6FCA
 :END:
 :LOGBOOK:
+- State "UPGR"       from "DONE"       [2026-02-18 Wed 21:39] \\
+  Noir v1.0.0-beta.19
 - State "DONE"       from "TODO"       [2025-06-04 Wed 19:29]
 - State "TODO"       from              [2025-05-25 Sun 19:03]
 :END:
@@ -4786,12 +4882,13 @@ const SECONDARY_ATTRIBUTES = [
 ]
 #+end_src
 
-**** DONE attribute                                                     :lex:
-CLOSED: [2025-06-05 Thu 20:02]
+**** UPGR attribute                                                  :lex:
 :PROPERTIES:
 :CUSTOM_ID: h:22DB13A6-D91E-4240-8711-10ED6DEE1C6E
 :END:
 :LOGBOOK:
+- State "UPGR"       from "DONE"       [2026-02-18 Wed 21:39] \\
+  Noir v1.0.0-beta.19
 - State "DONE"       from "TODO"       [2025-06-05 Thu 20:02]
 - State "TODO"       from              [2025-06-05 Thu 17:37] \\
   Reviewing attribute lexing
@@ -4931,12 +5028,13 @@ Should also link stuff as appropriate. This is lexing documentation.
 As it is is fine for now however.
 *************** END
 
-**** DONE str                                                           :lex:
-CLOSED: [2025-06-15 Sun 19:09]
+**** UPGR str                                                        :lex:
 :PROPERTIES:
 :CUSTOM_ID: h:6135F05F-8F23-4B77-98E2-CF6D639F4D7A
 :END:
 :LOGBOOK:
+- State "UPGR"       from "DONE"       [2026-02-18 Wed 21:39] \\
+  Noir v1.0.0-beta.19
 - State "DONE"       from              [2025-06-15 Sun 19:09]
 :END:
 
@@ -4978,12 +5076,13 @@ Lexer eats until ending ="= allowing the following escape characters within the 
 Seems to be fine for now.
 *************** END
 
-**** DONE raw_str                                                       :lex:
-CLOSED: [2025-06-17 Tue 16:40]
+**** UPGR raw_str                                                    :lex:
 :PROPERTIES:
 :CUSTOM_ID: h:0573AE7E-F170-4CC3-BE8C-852249558A04
 :END:
 :LOGBOOK:
+- State "UPGR"       from "DONE"       [2026-02-18 Wed 21:39] \\
+  Noir v1.0.0-beta.19
 - State "DONE"       from              [2025-06-17 Tue 16:40]
 :END:
 
@@ -5006,12 +5105,13 @@ Essentially this all means that a raw string literal is started via =r"= or =r#"
 
 Parsed via [[file:noir/compiler/noirc_frontend/src/parser/parser.rs::fn eat_raw_str(&mut self)][eat_raw_str]] which eats a token which was lexed as ~Token::RawStr~.
 
-**** DONE fmt_str                                                       :lex:
-CLOSED: [2025-06-17 Tue 17:43]
+**** UPGR fmt_str                                                    :lex:
 :PROPERTIES:
 :CUSTOM_ID: h:196B9814-8776-49F7-B43A-6084A8A3256A
 :END:
 :LOGBOOK:
+- State "UPGR"       from "DONE"       [2026-02-18 Wed 21:39] \\
+  Noir v1.0.0-beta.19
 - State "DONE"       from              [2025-06-17 Tue 17:43]
 :END:
 
