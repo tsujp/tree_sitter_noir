@@ -70,29 +70,28 @@ CLOSED: [2026-02-18 Wed 21:04]
 - State "DONE"       from "TODO"       [2025-05-25 Sun 17:51]
 :END:
 
-Parser: [[file:noir/compiler/noirc_frontend/src/parser/parser.rs::fn parse_program(&mut self)][parse_program]]
+Parser: [[file:noir/compiler/noirc_frontend/src/parser/parser.rs::fn parse_program(&mut self)][parse_program()]]
 
 #+name: ,ebnf_program
 #+transclude: [[file:noir/compiler/noirc_frontend/src/parser/parser.rs::/// Program =][Program doc]]  :lines 1- :src fundamental :end "pub(crate) fn parse_program"
 
-*** SPEC Module
+*** DONE Module
+CLOSED: [2026-02-19 Thu 20:02]
 :PROPERTIES:
 :CUSTOM_ID: h:649C4EE8-8F15-4F45-8EA6-3AD48A893930
 :END:
 :LOGBOOK:
+- State "DONE"       from "SPEC"       [2026-02-19 Thu 20:02] \\
+  No apparent change.
 - State "SPEC"       from "TODO"       [2025-05-25 Sun 17:52]
 :END:
-
-*************** TODO Have inlined this at the top of rules in the grammar file for now
-Go back to transclusion if/when appropriate.
-*************** END
 
 This /is/ ~ParsedModule~ (see: [[#h:DB42728E-09AF-4189-B2BE-E48853E5C1D9][Parsing]]). So a Module represents one parsed source-file, but they may appear inline (see: [[#h:9204514E-E5FC-488B-8066-66F0D9AF0C85][ModOrContract]]).
 
 Parser: [[file:noir/compiler/noirc_frontend/src/parser/parser.rs::fn parse_module(&mut self, nested: bool)][parse_module()]]
 
 #+name: ,ebnf_module
-#+transclude: [[file:noir/compiler/noirc_frontend/src/parser/parser.rs::122][Module doc]]  :lines 122-122 :src fundamental
+#+transclude: [[file:noir/compiler/noirc_frontend/src/parser/parser.rs::/// Module =][Module doc]]  :lines 1- :src fundamental :end "pub(crate) fn parse_module("
 
 *** TODO DocComments                                               :pseudo:
 :LOGBOOK:
@@ -491,11 +490,16 @@ Functionally this is just checking =as= followed by an ident.
 Make it so.
 *************** END
 
-***** UPGR ModOrContract
+***** DONE ModOrContract
+CLOSED: [2026-02-19 Thu 20:10]
 :PROPERTIES:
 :CUSTOM_ID: h:9204514E-E5FC-488B-8066-66F0D9AF0C85
 :END:
 :LOGBOOK:
+CLOCK: [2026-02-19 Thu 19:48]--[2026-02-19 Thu 20:10] =>  0:22
+- Review Module, ModOrContract.
+- State "DONE"       from "UPGR"       [2026-02-19 Thu 20:09] \\
+  No apparent change.
 - State "UPGR"       from "DONE"       [2026-02-18 Wed 21:39] \\
   Noir v1.0.0-beta.19
 - State "DONE"       from "TODO"       [2025-06-08 Sun 21:02]
@@ -517,7 +521,7 @@ seq(
 Parser: [[file:noir/compiler/noirc_frontend/src/parser/parser/item.rs::if let Some(is_contract) = self.eat_mod_or_contract() {][parse_mod_or_contract() parent callsite]], [[file:noir/compiler/noirc_frontend/src/parser/parser/module.rs::pub(super) fn parse_mod_or_contract(][parse_mod_or_contract()]]
 
 #+name: ,ebnf_mod_or_contract
-#+transclude: [[file:noir/compiler/noirc_frontend/src/parser/parser/module.rs::12][ModOrContract doc]]  :lines 12-13 :src fundamental
+#+transclude: [[file:noir/compiler/noirc_frontend/src/parser/parser/module.rs::/// ModOrContract][ModOrContract doc]]  :lines 1- :src fundamental :end "pub(super) fn parse_mod_or_contract("
 
 Only the [[#h:F5A79701-65C9-4FEA-83D8-2413C585A5FA][ItemVisibility]] modifier is applicable, all other [[#h:2A9D09A5-2E52-4B8C-ABA1-0B3B953F093C][Modifiers]] are parse errors. Eat =mod= or =contract= keywords, ~validate_secondary_attributes~. If the brace group is not hit it's a ~ItemKind::ModuleDecl~ (declaration), otherwise a real submodule.
 

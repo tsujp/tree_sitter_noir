@@ -631,6 +631,7 @@ Upstream grammar changes to Noir.
 **** v0.36.0 to v1.0.0-beta.19
 
 - [X] where_clause.rs
+- [X] module.rs
 
 ***** TODO eat_non_underscore_ident changes
 :LOGBOOK:
@@ -638,6 +639,9 @@ Upstream grammar changes to Noir.
 :END:
 
 A bunch of nodes now use eat_non_underscore_ident versus just eat_ident, do we want to enforce that at the ts grammar level? Seems like extra complexity for no gain to me.
+
+- [ ] Trait
+- [ ] ModOrContract
   
 ***** Traits
 
