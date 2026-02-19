@@ -1566,7 +1566,7 @@ trait Foo where, {}
 Trait / Declarations
 ====================
 
-trait Ipsum { type Foo; let y: Field = 420; }
+trait Ipsum { type Foo; let y: Field; }
 
 ---
 
@@ -1578,8 +1578,7 @@ trait Ipsum { type Foo; let y: Field = 420; }
         name: (identifier))
       (trait_constant
         name: (identifier)
-        type: (primitive_type)
-        value: (int_literal))))
+        type: (primitive_type))))
 )
 
 
@@ -1588,6 +1587,13 @@ Trait / Declarations / Type
 ===========================
 
 trait Foo { type Bar; }
+trait Lorem { type Pootis: Bound; }
+
+pub trait BuildHasher {
+    type H: Hasher;
+
+    fn build_hasher(self) -> H;
+}
 
 ---
 
@@ -1597,6 +1603,29 @@ trait Foo { type Bar; }
     body: (declaration_list
       (trait_type
         name: (identifier))))
+  (trait_item
+    name: (identifier)
+    body: (declaration_list
+      (trait_type
+        name: (identifier)
+        bounds: (trait_bounds
+          (identifier)))))
+
+  (trait_item
+    (visibility_modifier)
+    name: (identifier)
+    body: (declaration_list
+      (trait_type
+        name: (identifier)
+        bounds: (trait_bounds
+          (identifier)))
+      (function_signature_item
+        name: (identifier)
+        parameters: (parameters
+          (self_pattern
+            (self)))
+        return_type: (return_type
+          type: (identifier)))))
 )
 
 
@@ -1605,7 +1634,6 @@ Trait / Declarations / Constant
 ===============================
 
 trait Bar { let x: Field; }
-trait Lorem { let y    : Field = 1; }
 
 ---
 
@@ -1616,14 +1644,16 @@ trait Lorem { let y    : Field = 1; }
       (trait_constant
         name: (identifier)
         type: (primitive_type))))
-  (trait_item
-    name: (identifier)
-    body: (declaration_list
-      (trait_constant
-        name: (identifier)
-        type: (primitive_type)
-        value: (int_literal))))
 )
+
+
+=====================================================
+Trait / Declarations / Constant / Default values (e1)
+:error
+=====================================================
+
+trait Lorem { let y: Field = 1; }
+---
 
 
 ===============================
@@ -1686,6 +1716,118 @@ pub trait Hash {
             type: (identifier)
             bounds: (trait_bounds
               (identifier)))))))
+)
+
+
+=============
+Trait / Alias
+=============
+
+trait Foo = Bar;
+
+---
+
+(source_file
+  (trait_item
+    name: (identifier)
+    bounds: (trait_bounds
+      (identifier)))
+)
+
+
+========================
+Trait / Alias / Generics
+========================
+
+trait Foo<A, B> = Bar + Baz<A>;
+
+---
+
+(source_file
+  (trait_item
+    name: (identifier)
+    type_parameters: (type_parameters
+      (identifier)
+      (identifier))
+    bounds: (trait_bounds
+      (identifier)
+      (generic
+        trait: (identifier)
+        type_parameters: (type_parameters
+          (identifier)))))
+)
+
+
+============================
+Trait / Alias / Missing (e1)
+:error
+============================
+
+trait Foo = ;
+---
+
+
+============================
+Trait / Alias / Missing (e2)
+:error
+============================
+
+trait Foo<A, B> = ;
+---
+
+
+============================
+Trait / Alias / Missing (e3)
+:error
+============================
+
+trait Foo = Bar
+---
+
+
+============================
+Trait / Alias / Missing (e4)
+:error
+============================
+
+trait Foo<A, B> = where A: Z;
+---
+
+
+=========================
+Trait / Alias / Body (e1)
+:error
+=========================
+
+trait Foo = Bar {};
+---
+
+
+=====================
+Trait / Alias / Where
+=====================
+
+trait Foo<A, B> = Bar + Baz<A> where A: Z;
+
+---
+
+(source_file
+  (trait_item
+    name: (identifier)
+    type_parameters: (type_parameters
+      (identifier)
+      (identifier))
+    bounds: (trait_bounds
+      (identifier)
+      (generic
+        trait: (identifier)
+        type_parameters: (type_parameters
+          (identifier))))
+    (where_clause
+      (where_constraint
+        type: (identifier)
+        bounds: (trait_bounds
+          (identifier)))))
 )
 
 

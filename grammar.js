@@ -299,16 +299,27 @@ export default grammar({
             'trait',
             field('name', $.identifier),
             field('type_parameters', optional($._generic_parameters)),
-            field('bounds', optional($.trait_bounds)),
+            choice($.__trait_tail_alias, $.__trait_tail),
+        ),
+        // [[file:noir_grammar.org::trait_tail]]
+        __trait_tail: $ => seq(
+            field('bounds', optional(seq(':', $.trait_bounds))),
             optional($.where_clause),
             field('body', alias($.__trait_declaration_list, $.declaration_list)),
         ),
-        // [[file:noir_grammar.org::trait_bounds]]
-        trait_bounds: $ => seq(
-            ':', // Common prefix reduction.
-            sepBy1($.__trait_bound, '+'),
-            // optional('+'), // TODO: I think not allowed, test compiler methods post-grammar.
+        // [[file:noir_grammar.org::trait_tail_alias]]
+        __trait_tail_alias: $ => seq(
+            field('bounds', seq('=', $.trait_bounds)),
+            optional($.where_clause),
+            ';',
         ),
+        // [[file:noir_grammar.org::trait_bounds]]
+        trait_bounds: $ =>     sepBy1($.__trait_bound, '+'),
+        // seq(
+            // ':', // Common prefix reduction.
+            // sepBy1($.__trait_bound, '+')
+            // optional('+'), // TODO: I think not allowed, test compiler methods post-grammar.
+        // ),
         // [[file:noir_grammar.org::trait_bound]]
         __trait_bound: $ => choice(
             // TraitBound without generics associated.
@@ -336,15 +347,17 @@ export default grammar({
         trait_type: $ => seq(
             'type',
             field('name', $.identifier),
+            field('bounds', optional(seq(':', $.trait_bounds))),
             ';',
         ),
         // [[file:noir_grammar.org::trait_constant]]
         trait_constant: $ => seq(
             $.tmp__let_to_type,
-            optional(seq(
-                '=', // We don't want '=' part of the CST node for the (default) value.
-                field('value', $._expression),
-            )),
+            // Noirc: still listed on EBNF but parser logic always throws an error if included now (TODO: Upstream clarification).
+            // optional(seq(
+            //     '=', // We don't want '=' part of the CST node for the (default) value.
+            //     field('value', $._expression),
+            // )),
             ';',
         ),
         
@@ -455,7 +468,7 @@ export default grammar({
         // [[file:noir_grammar.org::where_clause]]
         where_constraint: $ => seq(
             field('type', $._type),
-            field('bounds', $.trait_bounds),
+            field('bounds', seq(':', $.trait_bounds)),
         ),
 
         // * * * * * * * * * * * * * * * * * * * * * * * * * STATEMENT KINDS (AST)

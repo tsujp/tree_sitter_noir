@@ -630,7 +630,33 @@ Upstream grammar changes to Noir.
 
 **** v0.36.0 to v1.0.0-beta.19
 
+- [X] where_clause.rs
 
+***** TODO eat_non_underscore_ident changes
+:LOGBOOK:
+- State "TODO"       from              [2026-02-19 Thu 18:36]
+:END:
+
+A bunch of nodes now use eat_non_underscore_ident versus just eat_ident, do we want to enforce that at the ts grammar level? Seems like extra complexity for no gain to me.
+  
+***** Traits
+
+****** TODO Is it worth it enforcing traits cannot be lone underscore identifiers?
+:LOGBOOK:
+- State "TODO"       from              [2026-02-19 Thu 15:13]
+:END:
+
+Probably not. TS grammar doesn't have to be compiler-level correct (and cannot be as previously discovered). If it doesn't add too much complexity to the compiled parser then sure.
+
+Line 29 of traits.rs for v1.0.0-beta.19 noir shows it's all non-underscore identifiers.
+
+****** TODO Review diff of parser/traits.rs
+:LOGBOOK:
+- State "TODO"       from              [2026-02-18 Wed 23:27]
+:END:
+
+- [ ] Looks like there's new trait syntax from the EBNF, current tests also fail at loci which appears to introduce said new syntax: noir/noir_stdlib/src/hash/mod.nr        183,4 - 186,0
+  
 **** TODO Misc
 :LOGBOOK:
 - State "TODO"       from              [2026-02-18 Wed 20:11] \\
@@ -705,6 +731,14 @@ Update Parser.eat_kind's docs in noir_grammar.org because eat_kind has slightly 
 *** Coverage TODOs
 
 It's a bit hard (currently) to track general-coverage TODOs within =noir_grammar.org= itself, and I have yet to dive-deep into org-agenda which might be able to construct such a view. However there are a lot of other TODOs specific to each headline they are under. Here is a general "overview" of areas of the grammar that need to be done as a way to "save progress" for when future Jordan comes back to work on =noir_grammar.org=.
+
+**** TODO Accomodations for validate_secondary_attributes in parser logic
+:LOGBOOK:
+- State "TODO"       from              [2026-02-19 Thu 16:11]
+:END:
+
+Appears in various parers, anything actually needed that concerns the tree-sitter grammar?
+- [ ] Trait
 
 **** TODO Workflow for updating grammar sources and checking for new changes
 :LOGBOOK:

@@ -1404,7 +1404,7 @@ trait Foo where, {}
 *** Declarations
 
 #+begin_test
-trait Ipsum { type Foo; let y: Field = 420; }
+trait Ipsum { type Foo; let y: Field; }
 
 ---
 
@@ -1415,13 +1415,13 @@ trait Ipsum { type Foo; let y: Field = 420; }
       name: (identifier))
     (trait_constant
       name: (identifier)
-      type: (primitive_type)
-      value: (int_literal))))
+      type: (primitive_type))))
 #+end_test
 
 **** Type
 #+begin_test
 trait Foo { type Bar; }
+trait Lorem { type Pootis: Bound; }
 
 ---
 
@@ -1430,12 +1430,45 @@ trait Foo { type Bar; }
   body: (declaration_list
     (trait_type
       name: (identifier))))
+(trait_item
+  name: (identifier)
+  body: (declaration_list
+    (trait_type
+      name: (identifier)
+      bounds: (trait_bounds
+        (identifier)))))
+#+end_test
+
+From v1.0.0-beta.19: noir/noir_stdlib/src/hash/mod.nr        183,4 - 186,0
+#+begin_test
+pub trait BuildHasher {
+    type H: Hasher;
+
+    fn build_hasher(self) -> H;
+}
+
+---
+
+(trait_item
+  (visibility_modifier)
+  name: (identifier)
+  body: (declaration_list
+    (trait_type
+      name: (identifier)
+      bounds: (trait_bounds
+        (identifier)))
+    (function_signature_item
+      name: (identifier)
+      parameters: (parameters
+        (self_pattern
+          (self)))
+      return_type: (return_type
+        type: (identifier)))))
 #+end_test
 
 **** Constant
 #+begin_test
 trait Bar { let x: Field; }
-trait Lorem { let y    : Field = 1; }
 
 ---
 
@@ -1445,13 +1478,11 @@ trait Lorem { let y    : Field = 1; }
     (trait_constant
       name: (identifier)
       type: (primitive_type))))
-(trait_item
-  name: (identifier)
-  body: (declaration_list
-    (trait_constant
-      name: (identifier)
-      type: (primitive_type)
-      value: (int_literal))))
+#+end_test
+
+***** Default values
+#+begin_test :error
+trait Lorem { let y: Field = 1; }
 #+end_test
 
 **** Function
@@ -1478,7 +1509,7 @@ trait Foo { fn foo() {} }
 
 ***** Signature
 
-From current submodule version of Noir: noir/noir_stdlib/src/hash/mod.nr    131,4 - 135,1
+From v0.36.0: noir/noir_stdlib/src/hash/mod.nr    131,4 - 135,1
 #+begin_test
 pub trait Hash {
     fn hash<H>(self, state: &mut H)
@@ -1509,6 +1540,89 @@ pub trait Hash {
           type: (identifier)
           bounds: (trait_bounds
             (identifier)))))))
+#+end_test
+
+*** Alias
+
+#+begin_test
+trait Foo = Bar;
+
+---
+
+(trait_item
+  name: (identifier)
+  bounds: (trait_bounds
+    (identifier)))
+#+end_test
+
+**** Generics
+#+begin_test
+trait Foo<A, B> = Bar + Baz<A>;
+
+---
+
+(trait_item
+  name: (identifier)
+  type_parameters: (type_parameters
+    (identifier)
+    (identifier))
+  bounds: (trait_bounds
+    (identifier)
+    (generic
+      trait: (identifier)
+      type_parameters: (type_parameters
+        (identifier)))))
+#+end_test
+
+**** Missing
+
+Missing bounds.
+#+begin_test :error
+trait Foo = ;
+#+end_test
+
+Generics with missing bounds.
+#+begin_test :error
+trait Foo<A, B> = ;
+#+end_test
+
+Missing semicolon.
+#+begin_test :error
+trait Foo = Bar
+#+end_test
+
+Where with missing bounds.
+#+begin_test :error
+trait Foo<A, B> = where A: Z;
+#+end_test
+
+**** Body
+#+begin_test :error
+trait Foo = Bar {};
+#+end_test
+
+**** Where
+#+begin_test
+trait Foo<A, B> = Bar + Baz<A> where A: Z;
+
+---
+
+(trait_item
+  name: (identifier)
+  type_parameters: (type_parameters
+    (identifier)
+    (identifier))
+  bounds: (trait_bounds
+    (identifier)
+    (generic
+      trait: (identifier)
+      type_parameters: (type_parameters
+        (identifier))))
+  (where_clause
+    (where_constraint
+      type: (identifier)
+      bounds: (trait_bounds
+        (identifier)))))
 #+end_test
 
 ** Global
@@ -1846,6 +1960,11 @@ fn unconstrained unconstrained one() {}
 :PROPERTIES:
 :export_file_name: statements.txt
 :END:
+
+** Naked
+#+begin_test :error
+;
+#+end_test
 
 ** Break
 #+begin_test
