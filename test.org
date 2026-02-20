@@ -1,3 +1,8 @@
+#+TODO: TODO(t@) TOIMPL(i@) SPEC(r@) BLOCK(b@) UPGR(u@) | DONE(d!)
+#+STARTUP: indent logdone logdrawer content
+# ------------------------------------------------------
+#+TITLE: Noir Tree-sitter Tests
+
 Top-level test under a subheading will either be the simple case or a combination of all it's children. This means when diagnosing errors it's easier to run child-specific tests and then "a mix of" those combinations without creating temporary tests.
 
 * Declarations
@@ -2049,9 +2054,13 @@ global f2 = { let (x, y) = 1; };
 global f = { let x = 123 };
 #+end_test
 
-*** Complex
-TODO: Rename this subheading better, maybe "nested expression" or something
-#+begin_test :skip
+*** TODO Complex
+:LOGBOOK:
+- State "TODO"       from              [2026-02-20 Fri 20:37] \\
+  Rename this subheading better, maybe "nested expression" or something
+:END:
+
+#+begin_test
 global f1 = { let mut y = { 1 + 2; }; };
 
 ---
@@ -2060,12 +2069,13 @@ global f1 = { let mut y = { 1 + 2; }; };
   name: (identifier)
   (block
     (let_statement
-      (mut_bound)
+      (mutable_modifier)
       pattern: (identifier)
       value: (block
-        (binary_expression
-          left: (int_literal)
-          right: (int_literal))))))
+        (expression_statement
+          (binary_expression
+            left: (int_literal)
+            right: (int_literal)))))))
 #+end_test
 
 ** Constrain
@@ -2325,6 +2335,85 @@ x
 
 ** Literal
 
+*** Integer
+#+begin_test
+global f0_1 = 1Field;
+global f0_2 = 1_Field;
+global f0_3 = 1____________________Field;
+global f0_4 = 1_________0______Field;
+
+global f1_1 = 0x1u1;
+global f1_2 = 3u32;
+global f1_3 = 3_u32;
+global f1_4 = 42069_i64;
+
+global f2_1 = 0x123;
+global f2_2 = 69;
+global f2_3 = 1_000_123;
+
+---
+
+(global_item
+  name: (identifier)
+  (int_literal))
+(global_item
+  name: (identifier)
+  (int_literal))
+(global_item
+  name: (identifier)
+  (int_literal))
+(global_item
+  name: (identifier)
+  (int_literal))
+
+(global_item
+  name: (identifier)
+  (int_literal))
+(global_item
+  name: (identifier)
+  (int_literal))
+(global_item
+  name: (identifier)
+  (int_literal))
+(global_item
+  name: (identifier)
+  (int_literal))
+
+(global_item
+  name: (identifier)
+  (int_literal))
+(global_item
+  name: (identifier)
+  (int_literal))
+(global_item
+  name: (identifier)
+  (int_literal))
+#+end_test
+
+**** CST
+
+Pedantic CST check.
+#+begin_test :cst
+global f0_1 = 1_________0______Field;
+global f0_2 = 123i128;
+
+---
+
+1:0  - 3:0    source_file
+1:0  - 1:37     global_item
+1:0  - 1:6        "global"
+1:7  - 1:11       name: identifier `f0_1`
+1:12 - 1:13       "="
+1:14 - 1:36       int_literal `1_________0______Field`
+1:36 - 1:37       ";"
+2:0  - 2:22     global_item
+2:0  - 2:6        "global"
+2:7  - 2:11       name: identifier `f0_2`
+2:12 - 2:13       "="
+2:14 - 2:21       int_literal `123i128`
+2:21 - 2:22       ";"
+#+end_test
+
 *** String
 #+begin_test
 global f1 = "";
@@ -2432,9 +2521,29 @@ global f1 = "\\";
 #+end_test
 
 ***** Require immediate
-Escape sequences must bind to immediate tokens.
-TODO: When CST testing implemented make a CST test for this: https://github.com/tree-sitter/tree-sitter/pull/4633 and https://github.com/tree-sitter/tree-sitter/issues/4476
 
+Escape sequences must bind to immediate tokens.
+#+begin_test :cst
+global f0 = "\rfoobar\"another";
+
+---
+
+1:0  - 2:0    source_file
+1:0  - 1:32     global_item
+1:0  - 1:6        "global"
+1:7  - 1:9        name: identifier `f0`
+1:10 - 1:11       "="
+1:12 - 1:31       str_literal
+1:12 - 1:13         "\""
+1:13 - 1:15         escape_sequence `\\r`
+1:15 - 1:21         str_content `foobar`
+1:21 - 1:23         escape_sequence `\\\"`
+1:23 - 1:30         str_content `another`
+1:30 - 1:31         "\""
+1:31 - 1:32       ";"
+#+end_test
+
+Non-immediate is an error.
 #+begin_test :error
 global f = "\ r";
 #+end_test

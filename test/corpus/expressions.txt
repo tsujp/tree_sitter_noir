@@ -1,3 +1,87 @@
+=================
+Literal / Integer
+=================
+
+global f0_1 = 1Field;
+global f0_2 = 1_Field;
+global f0_3 = 1____________________Field;
+global f0_4 = 1_________0______Field;
+
+global f1_1 = 0x1u1;
+global f1_2 = 3u32;
+global f1_3 = 3_u32;
+global f1_4 = 42069_i64;
+
+global f2_1 = 0x123;
+global f2_2 = 69;
+global f2_3 = 1_000_123;
+
+---
+
+(source_file
+  (global_item
+    name: (identifier)
+    (int_literal))
+  (global_item
+    name: (identifier)
+    (int_literal))
+  (global_item
+    name: (identifier)
+    (int_literal))
+  (global_item
+    name: (identifier)
+    (int_literal))
+
+  (global_item
+    name: (identifier)
+    (int_literal))
+  (global_item
+    name: (identifier)
+    (int_literal))
+  (global_item
+    name: (identifier)
+    (int_literal))
+  (global_item
+    name: (identifier)
+    (int_literal))
+
+  (global_item
+    name: (identifier)
+    (int_literal))
+  (global_item
+    name: (identifier)
+    (int_literal))
+  (global_item
+    name: (identifier)
+    (int_literal))
+)
+
+
+=======================
+Literal / Integer / CST
+:cst
+=======================
+
+global f0_1 = 1_________0______Field;
+global f0_2 = 123i128;
+
+---
+
+1:0  - 3:0    source_file
+1:0  - 1:37     global_item
+1:0  - 1:6        "global"
+1:7  - 1:11       name: identifier `f0_1`
+1:12 - 1:13       "="
+1:14 - 1:36       int_literal `1_________0______Field`
+1:36 - 1:37       ";"
+2:0  - 2:22     global_item
+2:0  - 2:6        "global"
+2:7  - 2:11       name: identifier `f0_2`
+2:12 - 2:13       "="
+2:14 - 2:21       int_literal `123i128`
+2:21 - 2:22       ";"
+
+
 ================
 Literal / String
 ================
@@ -112,6 +196,30 @@ global f1 = "\\";
     (str_literal
       (escape_sequence)))
 )
+
+
+======================================================
+Literal / String / Escape sequence / Require immediate
+:cst
+======================================================
+
+global f0 = "\rfoobar\"another";
+
+---
+
+1:0  - 2:0    source_file
+1:0  - 1:32     global_item
+1:0  - 1:6        "global"
+1:7  - 1:9        name: identifier `f0`
+1:10 - 1:11       "="
+1:12 - 1:31       str_literal
+1:12 - 1:13         "\""
+1:13 - 1:15         escape_sequence `\\r`
+1:15 - 1:21         str_content `foobar`
+1:21 - 1:23         escape_sequence `\\\"`
+1:23 - 1:30         str_content `another`
+1:30 - 1:31         "\""
+1:31 - 1:32       ";"
 
 
 ===========================================================

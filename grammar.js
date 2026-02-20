@@ -10,12 +10,16 @@ const INTEGER_TYPES = [
     'u16',
     'u32',
     'u64',
+    'u128',
     //
     'i1',
     'i8',
     'i16',
     'i32',
     'i64',
+    'i128',
+    //
+    'Field',
 ]
 
 const PRECEDENCE = {
@@ -848,7 +852,7 @@ export default grammar({
         
         // [[file:noir_grammar.org::primitive_type]]
         primitive_type: $ => choice(
-            $.__field_type,
+            // $.__field_type,
             $.__integer_type,
             $.__bool_type,
             $.__string_type,
@@ -1126,7 +1130,9 @@ export default grammar({
             choice(
                 /[0-9][0-9_]*/,
                 /0x[0-9a-fA-F_]+/,
-            )
+            ),
+            // Noirc: (TODO: get patch version this feature was added) integer suffix types.
+            optional(choice(...INTEGER_TYPES)),
         )),
         
         // [[file:noir_grammar.org::str]]

@@ -117,7 +117,6 @@ global f = { let x = 123 };
 
 =============
 Let / Complex
-:skip
 =============
 
 global f1 = { let mut y = { 1 + 2; }; };
@@ -129,12 +128,13 @@ global f1 = { let mut y = { 1 + 2; }; };
     name: (identifier)
     (block
       (let_statement
-        (mut_bound)
+        (mutable_modifier)
         pattern: (identifier)
         value: (block
-          (binary_expression
-            left: (int_literal)
-            right: (int_literal))))))
+          (expression_statement
+            (binary_expression
+              left: (int_literal)
+              right: (int_literal)))))))
 )
 
 

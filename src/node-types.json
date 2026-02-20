@@ -6115,6 +6115,10 @@
     "named": false
   },
   {
+    "type": "i128",
+    "named": false
+  },
+  {
     "type": "i16",
     "named": false
   },
@@ -6220,6 +6224,10 @@
   },
   {
     "type": "u1",
+    "named": false
+  },
+  {
+    "type": "u128",
     "named": false
   },
   {

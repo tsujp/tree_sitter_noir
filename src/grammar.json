@@ -3591,10 +3591,6 @@
       "members": [
         {
           "type": "SYMBOL",
-          "name": "__field_type"
-        },
-        {
-          "type": "SYMBOL",
           "name": "__integer_type"
         },
         {
@@ -3640,6 +3636,10 @@
         },
         {
           "type": "STRING",
+          "value": "u128"
+        },
+        {
+          "type": "STRING",
           "value": "i1"
         },
         {
@@ -3657,6 +3657,14 @@
         {
           "type": "STRING",
           "value": "i64"
+        },
+        {
+          "type": "STRING",
+          "value": "i128"
+        },
+        {
+          "type": "STRING",
+          "value": "Field"
         }
       ]
     },
@@ -4748,6 +4756,71 @@
               {
                 "type": "PATTERN",
                 "value": "0x[0-9a-fA-F_]+"
+              }
+            ]
+          },
+          {
+            "type": "CHOICE",
+            "members": [
+              {
+                "type": "CHOICE",
+                "members": [
+                  {
+                    "type": "STRING",
+                    "value": "u1"
+                  },
+                  {
+                    "type": "STRING",
+                    "value": "u8"
+                  },
+                  {
+                    "type": "STRING",
+                    "value": "u16"
+                  },
+                  {
+                    "type": "STRING",
+                    "value": "u32"
+                  },
+                  {
+                    "type": "STRING",
+                    "value": "u64"
+                  },
+                  {
+                    "type": "STRING",
+                    "value": "u128"
+                  },
+                  {
+                    "type": "STRING",
+                    "value": "i1"
+                  },
+                  {
+                    "type": "STRING",
+                    "value": "i8"
+                  },
+                  {
+                    "type": "STRING",
+                    "value": "i16"
+                  },
+                  {
+                    "type": "STRING",
+                    "value": "i32"
+                  },
+                  {
+                    "type": "STRING",
+                    "value": "i64"
+                  },
+                  {
+                    "type": "STRING",
+                    "value": "i128"
+                  },
+                  {
+                    "type": "STRING",
+                    "value": "Field"
+                  }
+                ]
+              },
+              {
+                "type": "BLANK"
               }
             ]
           }

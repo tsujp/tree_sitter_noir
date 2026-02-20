@@ -10,7 +10,7 @@
 ;;;; Variables
 
 ;; Specifiable keyword symbols defined for test-block (org node: special-block) attributes.
-(defconst presence-properties '(:error :extract :skip))
+(defconst presence-properties '(:error :extract :skip :cst))
 
 
 ;;;; Functions
@@ -175,6 +175,14 @@ is a global communication plist with contextual information."
                                      (concat (tst--get-special-block-contents --sb) "---")))
               (setq error-test-count (1+ error-test-count)))
 
+             ;; CST test, effectively do nothing.
+             ;; TODO: This code works but can it be reduced?
+             ((plist-get --sb-info :cst)
+              (org-element-set --sb (org-element-create
+                                     'test-block
+                                     (plist-put --sb-info :test-name (plist-get --sb-info :test-name))
+                                     (tst--get-special-block-contents --sb))))
+
              ;; Normal (non-error) test
              ;; ((not (or (plist-get --sb-info :error) (plist-get --sb-info :skip)))
              ((not (plist-get --sb-info :error))
@@ -269,6 +277,8 @@ of --- and (if appropriate) a tree-sitter parse-tree for assertion."
               ":error\n")
             (when (org-element-property :skip test-block)
               ":skip\n")
+            (when (org-element-property :cst test-block)
+              ":cst\n")
             test-name-wrap "\n\n"
             contents)))
 

@@ -3,7 +3,7 @@
 # ------------------------------------------------------
 #+NOIR_TEMPLATE_URL: https://github.com/noir-lang/noir/blob/%h/%p#L%lC%c-L%lC%s
 # ------------------------------------------------------
-#+TITLE: Noir Treesitter Grammar
+#+TITLE: Noir Tree-sitter Grammar
 #+AUTHOR: Jordan Ellis Coppard
 #+LANGUAGE: en
 #+OPTIONS: ^:{}
@@ -1233,7 +1233,7 @@ When lexing [[file:noir/compiler/noirc_frontend/src/lexer/token.rs::fn lookup_ke
 #+name: primitive_type
 #+begin_src js :arg $
 choice(
-    <<r("field_type")>>,
+    // <<r("field_type")>>,
     <<r("int_type")>>,
     <<r("bool_type")>>,
     <<r("str_type")>>,
@@ -1248,17 +1248,16 @@ Parser: [[file:noir/compiler/noirc_frontend/src/parser/parser/types.rs::fn parse
 Double check other grammars none appear to go deeper on primitive types (intentionally). So for example =i32= or =Field= is an IntegerType and FieldType respectively but none actually make a CST node called that and instead both would be PrimitiveType. I suppose you can get the match region when tagging to determine what it is, or there's just too many nodes for primitives since convention shows people _do_ have CST nodes for arrays, unit types, etc. I'll follow convention for now and make all the primitive types anonymous nodes by default.
 *************** END
 
-******* SPEC FieldType                                                 :leaf:
+******* UPGR FieldType                                           :leaf:
 :PROPERTIES:
 :CUSTOM_ID: h:B5115CEE-F6AE-4BB2-82EE-13F65B7EDC43
 :END:
 :LOGBOOK:
+- State "UPGR"       from "SPEC"       [2026-02-19 Thu 21:47] \\
+  v1.0.0-beta.19 Noir, this might not exist anymore (merged into integer suffix type perhaps)
 - State "SPEC"       from "TOIMPL"     [2025-05-24 Sat 22:10]
 - State "TOIMPL"     from "TODO"       [2024-11-03 Sun 12:24]
 :END:
-:pgd:
-+ =Field= (kw)
-:end:
 
 #+name: field_type
 #+begin_src js :rule __field_type
@@ -3275,9 +3274,13 @@ Currently lots of confusing names, got lexing at the top, literal at the bottom 
 
 All the expression nodes in [[file:noir/compiler/noirc_frontend/src/parser/parser/infix.rs][infix.rs]] constitute binary expressions and their call hierarchy via [[#h:CE180901-F6F2-4A65-878D-6C9154971376][parse_infix]] denotes the reverse of their precedence. Note that the deepest call (in that file) [[file:noir/compiler/noirc_frontend/src/parser/parser/infix.rs::pub(super) fn parse_multiply_or_divide_or_modulo(][parse_multiply_or_divide_or_modulo()]] further calls [[file:noir/compiler/noirc_frontend/src/parser/parser/expression.rs::pub(super) fn parse_term(&mut self, allow_constructors: bool)][parse_term()]] meaning all of Term's (TODO: link) expressions are higher priority still.
 
-**** TODO Literal
+**** UPGR Literal
 :PROPERTIES:
 :CUSTOM_ID: h:24F065BB-8AC3-48EE-8C8E-64E188E2AE16
+:END:
+:LOGBOOK:
+- State "UPGR"       from "TODO"       [2026-02-19 Thu 20:40] \\
+  v1.0.0-beta.19 Noir, lots different.
 :END:
 
 - [[id:CF0A439A-EFBB-466E-8F5F-7A8827EB703E][QuoteExpression]]
@@ -3307,7 +3310,7 @@ prec(
 Parser: [[file:noir/compiler/noirc_frontend/src/parser/parser/expression.rs::fn parse_literal(&mut self)][parse_literal()]]
 
 #+name: ,ebnf_literal
-#+transclude: [[file:noir/compiler/noirc_frontend/src/parser/parser/expression.rs::564][Literal, QuoteExpression, ArrayExpression, BlockExpression EBNF]]  :lines 564-579 :src fundamental
+#+transclude: [[file:noir/compiler/noirc_frontend/src/parser/parser/expression.rs::/// Literal][Literal, QuoteExpression, ArrayExpression, BlockExpression doc]]  :lines 1- :src fundamental :end "fn parse_literal("
 
 **** TODO AtomOrUnaryRightExpression
 2025/07/23 TODO
@@ -5042,10 +5045,6 @@ In source its listed as Attribute::Secondary but the comment for secondary attri
 :LOGBOOK:
 - State "SPEC"       from              [2025-06-15 Sun 17:15]
 :END:
-:pgd:
-- =true= (kw)
-- =false= (kw)
-:end:
 
 Via [[file:noir/compiler/noirc_frontend/src/parser/parser.rs::fn eat_bool(&mut self)][eat_bool]] eats a token which was lexed as ~Token::Bool~ which are created from either =true= or =false= (see: [[file:noir/compiler/noirc_frontend/src/lexer/token.rs::pub(crate) fn lookup_keyword(word: &str)][lookup_keyword()]]).
 
@@ -5070,9 +5069,6 @@ bool = 'true' | 'false'
 - State "SPEC"       from "TODO"       [2025-05-26 Mon 12:30]
 - State "TODO"       from              [2025-05-26 Mon 12:30]
 :END:
-:pgd:
-- TODO
-:end:
 
 #+name: int
 #+begin_src js :rule int_literal :ast int
@@ -5080,9 +5076,18 @@ token(seq(
     choice(
         /[0-9][0-9_]*/,
         /0x[0-9a-fA-F_]+/,
-    )
+    ),
+    // Noirc: (TODO: get patch version this feature was added) integer suffix types.
+    optional(choice(...INTEGER_TYPES)),
 ))
 #+end_src
+
+Parser: [[file:noir/compiler/noirc_frontend/src/parser/parser.rs::fn eat_int(&mut self)][eat_int()]]
+
+If token was lexed ~Token::Int~, bump parser, get token contents and return tuple ~(FieldElement, Option<IntegerTypeSuffix>)~.
+
+~IntegerTypeSuffix~
+
 
 Lexer:
 
@@ -5111,6 +5116,17 @@ Should also link stuff as appropriate. This is lexing documentation.
 *************** TODO Update reg for error on multiple consecutive _ and if a trailing _
 As it is is fine for now however.
 *************** END
+
+***** TODO IntegerTypeSuffix                                        :lex:
+:LOGBOOK:
+- State "TODO"       from              [2026-02-19 Thu 21:23] \\
+  v1.0.0-beta.19 Noir, new
+:END:
+
+Lexer: [[file:noir/compiler/noirc_frontend/src/lexer/lexer.rs::fn check_for_integer_type_suffix(integer_string: &mut String)][check_for_integer_type_suffix()]]
+Types: [[file:noir/compiler/noirc_frontend/src/lexer/token.rs::pub enum IntegerTypeSuffix {][IntegerTypeSuffix enum]]
+
+If an integer (used in a value position only) has a type suffix it is returned ~IntegerTypeSuffix~ and said suffix stripped from the integer string. Later the integer string can be parsed as an integer with this associated type information (see: [[#h:CA7F6441-C376-4A8E-9C59-B128CC1F841A][int]]).
 
 **** UPGR str                                                        :lex:
 :PROPERTIES:
@@ -5515,12 +5531,16 @@ const INTEGER_TYPES = [
     'u16',
     'u32',
     'u64',
+    'u128',
     //
     'i1',
     'i8',
     'i16',
     'i32',
     'i64',
+    'i128',
+    //
+    'Field',
 ]
 
 const PRECEDENCE = {
